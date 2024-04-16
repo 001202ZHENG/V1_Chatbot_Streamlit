@@ -10,9 +10,9 @@ with st.sidebar.expander("📬 Contact"):
 
     st.write("**GitHub:**",
 "[V1_Chatbot_Streamlit](https://github.com/001202ZHENG/V1_Chatbot_Streamlit)")
-    st.write("**Mail** :", "zheng.wan@student-cs.fr [Deloitte Team]")
-    st.write("**Mail** :", "TNuss@deloitte.fr [Deloitte Team]")
-    st.write("** By “Voice of Customers” Team**")
+    st.write("**Mail** :", "[Essec Team](zheng.wan@student-cs.fr)")
+    st.write("**Mail** :", "[Deloitte Team](TNuss@deloitte.fr)")
+    st.write("**By “Voice of Customers” Team**")
 
 
 #Title
