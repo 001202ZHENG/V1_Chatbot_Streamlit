@@ -18,7 +18,7 @@ with st.sidebar.expander("📬 Contact"):
 #Title
 st.markdown(
     """
-    <h2 style='text-align: center;'>VoC, where your voice is heard and advice is served. 🤖</h1>
+    <h2 style='text-align: center;'>VoC, where your voice is heard and advice is served! 🤖</h1>
     """,
     unsafe_allow_html=True,)
 
@@ -34,20 +34,11 @@ st.markdown(
 st.markdown("---")
 
 
-'''#Robby's Pages
-st.subheader("🚀 Robby's Pages")
-st.write("""
-- **Robby-Chat**: General Chat on data (PDF, TXT,CSV) with a [vectorstore](https://github.com/facebookresearch/faiss) (index useful parts(max 4) for respond to the user) | works with [ConversationalRetrievalChain](https://python.langchain.com/en/latest/modules/chains/index_examples/chat_vector_db.html)
-- **Robby-Sheet** (beta): Chat on tabular data (CSV) | for precise information | process the whole file | works with [CSV_Agent](https://python.langchain.com/en/latest/modules/agents/toolkits/examples/csv.html) + [PandasAI](https://github.com/gventuri/pandas-ai) for data manipulation and graph creation
-- **Robby-Youtube**: Summarize YouTube videos with [summarize-chain](https://python.langchain.com/en/latest/modules/chains/index_examples/summarize.html)
-""")
-st.markdown("---")
-'''
 
 #Contributing
 st.markdown("### 🎯 Contribution")
 st.markdown("""
-**This chatbot is developed through the collaborative efforts of the Voice of Customers teams from ESSEC Business School & CentraleSupélec, consisting of Data Sciences & Business Analytics students, along with the Deloitte Team. 🚀**
+**This chatbot is developed through the collaborative efforts of the Voice of Customers teams from ESSEC Business School & CentraleSupélec, along with the Deloitte Team. 🚀**
 """, unsafe_allow_html=True)
 
 
