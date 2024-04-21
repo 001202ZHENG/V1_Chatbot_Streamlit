@@ -309,4 +309,5 @@ if dashboard == "Recruiting & Onboarding":
         ax.text(1.05, 1, f'Total: {total_satisfied}', va='center', ha='left', color='black', fontsize=10)
 
         plt.show()
+        st.pyplot(fig)
     plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'], 'Proportion of Onboarding Process Satisfaction Scores')
