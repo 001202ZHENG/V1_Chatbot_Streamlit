@@ -12,7 +12,7 @@ st.set_page_config(layout="wide")
 @st.cache_data
 def load_data():
     # the path needs to change to a GitHub path
-    data = pd.read_excel('/Users/mariahallak/Desktop/M2-T3/CRP/GitHub/VoiceOfCustomers/Voice of Customer_Second data set.xlsx')
+    data = pd.read_excel('src/pages/data.xlsx')
     data = data.rename(columns={
     'What is your role at the company ?': 'Role',
     'What function are you part of ?': 'Function',
