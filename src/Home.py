@@ -52,6 +52,62 @@ st.markdown(
     ''',
     unsafe_allow_html=True
 )
+# Function to plot satisfaction proportions
+def plot_satisfaction_proportions(data_series, title):
+
+    # Calculate proportions
+    score_counts = data_series.value_counts().sort_index().astype(int)
+    total_satisfied = score_counts.get(4, 0) + score_counts.get(5, 0)
+    total_dissatisfied = score_counts.get(1, 0) + score_counts.get(2, 0) + score_counts.get(3, 0)
+    
+    # Calculate proportions
+    dissatisfied_proportions = [score_counts.get(i, 0) / total_dissatisfied if total_dissatisfied > 0 else 0 for i in range(1, 4)]
+    satisfied_proportions = [score_counts.get(i, 0) / total_satisfied if total_satisfied > 0 else 0 for i in range(4, 6)]
+
+    # Create the plotly figure
+    fig = go.Figure()
+
+    # Add 'Dissatisfied' parts
+    cumulative_size = 0
+    colors_dissatisfied = sns.color_palette("Blues_d", n_colors=3)
+    for i, prop in enumerate(dissatisfied_proportions):
+        fig.add_trace(go.Bar(
+            x=[prop],
+            y=['Dissatisfied'],
+            orientation='h',
+            name=f'{i+1}',
+            text=f'{prop:.0%}',
+            marker=dict(color=f'rgb({colors_dissatisfied[i][0]*255},{colors_dissatisfied[i][1]*255},{colors_dissatisfied[i][2]*255})'),
+            base=cumulative_size
+        ))
+        cumulative_size += prop
+
+    # Add 'Satisfied' parts
+    cumulative_size = 0
+    colors_satisfied = sns.color_palette("Greens_d", n_colors=2)
+    for i, prop in enumerate(satisfied_proportions):
+        fig.add_trace(go.Bar(
+            x=[prop],
+            y=['Satisfied'],
+            orientation='h',
+            name=f'{i+4}',
+            marker=dict(color=f'rgb({colors_satisfied[i][0]*255},{colors_satisfied[i][1]*255},{colors_satisfied[i][2]*255})'),
+            base=cumulative_size
+        ))
+        cumulative_size += prop
+
+    # Update layout
+    fig.update_layout(
+        title=title,
+        barmode='stack',
+        annotations=[
+            dict(x=1.05, y=0, text=f'Total: {total_dissatisfied}', showarrow=False),
+            dict(x=1.05, y=1, text=f'Total: {total_satisfied}', showarrow=False)
+        ]
+    )
+
+    # Display in Streamlit
+    st.plotly_chart(fig)  # Use Streamlit to display the plot
 
 # Sidebar for dashboard selection
 dashboard = st.sidebar.radio("Select Dashboard", ('General Survey Results', 
@@ -111,6 +167,7 @@ elif dashboard == 'Section 1: Employee Experience':
     render_header("General Employee Experience")
 elif dashboard == 'Section 2: Recruiting & Onboarding':
     render_header("Recruiting & Onboarding")
+    plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'], 'Proportion of Onboarding Process Satisfaction Scores')
 elif dashboard == 'Section 3: Performance & Talent':
     render_header("Performance & Talent")
 elif dashboard == 'Section 4: Learning':
@@ -254,63 +311,3 @@ if dashboard == "General Survey Results":
         fig_function.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function, use_container_width=True)
 
-if dashboard == "Recruiting & Onboarding":
-    def plot_satisfaction_proportions(data_series, title):
-        # 统计每个评分的数量
-        score_counts = data_series.value_counts().sort_index().astype(int)
-
-        # 计算 'Satisfied' 和 'Dissatisfied' 的总数量
-        total_satisfied = score_counts.get(4, 0) + score_counts.get(5, 0)
-        total_dissatisfied = score_counts.get(1, 0) + score_counts.get(2, 0) + score_counts.get(3, 0)
-
-        # 计算每个评分类别的比例
-        dissatisfied_proportions = [score_counts.get(i, 0) / total_dissatisfied if total_dissatisfied > 0 else 0 for i in range(1, 4)]
-        satisfied_proportions = [score_counts.get(i, 0) / total_satisfied if total_satisfied > 0 else 0 for i in range(4, 6)]
-
-        # 创建堆叠条形图
-        fig = go.Figure()
-
-        # 添加 'Dissatisfied' 部分
-        cumulative_size = 0
-        colors_dissatisfied = sns.color_palette("Blues_d", n_colors=3)
-        for i, prop in enumerate(dissatisfied_proportions):
-            fig.add_trace(go.Bar(
-                x=[prop],
-                y=['Dissatisfied'],
-                name=f'{i+1}',
-                orientation='h',
-                text=f'{prop:.0%}',
-                marker=dict(color=f'rgb({colors_dissatisfied[i][0]*255},{colors_dissatisfied[i][1]*255},{colors_dissatisfied[i][2]*255})'),
-                base=cumulative_size
-            ))
-            cumulative_size += prop
-
-        # 添加 'Satisfied' 部分
-        cumulative_size = 0
-        colors_satisfied = sns.color_palette("Greens_d", n_colors=2)
-        for i, prop in enumerate(satisfied_proportions):
-            fig.add_trace(go.Bar(
-                x=[prop],
-                y=['Satisfied'],
-                name=f'{i+4}',
-                orientation='h',
-                text=f'{prop:.0%}',
-                marker=dict(color=f'rgb({colors_satisfied[i][0]*255},{colors_satisfied[i][1]*255},{colors_satisfied[i][2]*255})'),
-                base=cumulative_size
-            ))
-            cumulative_size += prop
-
-        # 设置标题和图表样式
-        fig.update_layout(
-            title=title,
-            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            yaxis=dict(showgrid=False, zeroline=False),
-            barmode='stack',
-            annotations=[
-                dict(x=1.05, y=0, text=f'Total: {total_dissatisfied}', showarrow=False, xref='x', yref='y'),
-                dict(x=1.05, y=1, text=f'Total: {total_satisfied}', showarrow=False, xref='x', yref='y')
-            ]
-        )
-
-        fig.show()  # 显示图表
-    plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'], 'Proportion of Onboarding Process Satisfaction Scores')
