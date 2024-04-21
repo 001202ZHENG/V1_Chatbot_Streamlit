@@ -128,7 +128,6 @@ dashboard = st.sidebar.radio("Select Dashboard", ('General Survey Results',
 #selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
 #selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
 #selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
-
 # Sidebar for dashboard selection
 if dashboard == 'General Survey Results':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
