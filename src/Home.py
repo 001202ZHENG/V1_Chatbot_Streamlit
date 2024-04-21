@@ -245,7 +245,7 @@ elif dashboard == 'Section 1: Employee Experience':
 elif dashboard == 'Section 2: Recruiting & Onboarding':
     render_header("Recruiting & Onboarding")
     plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'], 'Proportion of Onboarding Process Satisfaction Scores')
-    sentiment_dashboard(data['Which reason(s) drive that score?'], 'Sentiment Analysis Dashboard')
+    sentiment_dashboard(data['Which reason(s) drive that score ?'], 'Sentiment Analysis Dashboard')
 elif dashboard == 'Section 3: Performance & Talent':
     render_header("Performance & Talent")
 elif dashboard == 'Section 4: Learning':
