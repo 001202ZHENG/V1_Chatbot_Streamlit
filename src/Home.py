@@ -126,6 +126,10 @@ def sentiment_dashboard(data_series, title):
 
     # Analyze sentiment and collect results
     for sentence in data_series.dropna():
+        distilled_student_sentiment_classifier = pipeline(
+            model="lxyuan/distilbert-base-multilingual-cased-sentiments-student",
+            return_all_scores=False
+        )
         result = distilled_student_sentiment_classifier(sentence)
         sentiment_label = result[0]['label']
         sentiment_score = result[0]['score']
