@@ -113,47 +113,48 @@ def plot_satisfaction_proportions(data_series, title):
     st.plotly_chart(fig)  # Use Streamlit to display the plot
 
 # Function to create Streamlit sentiment dashboard
+sentiment_classifier = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
+
+# Function to create the sentiment analysis dashboard
 def sentiment_dashboard(data_series, title):
-    # Initialize sidebar for filter options
+    # Sidebar options for filter control
     show_wordcloud = st.sidebar.checkbox("Show Word Cloud", value=True)
     filter_negative = st.sidebar.checkbox("Show Negative Comments", value=False)
     filter_positive = st.sidebar.checkbox("Show Positive Comments", value=False)
 
-    # Initialize sentiment results dictionary
+    # Initialize sentiment results
     sentiment_results = {'Positive': 0, 'Negative': 0, 'Neutral': 0}
     negative_comments = []
     positive_comments = []
 
     # Analyze sentiment and collect results
     for sentence in data_series.dropna():
-        distilled_student_sentiment_classifier = pipeline(
-            model="lxyuan/distilbert-base-multilingual-cased-sentiments-student",
-            return_all_scores=False
-        )
-        result = distilled_student_sentiment_classifier(sentence)
-        sentiment_label = result[0]['label']
-        sentiment_score = result[0]['score']
+        result = sentiment_classifier(sentence)[0]
+        sentiment_label = result["label"]
+        sentiment_score = result["score"]
 
-        if sentiment_label == 'negative':
+        if sentiment_label == "1 star" or sentiment_label == "2 stars":
             negative_comments.append((sentence, sentiment_score))
             sentiment_results['Negative'] += 1
-        elif sentiment_label == 'positive':
+        elif sentiment_label == "4 stars" or sentiment_label == "5 stars":
             positive_comments.append((sentence, sentiment_score))
             sentiment_results['Positive'] += 1
+        else:
+            sentiment_results['Neutral'] += 1
 
     # Sort comments by sentiment score
     negative_comments.sort(key=lambda x: x[1], reverse=True)
     positive_comments.sort(key=lambda x: x[1], reverse=True)
 
-    # Display word cloud
+    # Generate and display the word cloud
     if show_wordcloud:
-        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(' '.join(data_series.dropna().tolist()))
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(' '.join(data_series.dropna()))
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.axis("off")
         plt.title("Word Cloud")
         st.pyplot(plt)  # Display word cloud in Streamlit
 
-    # Display filtered comments
+    # Display filtered comments for negative and positive sentiments
     if filter_negative:
         st.write("Top 5 Negative Comments:")
         for comment, score in negative_comments[:5]:
@@ -179,10 +180,10 @@ def sentiment_dashboard(data_series, title):
         title="Sentiment Distribution",
         barmode='stack',
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=dict(showgrid=False, zeroline=False),
     )
 
-    # Display stacked bar chart
+    # Display the bar chart in Streamlit
     st.plotly_chart(fig)
 
 
