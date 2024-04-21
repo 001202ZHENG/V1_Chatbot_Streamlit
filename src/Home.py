@@ -115,6 +115,8 @@ def plot_satisfaction_proportions(data_series, title):
 
 # Function to create Streamlit sentiment dashboard
 # Initialize VADER sentiment analyzer
+# Make sure the VADER lexicon is downloaded
+nltk.download('vader_lexicon')
 sentiment_analyzer = SentimentIntensityAnalyzer()
 
 # Function to create the sentiment analysis dashboard
