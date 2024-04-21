@@ -6,8 +6,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from wordcloud import WordCloud
-from transformers import pipeline
 import os
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
 
 # Sets the page to wide layout.
 st.set_page_config(layout="wide")
@@ -113,9 +114,11 @@ def plot_satisfaction_proportions(data_series, title):
     st.plotly_chart(fig)  # Use Streamlit to display the plot
 
 # Function to create Streamlit sentiment dashboard
-sentiment_classifier = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
+# Initialize VADER sentiment analyzer
+sentiment_analyzer = SentimentIntensityAnalyzer()
 
 # Function to create the sentiment analysis dashboard
+# Function to create the sentiment analysis dashboard with VADER
 def sentiment_dashboard(data_series, title):
     # Sidebar options for filter control
     show_wordcloud = st.sidebar.checkbox("Show Word Cloud", value=True)
@@ -127,18 +130,17 @@ def sentiment_dashboard(data_series, title):
     negative_comments = []
     positive_comments = []
 
-    # Analyze sentiment and collect results
+    # Analyze sentiment and collect results with VADER
     for sentence in data_series.dropna():
-        result = sentiment_classifier(sentence)[0]
-        sentiment_label = result["label"]
-        sentiment_score = result["score"]
+        sentiment_scores = sentiment_analyzer.polarity_scores(sentence)
+        compound_score = sentiment_scores['compound']
 
-        if sentiment_label == "1 star" or sentiment_label == "2 stars":
-            negative_comments.append((sentence, sentiment_score))
+        if compound_score <= -0.05:
             sentiment_results['Negative'] += 1
-        elif sentiment_label == "4 stars" or sentiment_label == "5 stars":
-            positive_comments.append((sentence, sentiment_score))
+            negative_comments.append((sentence, compound_score))
+        elif compound_score >= 0.05:
             sentiment_results['Positive'] += 1
+            positive_comments.append((sentence, compound_score))
         else:
             sentiment_results['Neutral'] += 1
 
@@ -146,24 +148,24 @@ def sentiment_dashboard(data_series, title):
     negative_comments.sort(key=lambda x: x[1], reverse=True)
     positive_comments.sort(key=lambda x: x[1], reverse=True)
 
-    # Generate and display the word cloud
+    # Display the word cloud
     if show_wordcloud:
         wordcloud = WordCloud(width=800, height=400, background_color='white').generate(' '.join(data_series.dropna()))
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.axis("off")
         plt.title("Word Cloud")
-        st.pyplot(plt)  # Display word cloud in Streamlit
+        st.pyplot(plt)  # Display the word cloud in Streamlit
 
     # Display filtered comments for negative and positive sentiments
     if filter_negative:
         st.write("Top 5 Negative Comments:")
         for comment, score in negative_comments[:5]:
-            st.write(f"{comment} (Confidence: {score:.4f})")
+            st.write(f"{comment} (Score: {score:.4f})")
 
     if filter_positive:
         st.write("Top 5 Positive Comments:")
         for comment, score in positive_comments[:5]:
-            st.write(f"{comment} (Confidence: {score:.4f})")
+            st.write(f"{comment} (Score: {score:.4f})")
 
     # Create a stacked bar chart for sentiment distribution
     total = sum(sentiment_results.values())
@@ -185,7 +187,6 @@ def sentiment_dashboard(data_series, title):
 
     # Display the bar chart in Streamlit
     st.plotly_chart(fig)
-
 
 dashboard = st.sidebar.radio("Select Dashboard", ('General Survey Results', 
                                              'Section 1: Employee Experience',
