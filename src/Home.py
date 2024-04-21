@@ -56,62 +56,6 @@ st.markdown(
     ''',
     unsafe_allow_html=True
 )
-# Function to plot satisfaction proportions
-def plot_satisfaction_proportions(data_series, title):
-
-    # Calculate proportions
-    score_counts = data_series.value_counts().sort_index().astype(int)
-    total_satisfied = score_counts.get(4, 0) + score_counts.get(5, 0)
-    total_dissatisfied = score_counts.get(1, 0) + score_counts.get(2, 0) + score_counts.get(3, 0)
-    
-    # Calculate proportions
-    dissatisfied_proportions = [score_counts.get(i, 0) / total_dissatisfied if total_dissatisfied > 0 else 0 for i in range(1, 4)]
-    satisfied_proportions = [score_counts.get(i, 0) / total_satisfied if total_satisfied > 0 else 0 for i in range(4, 6)]
-
-    # Create the plotly figure
-    fig = go.Figure()
-
-    # Add 'Dissatisfied' parts
-    cumulative_size = 0
-    colors_dissatisfied = sns.color_palette("Blues_d", n_colors=3)
-    for i, prop in enumerate(dissatisfied_proportions):
-        fig.add_trace(go.Bar(
-            x=[prop],
-            y=['Dissatisfied'],
-            orientation='h',
-            name=f'{i+1}',
-            text=f'{prop:.0%}',
-            marker=dict(color=f'rgb({colors_dissatisfied[i][0]*255},{colors_dissatisfied[i][1]*255},{colors_dissatisfied[i][2]*255})'),
-            base=cumulative_size
-        ))
-        cumulative_size += prop
-
-    # Add 'Satisfied' parts
-    cumulative_size = 0
-    colors_satisfied = sns.color_palette("Greens_d", n_colors=2)
-    for i, prop in enumerate(satisfied_proportions):
-        fig.add_trace(go.Bar(
-            x=[prop],
-            y=['Satisfied'],
-            orientation='h',
-            name=f'{i+4}',
-            marker=dict(color=f'rgb({colors_satisfied[i][0]*255},{colors_satisfied[i][1]*255},{colors_satisfied[i][2]*255})'),
-            base=cumulative_size
-        ))
-        cumulative_size += prop
-
-    # Update layout
-    fig.update_layout(
-        title=title,
-        barmode='stack',
-        annotations=[
-            dict(x=1.05, y=0, text=f'Total: {total_dissatisfied}', showarrow=False),
-            dict(x=1.05, y=1, text=f'Total: {total_satisfied}', showarrow=False)
-        ]
-    )
-
-    # Display in Streamlit
-    st.plotly_chart(fig)  # Use Streamlit to display the plot
 
 # Function to create Streamlit sentiment dashboard
 # Initialize VADER sentiment analyzer
@@ -119,20 +63,20 @@ def plot_satisfaction_proportions(data_series, title):
 nltk.download('vader_lexicon')
 sentiment_analyzer = SentimentIntensityAnalyzer()
 
-# Function to create the sentiment analysis dashboard
-# Function to create the sentiment analysis dashboard with VADER
+# Function for sentiment analysis dashboard
 def sentiment_dashboard(data_series, title):
-    # Sidebar options for filter control
+    # Sidebar for control
+    st.sidebar.markdown("### Filter Options")
     show_wordcloud = st.sidebar.checkbox("Show Word Cloud", value=True)
     filter_negative = st.sidebar.checkbox("Show Negative Comments", value=False)
     filter_positive = st.sidebar.checkbox("Show Positive Comments", value=False)
 
-    # Initialize sentiment results
+    # Initialize sentiment results and comment lists
     sentiment_results = {'Positive': 0, 'Negative': 0, 'Neutral': 0}
     negative_comments = []
     positive_comments = []
 
-    # Analyze sentiment and collect results with VADER
+    # Analyze sentiment and collect results
     for sentence in data_series.dropna():
         sentiment_scores = sentiment_analyzer.polarity_scores(sentence)
         compound_score = sentiment_scores['compound']
@@ -146,40 +90,36 @@ def sentiment_dashboard(data_series, title):
         else:
             sentiment_results['Neutral'] += 1
 
-    # Sort comments by sentiment score
-    negative_comments.sort(key=lambda x: x[1], reverse=True)
-    positive_comments.sort(key=lambda x: x[1], reverse=True)
-
-    # Display the word cloud
+    # Display word cloud
     if show_wordcloud:
-        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(' '.join(data_series.dropna()))
+        wordcloud = WordCloud(width=400, height=200, background_color='white').generate(' '.join(data_series.dropna()))
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.axis("off")
-        plt.title("Word Cloud")
-        st.pyplot(plt)  # Display the word cloud in Streamlit
+        st.pyplot(plt)  # Display word cloud in Streamlit
 
-    # Display filtered comments for negative and positive sentiments
+    # Display top negative and positive comments
     if filter_negative:
-        st.write("Top 5 Negative Comments:")
-        for comment, score in negative_comments[:5]:
+        st.markdown("### Top 5 Negative Comments")
+        for comment, score in sorted(negative_comments, key=lambda x: x[1], reverse=True)[:5]:
             st.write(f"{comment} (Score: {score:.4f})")
 
     if filter_positive:
-        st.write("Top 5 Positive Comments:")
-        for comment, score in positive_comments[:5]:
+        st.markdown("### Top 5 Positive Comments")
+        for comment, score in sorted(positive_comments, key=lambda x: x[1], reverse=True)[:5]:
             st.write(f"{comment} (Score: {score:.4f})")
 
-    # Create a stacked bar chart for sentiment distribution
+    # Create stacked bar chart for sentiment distribution
     total = sum(sentiment_results.values())
     proportions = {k: v / total for k, v in sentiment_results.items()}
 
     fig = go.Figure()
-    left = 0
+    cumulative_size = 0
     for sentiment, proportion in proportions.items():
         color = 'lightgreen' if sentiment == 'Positive' else 'lightcoral' if sentiment == 'Negative' else 'lightgrey'
-        fig.add_trace(go.Bar(x=[proportion], y=['Sentiment'], orientation='h', name=sentiment, base=left, marker=dict(color=color)))
-        left += proportion
+        fig.add_trace(go.Bar(x=[proportion], y=['Sentiment'], orientation='h', name=sentiment, base=cumulative_size, marker=dict(color=color)))
+        cumulative_size += proportion
 
+    # Update layout and display chart in Streamlit
     fig.update_layout(
         title="Sentiment Distribution",
         barmode='stack',
@@ -187,8 +127,61 @@ def sentiment_dashboard(data_series, title):
         yaxis=dict(showgrid=False, zeroline=False),
     )
 
-    # Display the bar chart in Streamlit
-    st.plotly_chart(fig)
+    st.plotly_chart(fig)  # Display the stacked bar chart
+
+# Function to plot satisfaction proportions
+def plot_satisfaction_proportions(data_series, title):
+    # Calculate satisfaction proportions
+    score_counts = data_series.value_counts().sort_index().astype(int)
+    total_satisfied = score_counts.get(4, 0) + score_counts.get(5, 0)
+    total_dissatisfied = score_counts.get(1, 0) + score_counts.get(2, 0) + score_counts.get(3, 0)
+    
+    # Calculate proportions
+    dissatisfied_proportions = [score_counts.get(i, 0) / total_dissatisfied if total_dissatisfied > 0 else 0 for i in range(1, 4)]
+    satisfied_proportions = [score_counts.get(i, 0) / total_satisfied if total_satisfied > 0 else 0 for i in range(4, 6)]
+
+    # Create the plotly figure for stacked bar chart
+    fig = go.Figure()
+
+    # Add 'Dissatisfied' segments
+    cumulative_size = 0
+    colors_dissatisfied = sns.color_palette("Blues_d", n_colors=3)
+    for i, prop in enumerate(dissatisfied_proportions):
+        fig.add_trace(go.Bar(
+            x=[prop],
+            y=['Dissatisfied'],
+            orientation='h',
+            name=f'{i+1}',
+            marker=dict(color=f'rgb({colors_dissatisfied[i][0]*255},{colors_dissatisfied[i][1]*255},{colors_dissatisfied[i][2]*255})'),
+            base=cumulative_size
+        ))
+        cumulative_size += prop
+
+    # Add 'Satisfied' segments
+    cumulative_size = 0
+    colors_satisfied = sns.color_palette("Greens_d", n_colors=2)
+    for i, prop in enumerate(satisfied_proportions):
+        fig.add_trace(go.Bar(
+            x=[prop],
+            y=['Satisfied'],
+            orientation='h',
+            name=f'{i+4}',
+            marker=dict(color=f'rgb({colors_satisfied[i][0]*255},{colors_satisfied[i][1]*255},{colors_satisfied[i][2]*255})'),
+            base=cumulative_size
+        ))
+        cumulative_size += prop
+
+    # Update layout and display in Streamlit
+    fig.update_layout(
+        title=title,
+        barmode='stack',
+        annotations=[
+            dict(x=1.05, y=0, text=f'Total: {total_dissatisfied}', showarrow=False),
+            dict(x=1.05, y=1, text=f'Total: {total_satisfied}', showarrow=False)
+        ]
+    )
+
+    st.plotly_chart(fig)  # Display the plot in Streamlit
 
 dashboard = st.sidebar.radio("Select Dashboard", ('General Survey Results', 
                                              'Section 1: Employee Experience',
