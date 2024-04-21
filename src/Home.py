@@ -6,6 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from wordcloud import WordCloud
+from transformers import pipeline
 import os
 
 # Sets the page to wide layout.
@@ -111,6 +112,75 @@ def plot_satisfaction_proportions(data_series, title):
     # Display in Streamlit
     st.plotly_chart(fig)  # Use Streamlit to display the plot
 
+# Function to create Streamlit sentiment dashboard
+def sentiment_dashboard(data_series, title):
+    # Initialize sidebar for filter options
+    show_wordcloud = st.sidebar.checkbox("Show Word Cloud", value=True)
+    filter_negative = st.sidebar.checkbox("Show Negative Comments", value=False)
+    filter_positive = st.sidebar.checkbox("Show Positive Comments", value=False)
+
+    # Initialize sentiment results dictionary
+    sentiment_results = {'Positive': 0, 'Negative': 0, 'Neutral': 0}
+    negative_comments = []
+    positive_comments = []
+
+    # Analyze sentiment and collect results
+    for sentence in data_series.dropna():
+        result = distilled_student_sentiment_classifier(sentence)
+        sentiment_label = result[0]['label']
+        sentiment_score = result[0]['score']
+
+        if sentiment_label == 'negative':
+            negative_comments.append((sentence, sentiment_score))
+            sentiment_results['Negative'] += 1
+        elif sentiment_label == 'positive':
+            positive_comments.append((sentence, sentiment_score))
+            sentiment_results['Positive'] += 1
+
+    # Sort comments by sentiment score
+    negative_comments.sort(key=lambda x: x[1], reverse=True)
+    positive_comments.sort(key=lambda x: x[1], reverse=True)
+
+    # Display word cloud
+    if show_wordcloud:
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(' '.join(data_series.dropna().tolist()))
+        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.axis("off")
+        plt.title("Word Cloud")
+        st.pyplot(plt)  # Display word cloud in Streamlit
+
+    # Display filtered comments
+    if filter_negative:
+        st.write("Top 5 Negative Comments:")
+        for comment, score in negative_comments[:5]:
+            st.write(f"{comment} (Confidence: {score:.4f})")
+
+    if filter_positive:
+        st.write("Top 5 Positive Comments:")
+        for comment, score in positive_comments[:5]:
+            st.write(f"{comment} (Confidence: {score:.4f})")
+
+    # Create a stacked bar chart for sentiment distribution
+    total = sum(sentiment_results.values())
+    proportions = {k: v / total for k, v in sentiment_results.items()}
+
+    fig = go.Figure()
+    left = 0
+    for sentiment, proportion in proportions.items():
+        color = 'lightgreen' if sentiment == 'Positive' else 'lightcoral' if sentiment == 'Negative' else 'lightgrey'
+        fig.add_trace(go.Bar(x=[proportion], y=['Sentiment'], orientation='h', name=sentiment, base=left, marker=dict(color=color)))
+        left += proportion
+
+    fig.update_layout(
+        title="Sentiment Distribution",
+        barmode='stack',
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+    )
+
+    # Display stacked bar chart
+    st.plotly_chart(fig)
+
 
 dashboard = st.sidebar.radio("Select Dashboard", ('General Survey Results', 
                                              'Section 1: Employee Experience',
@@ -175,6 +245,7 @@ elif dashboard == 'Section 1: Employee Experience':
 elif dashboard == 'Section 2: Recruiting & Onboarding':
     render_header("Recruiting & Onboarding")
     plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'], 'Proportion of Onboarding Process Satisfaction Scores')
+    sentiment_dashboard(data['Which reason(s) drive that score?'], 'Sentiment Analysis Dashboard')
 elif dashboard == 'Section 3: Performance & Talent':
     render_header("Performance & Talent")
 elif dashboard == 'Section 4: Learning':
