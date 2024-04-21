@@ -123,9 +123,6 @@ elif dashboard == 'Section 7: Time Management':
     render_header("Time Management")
 elif dashboard == 'Section 8: User Experience':
     render_header("User Experience")
-elif dashboard == 'Chatbot':
-    render_header("Interactive Chatbot")
-
 
 
 if dashboard == "General Survey Results":
@@ -257,3 +254,59 @@ if dashboard == "General Survey Results":
         fig_function.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function, use_container_width=True)
 
+if dashboard == "Recruiting & Onboarding":
+    def plot_satisfaction_proportions(data_series, title):
+        # Count the occurrences of each score
+        score_counts = data_series.value_counts().sort_index().astype(int)
+
+        # Calculate the total counts for 'Satisfied' and 'Dissatisfied' categories
+        total_satisfied = score_counts.get(4, 0) + score_counts.get(5, 0)
+        total_dissatisfied = score_counts.get(1, 0) + score_counts.get(2, 0) + score_counts.get(3, 0)
+
+        # Calculate proportions for each score category
+        dissatisfied_proportions = [score_counts.get(i, 0) / total_dissatisfied if total_dissatisfied > 0 else 0 for i in range(1, 4)]
+        satisfied_proportions = [score_counts.get(i, 0) / total_satisfied if total_satisfied > 0 else 0 for i in range(4, 6)]
+
+        # Create the stacked bar chart
+        fig, ax = plt.subplots(figsize=(10, 2))
+
+        # Positions of the bars on the y-axis
+        bar_positions = [0, 1]
+
+        # Cumulative size for each segment to get the start position of the next segment
+        cumulative_size_dissatisfied = 0
+        cumulative_size_satisfied = 0
+
+        # Plot each score segment for 'Dissatisfied'
+        for i in range(3):
+            ax.barh(bar_positions[0], dissatisfied_proportions[i], left=cumulative_size_dissatisfied, edgecolor='white', color=sns.color_palette("Blues_d", n_colors=3)[i])
+            cumulative_size_dissatisfied += dissatisfied_proportions[i]
+
+        # Plot each score segment for 'Satisfied'
+        for i in range(2):
+            ax.barh(bar_positions[1], satisfied_proportions[i], left=cumulative_size_satisfied, edgecolor='white', color=sns.color_palette("Greens_d", n_colors=2)[i])
+            cumulative_size_satisfied += satisfied_proportions[i]
+
+        # Add labels and a title
+        ax.set_yticks([0, 1])
+        ax.set_yticklabels(['Dissatisfied', 'Satisfied'])
+        ax.set_title(title)
+
+        # Remove x-axis ticks for clarity
+        ax.set_xticks([])
+
+        # Add annotations for each segment
+        for i, prop in enumerate(dissatisfied_proportions):
+            ax.text(prop / 2 + sum(dissatisfied_proportions[:i]), 0, f'{i+1} ({prop:.0%})', va='center', ha='center', color='white')
+
+        for i, prop in enumerate(satisfied_proportions):
+            ax.text(prop / 2 + sum(satisfied_proportions[:i]), 1, f'{i+4} ({prop:.0%})', va='center', ha='center', color='white')
+
+        # Add annotation for the total count of dissatisfied
+        ax.text(1.05, 0, f'Total: {total_dissatisfied}', va='center', ha='left', color='black', fontsize=10)
+
+        # Add annotation for the total count of satisfied
+        ax.text(1.05, 1, f'Total: {total_satisfied}', va='center', ha='left', color='black', fontsize=10)
+
+        plt.show()
+    plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'], 'Proportion of Onboarding Process Satisfaction Scores')
