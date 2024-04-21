@@ -255,7 +255,6 @@ if dashboard == "General Survey Results":
         st.plotly_chart(fig_function, use_container_width=True)
 
 if dashboard == "Recruiting & Onboarding":
-
     def plot_satisfaction_proportions(data_series, title):
         # 统计每个评分的数量
         score_counts = data_series.value_counts().sort_index().astype(int)
@@ -301,7 +300,7 @@ if dashboard == "Recruiting & Onboarding":
             ))
             cumulative_size += prop
 
-        # 设置图表的标题和样式
+        # 设置标题和图表样式
         fig.update_layout(
             title=title,
             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
@@ -312,5 +311,6 @@ if dashboard == "Recruiting & Onboarding":
                 dict(x=1.05, y=1, text=f'Total: {total_satisfied}', showarrow=False, xref='x', yref='y')
             ]
         )
-    plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'], 'Proportion of Onboarding Process Satisfaction Scores')
 
+        fig.show()  # 显示图表
+    plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'], 'Proportion of Onboarding Process Satisfaction Scores')
