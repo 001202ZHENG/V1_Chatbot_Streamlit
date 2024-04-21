@@ -301,7 +301,7 @@ if dashboard == "Recruiting & Onboarding":
             ))
             cumulative_size += prop
 
-        # 设置标题和图表样式
+        # 设置图表的标题和样式
         fig.update_layout(
             title=title,
             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
@@ -312,7 +312,5 @@ if dashboard == "Recruiting & Onboarding":
                 dict(x=1.05, y=1, text=f'Total: {total_satisfied}', showarrow=False, xref='x', yref='y')
             ]
         )
-
-        fig.show()  # 显示图表
-
     plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'], 'Proportion of Onboarding Process Satisfaction Scores')
+
