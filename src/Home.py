@@ -4,6 +4,7 @@ import plotly.express as px
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
 
 # Sets the page to wide layout.
 st.set_page_config(layout="wide")
@@ -12,7 +13,10 @@ st.set_page_config(layout="wide")
 @st.cache_data
 def load_data():
     # the path needs to change to a GitHub path
-    data = pd.read_excel('./data.xlsx')
+    file_name = 'data.xlsx'
+    current_directory = os.getcwd()
+    file_path = os.path.join(current_directory, file_name)
+    data = pd.read_excel(file_path) 
     data = data.rename(columns={
     'What is your role at the company ?': 'Role',
     'What function are you part of ?': 'Function',
