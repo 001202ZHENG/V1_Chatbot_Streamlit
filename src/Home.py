@@ -17,10 +17,9 @@ st.set_page_config(layout="wide")
 @st.cache_data
 def load_data():
     # the path needs to change to a GitHub path
-    file_name = 'data.xlsx'
-    current_directory = os.getcwd()
-    file_path = os.path.join(current_directory, file_name)
-    data = pd.read_excel(file_path) 
+    file_name = 'https://github.com/Mariahallak/VoiceOfCustomers/raw/main/data/Voice%20of%20Customer_Second%20data%20set.xlsx'
+
+    data = pd.read_excel(file_name)
     data = data.rename(columns={
     'What is your role at the company ?': 'Role',
     'What function are you part of ?': 'Function',
@@ -389,4 +388,299 @@ if dashboard == "General Survey Results":
         fig_function.update_yaxes(showticklabels=True, title='')
         fig_function.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function, use_container_width=True)
+
+if dashboard == 'Section 1: Employee Experience':
+    selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
+    selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
+    selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
+
+if dashboard == "Section 1: Employee Experience":
+    
+    filtered_data = data[
+        (data['Role'].isin(selected_role)) &
+        (data['Function'].isin(selected_function)) &
+        (data['Location'].isin(selected_location))
+    ]
+    
+    import altair as alt
+    from altair import expr, datum
+    import plotly.express as px
+    import plotly.graph_objects as go
+
+    
+    # Extract the satisfaction scores column
+    q6_data = pd.DataFrame({'satisfaction_score': filtered_data["From 1 to 5, how satisfied are you with the overall HR services and support provided by the company?\xa0"]})
+    
+    # Count the occurrences of each score
+    score_counts = q6_data['satisfaction_score'].value_counts().reset_index()
+    score_counts.columns = ['satisfaction_score', 'count']
+    
+    # Create a dictionary to map scores to categories
+    score_to_category = {
+        1: 'Very Dissatisfied',
+        2: 'Dissatisfied',
+        3: 'Neutral',
+        4: 'Satisfied',
+        5: 'Very Satisfied'
+    }
+
+    # Create a new column 'satisfaction_category' by mapping the 'satisfaction_score' column to the categories
+    score_counts['satisfaction_category'] = score_counts['satisfaction_score'].map(score_to_category)
+
+    
+
+    # Create a new column 'satisfaction_category' by mapping the 'satisfaction_score' column to the categories
+    score_counts['satisfaction_category'] = score_counts['satisfaction_score'].map(score_to_category)
+
+    # Calculate percentage
+    score_counts['percentage'] = score_counts['count'] / score_counts['count'].sum() * 100
+
+    # Create a horizontal bar chart
+    fig1 = px.bar(score_counts, x='percentage', y='satisfaction_category', text='count', orientation='h', color='satisfaction_category')
+
+    # Calculate median score and round to nearest whole number
+    median_score = round(q6_data['satisfaction_score'].median())
+
+    # Find the corresponding category for the median score
+    median_category = score_to_category[median_score]
+
+    # Find the corresponding percentage for the median score
+    median_percentage = score_counts[score_counts['satisfaction_category'] == median_category]['percentage'].values[0]
+
+    # Create a scatter plot with a single point at the median score
+    median_marker = go.Scatter(x=[median_percentage], y=[median_category], mode='markers', marker=dict(symbol='diamond', size=12, color='red'), name='Median')
+
+    # Add the scatter plot to the bar chart
+    fig1.add_trace(median_marker)
+
+    # Add interactivity to the bar chart only
+    fig1.update_traces(texttemplate='%{text:.2s}', textposition='inside', selector=dict(type='bar'))
+    fig1.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+
+
+    st.plotly_chart(fig1, use_container_width=True)
+
+
+
+    import plotly.graph_objects as go
+
+    q4_data = pd.DataFrame({
+        'ID': filtered_data['ID'],
+        'HR_Process': filtered_data['What HR processes do you interact with the most in your day-to-day work ?']
+    })
+
+    # Remove the last semicolon from each HR_Process value
+    q4_data['HR_Process'] = q4_data['HR_Process'].str.rstrip(';')
+
+    # Splitting the HR_Process values into separate lists of processes
+    q4_data['HR_Process'] = q4_data['HR_Process'].str.split(';')
+
+    # Explode the lists into separate rows while maintaining the corresponding ID
+    q4_processed = q4_data.explode('HR_Process')
+
+    # Reset index to maintain the original ID
+    q4_processed.reset_index(drop=True, inplace=True)
+
+    q4_count = q4_processed.groupby('HR_Process').size().reset_index(name='Count')
+
+    q5_data = pd.DataFrame({
+        'ID': filtered_data['ID'],
+        'Improve_Area': filtered_data['In what areas do you think HR could improve its capabilities to enhance how they deliver services and support you ?']
+    })
+
+    # Remove the last semicolon from each value
+    q5_data['Improve_Area'] = q5_data['Improve_Area'].str.rstrip(';')
+
+    # Splitting the values into separate lists of processes
+    q5_data['Improve_Area'] = q5_data['Improve_Area'].str.split(';')
+
+    # Explode the lists into separate rows while maintaining the corresponding ID
+    q5_processed = q5_data.explode('Improve_Area')
+
+    # Reset index to maintain the original ID
+    q5_processed.reset_index(drop=True, inplace=True)
+
+    q5_count = q5_processed.groupby('Improve_Area').size().reset_index(name='Count')
+
+    # Merge the two dataset on function
+    # Merge datasets by matching HR_Process and Improve_Area
+    q4_q5_count = pd.merge(q4_count, q5_count, left_on='HR_Process', right_on='Improve_Area', how='outer')
+
+    # Drop unnecessary columns
+    q4_q5_count.drop(['Improve_Area'], axis=1, inplace=True)
+
+    q4_q5_count.rename(columns={'HR_Process': 'HR Function', 'Count_x': 'HR_Process_Interacted', 'Count_y': 'Improvement_Areas'}, inplace=True)
+
+    # Reshape data into tidy format
+    df_tidy = q4_q5_count.melt(id_vars='HR Function', var_name='Type', value_name='Count')
+
+    # Create grouped bar chart
+    fig2 = go.Figure(data=[
+        go.Bar(
+            name='HR Process Interacted',
+            x=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['HR Function'],
+            y=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['Count'],
+            marker_color='blue'
+        ),
+        go.Bar(
+            name='Improvement Areas',
+            x=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['HR Function'],
+            y=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['Count'],
+            marker_color='orange'
+        )
+    ])
+
+    fig2.update_layout(
+        title='Grouped Bar Chart by HR Function',
+        xaxis_title='HR Function',
+        yaxis_title='Count',
+        barmode='group'
+    )
+
+    st.plotly_chart(fig2, use_container_width=True)
+
+    
+    
+
+    
+
+if dashboard == 'Section 2: Recruiting & Onboarding':
+    selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
+    selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
+    selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
+
+
+if dashboard == 'Section 3: Performance & Talent':
+    selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
+    selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
+    selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
+
+if dashboard == 'Section 4: Learning':
+    selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
+    selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
+    selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
+
+
+if dashboard == 'Section 5: Compensation':
+    selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
+    selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
+    selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
+
+    filtered_data = data[
+        (data['Role'].isin(selected_role)) &
+        (data['Function'].isin(selected_function)) &
+        (data['Location'].isin(selected_location))
+    ]
+
+    q36_compensation_count = (filtered_data['Do you participate in the Compensation Campaign ?'] == 'Yes').sum()
+    q36_compensation_pct = q36_compensation_count/len(filtered_data) * 100
+
+    st.write("Compensation Campaign Participation")
+    
+    st.write("%.2f" % q36_compensation_pct, "% of people, which are", q36_compensation_count, "person(s), participate in the Compensation Campaign.")
+
+    q37_data_available_count = (filtered_data['Do you think that the data available in the Compensation form enables you to make a fair decision regarding a promotion, a bonus or a raise ? (e.g : compa-ratio, variation between years, historica...'] == 'Yes').sum()
+    q37_data_available_pct = q37_data_available_count/q36_compensation_count * 100
+
+    st.write("Data Available in Compensation Form")
+    
+    st.write("Among the people who participate the Compensation Campaign "
+      "%.2f" % q37_data_available_pct, "% of people, which are", q37_data_available_count,
+      "\nperson(s), think that the data available in the Compensation form enables him/her to make \na fair decision regarding a promotion, a bonus or a raise.")
+    
+    st.write("Data Missing")
+
+    q38_data_reliable = filtered_data['What data is missing according to you ?'].dropna()
+    from wordcloud import WordCloud
+    import matplotlib.pyplot as plt
+    # Replace spaces with underscores
+    phrases = q38_data_reliable.str.replace(' ', '_')
+
+    # Generate word cloud
+    wordcloud = WordCloud(width = 1000, height = 500).generate(' '.join(phrases))
+
+    plt.figure(figsize=(15,8))
+    plt.imshow(wordcloud)
+    plt.axis("off")
+    
+    # Display the plot in Streamlit
+    st.pyplot(plt)
+
+    # Convert the data to a DataFrame
+    q39_campaign_manage = pd.DataFrame({'Campaign': filtered_data["Do you manage/launch your compensation campaigns nationally or in another way?\n"]})
+
+    # Drop NaN values
+    q39_campaign_manage.dropna(inplace=True)
+
+    # Count occurrences of each campaign type
+    campaign_manage_counts = q39_campaign_manage['Campaign'].value_counts().reset_index()
+    campaign_manage_counts.columns = ['Campaign', 'Count']
+    campaign_manage_counts['Percentage'] = campaign_manage_counts['Count'] / len(q39_campaign_manage) * 100
+
+    # Sort the DataFrame by count
+    campaign_manage_counts = campaign_manage_counts.sort_values(by='Count', ascending=False)
+
+    # Create the bar chart using Plotly
+    fig = px.bar(campaign_manage_counts, x='Campaign', y='Count', text='Percentage',
+                 title="Do you manage/launch your compensation campaigns nationally or in another way?")
+    fig.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
+
+    # Customize the layout
+    fig.update_layout(
+        xaxis_title="Campaign",
+        yaxis_title="Count",
+        showlegend=False
+    )
+
+    # Display the chart in Streamlit
+    st.plotly_chart(fig)
+
+    # Extract the column
+    q40_compensation_satisfaction = pd.DataFrame({'satisfaction_score': filtered_data.iloc[:, 40]}).dropna()
+    
+
+    # Count the occurrences of each value
+    value_counts = q40_compensation_satisfaction['satisfaction_score'].value_counts().reset_index()
+    value_counts.columns = ['satisfaction_score', 'count']
+
+    # Create a dictionary to map values to categories
+    # Create a dictionary to map scores to categories
+    score_to_category = {
+        1: 'Very Dissatisfied',
+        2: 'Dissatisfied',
+        3: 'Neutral',
+        4: 'Satisfied',
+        5: 'Very Satisfied'
+    }
+
+    # Create a new column 'category' by mapping the 'column_40' column to the categories
+    value_counts['category'] = value_counts['satisfaction_score'].map(score_to_category)
+
+    # Calculate percentage
+    value_counts['percentage'] = value_counts['count'] / value_counts['count'].sum() * 100
+
+    # Create a horizontal bar chart
+    fig6 = px.bar(value_counts, x='percentage', y='category', text='count', orientation='h', color='category')
+
+    
+    # Add interactivity to the bar chart only
+    fig6.update_traces(texttemplate='%{text:.2s}', textposition='inside', selector=dict(type='bar'))
+    fig6.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+
+    st.plotly_chart(fig6, use_container_width=True)
+
+if dashboard == 'Section 6: Payroll':
+    selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
+    selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
+    selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
+
+if dashboard == 'Section 7: Time Management':
+    selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
+    selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
+    selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
+
+if dashboard == 'Section 8: User Experience':
+    selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
+    selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
+    selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
 
