@@ -7,6 +7,8 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+import pandas as pd
+
 
 class Embedder:
 
@@ -54,7 +56,15 @@ class Embedder:
         elif file_extension == ".txt":
             loader = TextLoader(file_path=tmp_file_path, encoding="utf-8")
             data = loader.load_and_split(text_splitter)
-            
+
+        elif file_extension == ".xlsx":
+            df = pd.read_excel(tmp_file_path)
+            newcsvfile = tmp_file_path.replace('.xlsx', '.csv')  # create a new file name with .csv extension
+            df.to_csv(newcsvfile, index=False)  # write DataFrame to a CSV file
+            loader = CSVLoader(file_path=newcsvfile, encoding="utf-8", csv_args={'delimiter': ',',})
+            data = loader.load_and_split(text_splitter)
+
+
         embeddings = OpenAIEmbeddings()
 
         vectors = FAISS.from_documents(data, embeddings)
