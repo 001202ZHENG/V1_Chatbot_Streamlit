@@ -595,7 +595,7 @@ if dashboard == "Section 1: Employee Experience":
     channel_counts = channel_counts.sort_values('satisfaction_channel', ascending=False)
 
     # Create a horizontal bar chart
-    fig1 = px.bar(channel_counts, x='percentage', y='satisfaction_category', text='count', orientation='h', color='satisfaction_category',
+    fig4 = px.bar(channel_counts, x='percentage', y='satisfaction_category', text='count', orientation='h', color='satisfaction_category',
                   color_discrete_map={
                       'Very Dissatisfied': '#C9190B',
                       'Dissatisfied': '#EC7A08',
@@ -620,10 +620,11 @@ if dashboard == "Section 1: Employee Experience":
     # Display the median score in a text box
     st.markdown(f'<p style="color: {color};">Median Channel Satisfaction Score: {median_score1:.2f}</p>', unsafe_allow_html=True)
 
-    # Create a horizontal bar chart
-    fig4 = px.bar(channel_counts, x='percentage', y='satisfaction_channel', text='count', orientation='h', color='satisfaction_channel')
-
+    
     st.plotly_chart(fig4, use_container_width=True)
+
+
+
 
 
 if dashboard == 'Section 2: Recruiting & Onboarding':
