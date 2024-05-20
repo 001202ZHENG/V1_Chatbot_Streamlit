@@ -512,6 +512,14 @@ if dashboard == "Section 1: Employee Experience":
 
     q4_q5_count.rename(columns={'HR_Process': 'HR Function', 'Count_x': 'HR_Process_Interacted', 'Count_y': 'Improvement_Areas'}, inplace=True)
 
+    q4_q5_count.sort_values('HR_Process_Interacted', ascending=False, inplace=True)
+
+    categories = [cat for cat in q4_q5_count['HR Function'].unique() if cat != 'None']
+
+    categories.append('None')
+
+    q4_q5_count['HR Function'] = pd.Categorical(q4_q5_count['HR Function'], categories=categories, ordered=True)
+    
     # Reshape data into tidy format
     df_tidy = q4_q5_count.melt(id_vars='HR Function', var_name='Type', value_name='Count')
 
