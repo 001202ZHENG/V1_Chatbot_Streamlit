@@ -551,16 +551,16 @@ if dashboard == "Section 1: Employee Experience":
     #q7 how access to HR services
     q7_data = pd.DataFrame({'device/interface': filtered_data["How do you access HR Information ?"]})
 
-    # Count the occurrences of each score
+    # Count the occurrences of each device/interface
     device_counts = q7_data['device/interface'].value_counts().reset_index()
     device_counts.columns = ['device/interface', 'count']
   
     # Calculate percentage
-    device_counts['percentage'] = score_counts['count'] / score_counts['count'].sum() * 100
+    device_counts['percentage'] = device_counts['count'] / device_counts['count'].sum() * 100
 
 
     # Create a horizontal bar chart
-    fig3 = px.bar(score_counts, x='percentage', y='device/interface', text='count', orientation='h', color='device/interface')
+    fig3 = px.bar(device_counts, x='percentage', y='device/interface', text='count', orientation='h', color='device/interface')
 
     #show the chart
     st.plotly_chart(fig3, use_container_width=True)
