@@ -645,7 +645,7 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     total_rows = filtered_data.shape[0]
 
     # Display the sentence
-    st.markdown(f"The following dashboard section is based on {less_than_a_year_count} out of {total_rows} respondents, who have been less than a year.")
+    st.markdown(f"The dashboard section above is based on {less_than_a_year_count} out of {total_rows} respondents, who have been less than a year.")
 
 
 
@@ -682,7 +682,7 @@ if dashboard == 'Section 3: Performance & Talent':
         4: 'Satisfied',
         5: 'Very Satisfied'
     }
-    
+
    
     # Create a new column 'performance_satisfaction_category' by mapping the 'performance_satisfaction' column to the categories
     performance_satisfaction_counts['performance_satisfaction_category'] = performance_satisfaction_counts['performance_satisfaction'].map(score_to_category)
