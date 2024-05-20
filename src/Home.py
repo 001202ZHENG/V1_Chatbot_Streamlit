@@ -720,6 +720,60 @@ if dashboard == 'Section 3: Performance & Talent':
 
     st.plotly_chart(fig26, use_container_width=True)
 
+    # Extract the satisfaction scores column
+    q28_data = pd.DataFrame({'learning_satisfaction': filtered_data.iloc[:, 28]})
+
+    # Count the occurrences of each score
+    learning_satisfaction_counts = q28_data['learning_satisfaction'].value_counts().reset_index()
+    learning_satisfaction_counts.columns = ['learning_satisfaction', 'count']
+    
+    #create a dictionary to map scores to categories
+    score_to_category = {
+        1: 'Very Dissatisfied',
+        2: 'Dissatisfied',
+        3: 'Neutral',
+        4: 'Satisfied',
+        5: 'Very Satisfied'
+    }
+
+   
+    # Create a new column 'learning_satisfaction_category' by mapping the 'learning_satisfaction' column to the categories
+    learning_satisfaction_counts['learning_satisfaction_category'] = learning_satisfaction_counts['learning_satisfaction'].map(score_to_category)
+
+    # Calculate percentage
+    learning_satisfaction_counts['percentage'] = learning_satisfaction_counts['count'] / learning_satisfaction_counts['count'].sum() * 100
+
+    # Sort learning_satisfaction_counts by 'learning_satisfaction' in descending order
+    learning_satisfaction_counts = learning_satisfaction_counts.sort_values('learning_satisfaction', ascending=False)
+
+    # Create a horizontal bar chart
+    fig28 = px.bar(learning_satisfaction_counts, x='percentage', y='learning_satisfaction_category', text='count', orientation='h', color='learning_satisfaction_category',
+                  color_discrete_map={
+                      'Very Dissatisfied': '#C9190B',
+                      'Dissatisfied': '#EC7A08',
+                      'Neutral': '#F0AB00',
+                      'Satisfied': '#519DE9',
+                      'Very Satisfied': '#004B95'
+                  })
+
+    # Calculate median score
+    median_score_28 = q28_data['learning_satisfaction'].median()
+
+    # Determine the color based on the median score
+    if median_score_28 < 2:
+        color = 'red'
+    elif median_score_28 < 3:
+        color = 'orange'
+    elif median_score_28 < 4:
+        color = 'yellow'
+    else:
+        color = 'green'
+    
+    # Display the median score in a text box
+    st.markdown(f'<p style="color: {color};">Median Learning Satisfaction Score: {median_score_28:.2f}</p>', unsafe_allow_html=True)
+
+    st.plotly_chart(fig28, use_container_width=True)
+
 if dashboard == 'Section 4: Learning':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
