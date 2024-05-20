@@ -674,6 +674,15 @@ if dashboard == 'Section 3: Performance & Talent':
     performance_satisfaction_counts = q26_data['performance_satisfaction'].value_counts().reset_index()
     performance_satisfaction_counts.columns = ['performance_satisfaction', 'count']
     
+    #create a dictionary to map scores to categories
+    score_to_category = {
+        1: 'Very Dissatisfied',
+        2: 'Dissatisfied',
+        3: 'Neutral',
+        4: 'Satisfied',
+        5: 'Very Satisfied'
+    }
+    
    
     # Create a new column 'performance_satisfaction_category' by mapping the 'performance_satisfaction' column to the categories
     performance_satisfaction_counts['performance_satisfaction_category'] = performance_satisfaction_counts['performance_satisfaction'].map(score_to_category)
