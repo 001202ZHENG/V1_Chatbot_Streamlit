@@ -756,7 +756,7 @@ if dashboard == 'Section 3: Performance & Talent':
                       'Very Satisfied': '#004B95'
                   })
 
-    # Calculate median score28
+    # Calculate median score
     median_score_28 = q28_data['learning_satisfaction'].median()
 
     # Determine the color based on the median score
