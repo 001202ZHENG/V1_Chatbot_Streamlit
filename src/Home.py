@@ -550,7 +550,7 @@ if dashboard == "Section 1: Employee Experience":
 
     #q7 how access to HR services
     q7_data = pd.DataFrame({'device/interface': filtered_data["How do you access HR Information ?"]})
-    q7_data['device/interface'] = q7_data['device/interface'].str.split(';')
+    q7_data['device/interface'] = q7_data['device/interface'].str.rstrip(';').str.split(';')
     q7_data = q7_data.explode('device/interface')
     q7_data.dropna(inplace=True)
 
@@ -560,8 +560,7 @@ if dashboard == "Section 1: Employee Experience":
     device_counts.columns = ['device/interface', 'count']
   
     # Calculate percentage
-    device_counts['percentage'] = device_counts['count'] / device_counts['count'].sum() * 100
-
+    device_counts['percentage'] = device_counts['count'] / len(filtered_data) * 100
 
     # Create a horizontal bar chart
     fig3 = px.bar(device_counts, x='percentage', y='device/interface', text='count', orientation='h', color='device/interface')
