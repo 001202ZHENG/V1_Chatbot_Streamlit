@@ -551,6 +551,8 @@ if dashboard == "Section 1: Employee Experience":
     #q7 how access to HR services
     q7_data = pd.DataFrame({'device/interface': filtered_data["How do you access HR Information ?"]})
     q7_data['device/interface'] = q7_data['device/interface'].str.split(';')
+    q7_data = q7_data.explode('device/interface')
+    
 
     # Count the occurrences of each device/interface
     device_counts = q7_data['device/interface'].value_counts().reset_index()
