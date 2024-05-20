@@ -568,7 +568,7 @@ if dashboard == "Section 1: Employee Experience":
     st.plotly_chart(fig3, use_container_width=True)
 
     #q10 how you find the HR services responsive
-    q10_responsiveness_count = (filtered_data['Do you find the HR department responsive to your inquiries and concerns?'] == 'Yes').sum()
+    q10_responsiveness_count = (filtered_data.iloc[:, 15] == 'Yes').sum()
     q10_responsiveness_pct = q10_responsiveness_count/len(filtered_data) * 100
 
     st.write("Responsiveness to Inquiries and Concerns")
