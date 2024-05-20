@@ -519,7 +519,7 @@ if dashboard == "Section 1: Employee Experience":
     categories.append('None')
 
     q4_q5_count['HR Function'] = pd.Categorical(q4_q5_count['HR Function'], categories=categories, ordered=True)
-    
+
     # Reshape data into tidy format
     df_tidy = q4_q5_count.melt(id_vars='HR Function', var_name='Type', value_name='Count')
 
@@ -548,11 +548,24 @@ if dashboard == "Section 1: Employee Experience":
 
     st.plotly_chart(fig2, use_container_width=True)
 
-    
-    
+    #q7 how access to HR services
+    q7_data = pd.DataFrame({'device/interface': filtered_data["How do you access HR services and support ?"]})
+
+    # Count the occurrences of each score
+    device_counts = q7_data['device/interface'].value_counts().reset_index()
+    device_counts.columns = ['device/interface', 'count']
+  
+    # Calculate percentage
+    device_counts['percentage'] = score_counts['count'] / score_counts['count'].sum() * 100
+
+
+    # Create a horizontal bar chart
+    fig3 = px.bar(score_counts, x='percentage', y='device/interface', text='count', orientation='h', color='device/interface')
+
+    #show the chart
+    st.plotly_chart(fig3, use_container_width=True)
 
     
-
 if dashboard == 'Section 2: Recruiting & Onboarding':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
