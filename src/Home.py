@@ -427,36 +427,30 @@ if dashboard == "Section 1: Employee Experience":
     # Create a new column 'satisfaction_category' by mapping the 'satisfaction_score' column to the categories
     score_counts['satisfaction_category'] = score_counts['satisfaction_score'].map(score_to_category)
 
-    
-
-    # Create a new column 'satisfaction_category' by mapping the 'satisfaction_score' column to the categories
-    score_counts['satisfaction_category'] = score_counts['satisfaction_score'].map(score_to_category)
-
     # Calculate percentage
     score_counts['percentage'] = score_counts['count'] / score_counts['count'].sum() * 100
+
+    # Sort score_counts by 'satisfaction_score' in descending order
+    score_counts = score_counts.sort_values('satisfaction_score', ascending=False)
 
     # Create a horizontal bar chart
     fig1 = px.bar(score_counts, x='percentage', y='satisfaction_category', text='count', orientation='h', color='satisfaction_category')
 
-    # Calculate median score and round to nearest whole number
-    median_score = round(q6_data['satisfaction_score'].median())
+    # Calculate median score
+    median_score = q6_data['satisfaction_score'].median()
 
-    # Find the corresponding category for the median score
-    median_category = score_to_category[median_score]
-
-    # Find the corresponding percentage for the median score
-    median_percentage = score_counts[score_counts['satisfaction_category'] == median_category]['percentage'].values[0]
-
-    # Create a scatter plot with a single point at the median score
-    median_marker = go.Scatter(x=[median_percentage], y=[median_category], mode='markers', marker=dict(symbol='diamond', size=12, color='red'), name='Median')
-
-    # Add the scatter plot to the bar chart
-    fig1.add_trace(median_marker)
-
-    # Add interactivity to the bar chart only
-    fig1.update_traces(texttemplate='%{text:.2s}', textposition='inside', selector=dict(type='bar'))
-    fig1.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-
+    # Determine the color based on the median score
+    if median_score < 2:
+        color = 'red'
+    elif median_score < 3:
+        color = 'orange'
+    elif median_score < 4:
+        color = 'yellow'
+    else:
+        color = 'green'
+    
+    # Display the median score in a text box
+    st.markdown(f'<p style="color: {color};">Median Satisfaction Score: {median_score:.2f}</p>', unsafe_allow_html=True)
 
     st.plotly_chart(fig1, use_container_width=True)
 
