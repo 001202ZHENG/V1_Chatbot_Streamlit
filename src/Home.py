@@ -434,7 +434,14 @@ if dashboard == "Section 1: Employee Experience":
     score_counts = score_counts.sort_values('satisfaction_score', ascending=False)
 
     # Create a horizontal bar chart
-    fig1 = px.bar(score_counts, x='percentage', y='satisfaction_category', text='count', orientation='h', color='satisfaction_category')
+    fig1 = px.bar(score_counts, x='percentage', y='satisfaction_category', text='count', orientation='h', color='satisfaction_category',
+                  color_discrete_map={
+                      'Very Dissatisfied': 'red',
+                      'Dissatisfied': 'orange',
+                      'Neutral': 'yellow',
+                      'Satisfied': 'lightblue',
+                      'Very Satisfied': 'blue'
+                  })
 
     # Calculate median score
     median_score = q6_data['satisfaction_score'].median()
