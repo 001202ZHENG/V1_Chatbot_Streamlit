@@ -521,13 +521,13 @@ if dashboard == "Section 1: Employee Experience":
             name='HR Process Interacted',
             x=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['HR Function'],
             y=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['Count'],
-            marker_color='blue'
+            marker_color='#6C8EBF'
         ),
         go.Bar(
             name='Improvement Areas',
             x=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['HR Function'],
             y=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['Count'],
-            marker_color='orange'
+            marker_color='#FFB347'  # Muted orange
         )
     ])
 
