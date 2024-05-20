@@ -436,11 +436,11 @@ if dashboard == "Section 1: Employee Experience":
     # Create a horizontal bar chart
     fig1 = px.bar(score_counts, x='percentage', y='satisfaction_category', text='count', orientation='h', color='satisfaction_category',
                   color_discrete_map={
-                      'Very Dissatisfied': 'red',
-                      'Dissatisfied': 'orange',
-                      'Neutral': 'yellow',
-                      'Satisfied': 'lightblue',
-                      'Very Satisfied': 'blue'
+                      'Very Dissatisfied': '#C9190B',
+                      'Dissatisfied': '#EC7A08',
+                      'Neutral': '#F0AB00',
+                      'Satisfied': '#519DE9',
+                      'Very Satisfied': '#004B95'
                   })
 
     # Calculate median score
@@ -521,13 +521,13 @@ if dashboard == "Section 1: Employee Experience":
             name='HR Process Interacted',
             x=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['HR Function'],
             y=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['Count'],
-            marker_color='#6C8EBF'
+            marker_color='#3C3D99'
         ),
         go.Bar(
             name='Improvement Areas',
             x=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['HR Function'],
             y=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['Count'],
-            marker_color='#FFB347'  # Muted orange
+            marker_color='#F0AB00'  
         )
     ])
 
