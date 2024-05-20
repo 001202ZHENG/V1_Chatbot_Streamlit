@@ -549,7 +549,7 @@ if dashboard == "Section 1: Employee Experience":
     st.plotly_chart(fig2, use_container_width=True)
 
     #q7 how access to HR services
-    q7_data = pd.DataFrame({'device/interface': filtered_data["How do you access HR services and support ?"]})
+    q7_data = pd.DataFrame({'device/interface': filtered_data["How do you access HR Information ?"]})
 
     # Count the occurrences of each score
     device_counts = q7_data['device/interface'].value_counts().reset_index()
