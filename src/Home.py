@@ -654,6 +654,63 @@ if dashboard == 'Section 3: Performance & Talent':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
     selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
+    
+    filtered_data = data[
+        (data['Role'].isin(selected_role)) &
+        (data['Function'].isin(selected_function)) &
+        (data['Location'].isin(selected_location))
+    ]
+    
+    import altair as alt
+    from altair import expr, datum
+    import plotly.express as px
+    import plotly.graph_objects as go
+
+    
+    # Extract the satisfaction scores column
+    q26_data = pd.DataFrame({'performance_satisfaction': filtered_data.iloc[:, 26]})
+
+    # Count the occurrences of each score
+    performance_satisfaction_counts = q26_data['performance_satisfaction'].value_counts().reset_index()
+    performance_satisfaction_counts.columns = ['performance_satisfaction', 'count']
+    
+   
+    # Create a new column 'performance_satisfaction_category' by mapping the 'performance_satisfaction' column to the categories
+    performance_satisfaction_counts['performance_satisfaction_category'] = performance_satisfaction_counts['performance_satisfaction'].map(score_to_category)
+
+    # Calculate percentage
+    performance_satisfaction_counts['percentage'] = performance_satisfaction_counts['count'] / performance_satisfaction_counts['count'].sum() * 100
+
+    # Sort performance_satisfaction_counts by 'performance_satisfaction' in descending order
+    performance_satisfaction_counts = performance_satisfaction_counts.sort_values('performance_satisfaction', ascending=False)
+
+    # Create a horizontal bar chart
+    fig26 = px.bar(performance_satisfaction_counts, x='percentage', y='performance_satisfaction_category', text='count', orientation='h', color='performance_satisfaction_category',
+                  color_discrete_map={
+                      'Very Dissatisfied': '#C9190B',
+                      'Dissatisfied': '#EC7A08',
+                      'Neutral': '#F0AB00',
+                      'Satisfied': '#519DE9',
+                      'Very Satisfied': '#004B95'
+                  })
+
+    # Calculate median score
+    median_score_26 = q26_data['performance_satisfaction'].median()
+
+    # Determine the color based on the median score
+    if median_score_26 < 2:
+        color = 'red'
+    elif median_score_26 < 3:
+        color = 'orange'
+    elif median_score_26 < 4:
+        color = 'yellow'
+    else:
+        color = 'green'
+    
+    # Display the median score in a text box
+    st.markdown(f'<p style="color: {color};">Median Performance Satisfaction Score: {median_score_26:.2f}</p>', unsafe_allow_html=True)
+
+    st.plotly_chart(fig26, use_container_width=True)
 
 if dashboard == 'Section 4: Learning':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
