@@ -576,7 +576,7 @@ if dashboard == "Section 1: Employee Experience":
     st.write("%.2f" % q10_responsiveness_pct, "% of people, which are", q10_responsiveness_count, "person(s), find the HR department responsive to their inquiries and concerns.")
 
     #q8 satisfaction about the channels
-    q8_data = pd.DataFrame({'satisfaction_channel': filtered_data["How satisfied are you with the channels available to access HR services ?"]})
+    q8_data = pd.DataFrame({'satisfaction_channel': filtered_data.iloc[:, 13]})
     
     # Count the occurrences of each satisfaction channel
     channel_counts = q8_data['satisfaction_channel'].value_counts().reset_index()
