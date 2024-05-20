@@ -462,7 +462,6 @@ if dashboard == "Section 1: Employee Experience":
     st.plotly_chart(fig1, use_container_width=True)
 
 
-
     import plotly.graph_objects as go
 
     q4_data = pd.DataFrame({
@@ -549,26 +548,84 @@ if dashboard == "Section 1: Employee Experience":
     st.plotly_chart(fig2, use_container_width=True)
 
     #q7 how access to HR services
-    q7_data = pd.DataFrame({'device/interface': filtered_data["How do you access HR Information ?"]})
-    q7_data['device/interface'] = q7_data['device/interface'].str.rstrip(';').str.split(';')
-    q7_data = q7_data.explode('device/interface')
+    q7_data = pd.DataFrame({'device': filtered_data["How do you access HR Information ?"]})
+    q7_data['device'] = q7_data['device'].str.rstrip(';').str.split(';')
+    q7_data = q7_data.explode('device')
     q7_data.dropna(inplace=True)
 
 
-    # Count the occurrences of each device/interface
-    device_counts = q7_data['device/interface'].value_counts().reset_index()
-    device_counts.columns = ['device/interface', 'count']
+    # Count the occurrences of each device
+    device_counts = q7_data['device'].value_counts().reset_index()
+    device_counts.columns = ['device', 'count']
   
     # Calculate percentage
     device_counts['percentage'] = device_counts['count'] / len(filtered_data) * 100
 
     # Create a horizontal bar chart
-    fig3 = px.bar(device_counts, x='percentage', y='device/interface', text='count', orientation='h', color='device/interface')
+    fig3 = px.bar(device_counts, x='percentage', y='device', text='count', orientation='h', color='device')
 
     #show the chart
     st.plotly_chart(fig3, use_container_width=True)
 
+    #q10 how you find the HR services responsive
+    q10_responsiveness_count = (filtered_data['Do you find the HR department responsive to your inquiries and concerns?'] == 'Yes').sum()
+    q10_responsiveness_pct = q10_responsiveness_count/len(filtered_data) * 100
+
+    st.write("Responsiveness to Inquiries and Concerns")
     
+    st.write("%.2f" % q10_responsiveness_pct, "% of people, which are", q10_responsiveness_count, "person(s), find the HR department responsive to their inquiries and concerns.")
+
+    #q8 satisfaction about the channels
+    q8_data = pd.DataFrame({'satisfaction_channel': filtered_data["How satisfied are you with the channels available to access HR services ?"]})
+    
+    # Count the occurrences of each satisfaction channel
+    channel_counts = q8_data['satisfaction_channel'].value_counts().reset_index()
+    channel_counts.columns = ['satisfaction_channel', 'count']
+
+    # Calculate percentage
+    channel_counts['percentage'] = channel_counts['count'] / channel_counts['count'].sum() * 100
+
+    # Create a new column 'satisfaction_category' by mapping the 'satisfaction_channel' column to the categories
+    channel_counts['satisfaction_category'] = channel_counts['satisfaction_channel'].map(score_to_category)
+
+    # Calculate percentage
+    channel_counts['percentage'] = channel_counts['count'] / channel_counts['count'].sum() * 100
+
+    # Sort channel_counts by 'satisfaction_channel' in descending order
+    channel_counts = channel_counts.sort_values('satisfaction_channel', ascending=False)
+
+    # Create a horizontal bar chart
+    fig1 = px.bar(channel_counts, x='percentage', y='satisfaction_category', text='count', orientation='h', color='satisfaction_category',
+                  color_discrete_map={
+                      'Very Dissatisfied': '#C9190B',
+                      'Dissatisfied': '#EC7A08',
+                      'Neutral': '#F0AB00',
+                      'Satisfied': '#519DE9',
+                      'Very Satisfied': '#004B95'
+                  })
+
+    # Calculate median score
+    median_score1 = q8_data['satisfaction_channel'].median()
+
+    # Determine the color based on the median score
+    if median_score1 < 2:
+        color = 'red'
+    elif median_score1 < 3:
+        color = 'orange'
+    elif median_score1 < 4:
+        color = 'yellow'
+    else:
+        color = 'green'
+    
+    # Display the median score in a text box
+    st.markdown(f'<p style="color: {color};">Median Channel Satisfaction Score: {median_score1:.2f}</p>', unsafe_allow_html=True)
+
+    # Create a horizontal bar chart
+    fig4 = px.bar(channel_counts, x='percentage', y='satisfaction_channel', text='count', orientation='h', color='satisfaction_channel')
+
+    st.plotly_chart(fig4, use_container_width=True)
+
+
 if dashboard == 'Section 2: Recruiting & Onboarding':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
