@@ -624,13 +624,30 @@ if dashboard == "Section 1: Employee Experience":
     st.plotly_chart(fig4, use_container_width=True)
 
 
-
-
-
 if dashboard == 'Section 2: Recruiting & Onboarding':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
     selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
+
+    filtered_data = data[
+        (data['Role'].isin(selected_role)) &
+        (data['Function'].isin(selected_function)) &
+        (data['Location'].isin(selected_location))
+    ]
+
+    column_16 = filtered_data.iloc[:, 16]
+
+    # Count the number of 'Less than a year' and 'More than a year' responses
+    less_than_a_year_count = (column_16 == 'Less than a year').sum()
+    more_than_a_year_count = (column_16 == 'More than a year').sum()
+
+    # Get the total number of rows in the DataFrame
+    total_rows = filtered_data.shape[0]
+
+    # Display the sentence
+    st.markdown(f"The following dashboard section is based on {less_than_a_year_count} out of {total_rows} respondents, who have been less than a year.")
+
+
 
 
 if dashboard == 'Section 3: Performance & Talent':
