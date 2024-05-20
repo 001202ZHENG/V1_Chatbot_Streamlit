@@ -649,7 +649,6 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
 
 
 
-
 if dashboard == 'Section 3: Performance & Talent':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
@@ -726,6 +725,11 @@ if dashboard == 'Section 4: Learning':
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
     selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
 
+    filtered_data = data[
+            (data['Role'].isin(selected_role)) &
+            (data['Function'].isin(selected_function)) &
+            (data['Location'].isin(selected_location))
+        ]
 
 if dashboard == 'Section 5: Compensation':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
