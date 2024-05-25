@@ -716,7 +716,7 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(filtered_data) * 100
 
     # Create a vertical bar chart
-    fig6 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', color='negative_reasons', color_discrete_sequence=['#004B95'])
+    fig6 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', color='negative_reasons', color_discrete_sequence=['#FFA500'])
 
     # Show the chart
     st.plotly_chart(fig6, use_container_width=True)
@@ -735,12 +735,32 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     positive_reason_recruiting_counts['percentage'] = positive_reason_recruiting_counts['count'] / len(filtered_data) * 100
 
     # Create a vertical bar chart
-    fig7 = px.bar(positive_reason_recruiting_counts, x='positive_reasons', y='percentage', text='count', color='positive_reasons')
+    fig7 = px.bar(positive_reason_recruiting_counts, x='positive_reasons', y='percentage', text='count', color='positive_reasons', color_discrete_sequence=['#519DE9'])
 
     # Show the chart
     st.plotly_chart(fig7, use_container_width=True)
-    
 
+    #recruting process that took longest time and require improvement
+    q20_data = pd.DataFrame({'recruting process that required improvement': filtered_data.iloc[:, 20]})
+
+    q20_data['recruting process that required improvement'] = q20_data['recruting process that required improvement'].str.rstrip(';').str.split(';')
+    q20_data = q20_data.explode('recruting process that required improvement')
+    q20_data.dropna(inplace=True)
+
+    # Count the occurrences of each aspect that required improvement
+    aspect_recruiting_counts = q20_data['recruting process that required improvement'].value_counts().reset_index()
+    aspect_recruiting_counts.columns = ['recruting process that required improvement', 'count']
+
+    # Calculate percentage
+    aspect_recruiting_counts['percentage'] = aspect_recruiting_counts['count'] / len(filtered_data) * 100
+
+    # Create a vertical bar chart
+    fig8 = px.bar(aspect_recruiting_counts, x='recruting process that required improvement', y='percentage', text='count', color='recruting process that required improvement', color_discrete_sequence=['#FF7F7F'])
+
+    # Show the chart
+    st.plotly_chart(fig8, use_container_width=True)
+
+    
 
 
 
