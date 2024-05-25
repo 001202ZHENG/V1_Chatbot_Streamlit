@@ -716,7 +716,7 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(filtered_data) * 100
 
     # Create a vertical bar chart
-    fig6 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', color='negative_reasons')
+    fig6 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', color='negative_reasons', color_discrete_sequence=['#004B95'])
 
     # Show the chart
     st.plotly_chart(fig6, use_container_width=True)
