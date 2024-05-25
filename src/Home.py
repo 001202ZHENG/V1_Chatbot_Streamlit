@@ -718,8 +718,12 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     # Create a vertical bar chart
     fig6 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', color='negative_reasons', color_discrete_sequence=['#FFA500'])
 
+    #make a tree map on the negative reasons
+    fig10 = px.treemap(negative_reason_recruiting_counts, path=['negative_reasons'], values='count', color='count', color_continuous_scale='RdBu')
+
     # Show the chart
     st.plotly_chart(fig6, use_container_width=True)
+    st.plotly_chart(fig10, use_container_width=True)
 
     #positive reasons for recruiting process
     q19_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 19]})
@@ -737,8 +741,12 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     # Create a vertical bar chart
     fig7 = px.bar(positive_reason_recruiting_counts, x='positive_reasons', y='percentage', text='count', color='positive_reasons', color_discrete_sequence=['#519DE9'])
 
+    #make a tree map on the positive reasons
+    fig9 = px.treemap(positive_reason_recruiting_counts, path=['positive_reasons'], values='count', color='count', color_continuous_scale='RdBu')
+
     # Show the chart
     st.plotly_chart(fig7, use_container_width=True)
+    st.plotly_chart(fig9, use_container_width=True)
 
     #recruting process that took longest time and require improvement
     q20_data = pd.DataFrame({'recruting process that required improvement': filtered_data.iloc[:, 20]})
@@ -757,10 +765,153 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     # Create a vertical bar chart
     fig8 = px.bar(aspect_recruiting_counts, x='recruting process that required improvement', y='percentage', text='count', color='recruting process that required improvement', color_discrete_sequence=['#FF7F7F'])
 
+    #make a tree map on the aspect that required improvement
+    fig11 = px.treemap(aspect_recruiting_counts, path=['recruting process that required improvement'], values='count', color='count', color_continuous_scale='RdBu')
+
     # Show the chart
     st.plotly_chart(fig8, use_container_width=True)
+    st.plotly_chart(fig11, use_container_width=True)
 
+    #score analysis on onboarding process
+    q21_data = pd.DataFrame({'onboarding_score': filtered_data.iloc[:, 21]})
+
+    # Count the occurrences of each score
+    q21_score_counts = q21_data['onboarding_score'].value_counts().reset_index()
+    q21_score_counts.columns = ['onboarding_score', 'count']
     
+    # Create a new column 'onboarding_category' by mapping the 'onboarding_score' column to the categories
+    q21_score_counts['onboarding_satisfactory_category'] = q21_score_counts['onboarding_score'].map(score_to_category)
+
+    # Calculate percentage
+    q21_score_counts['percentage'] = q21_score_counts['count'] / q21_score_counts['count'].sum() * 100
+
+    # Sort score_counts by 'onboarding_score' in descending order
+    q21_score_counts = q21_score_counts.sort_values('onboarding_score', ascending=False)
+
+    # Create a horizontal bar chart
+    fig12 = px.bar(q21_score_counts, x='percentage', y='onboarding_category', text='count', orientation='h', color='onboarding_category',
+                  color_discrete_map={
+                      'Very Dissatisfied': '#C9190B',
+                      'Dissatisfied': '#EC7A08',
+                      'Neutral': '#F0AB00',
+                      'Satisfied': '#519DE9',
+                      'Very Satisfied': '#004B95'
+                  })
+
+    # Calculate median score
+    q21_median_score = q21_data['onboarding_score'].median()
+
+    # Determine the color based on the median score
+    if q21_median_score < 2:
+        color = 'red'
+    elif q21_median_score < 3:
+        color = 'orange'
+    elif q21_median_score < 4:
+        color = 'yellow'
+    else:
+        color = 'green'
+    
+    # Display the median score in a text box
+    st.markdown(f'<p style="color: {color};">Median Onboarding Score: {q21_median_score:.2f}</p>', unsafe_allow_html=True)
+
+    st.plotly_chart(fig12, use_container_width=True)
+
+    #negative reasons for onboarding process
+    q22_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 22]})
+    q22_data['negative_reasons'] = q22_data['negative_reasons'].str.rstrip(';').str.split(';')
+    q22_data = q22_data.explode('negative_reasons')
+    q22_data.dropna(inplace=True)
+
+    # Count the occurrences of each negative reason
+    negative_reason_recruiting_counts = q22_data['negative_reasons'].value_counts().reset_index()
+    negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
+
+    # Calculate percentage
+    negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(filtered_data) * 100
+
+    # Create a vertical bar chart
+    fig13 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', color='negative_reasons', color_discrete_sequence=['#FFA500'])
+
+    #make a tree map on the negative reasons
+    fig14 = px.treemap(negative_reason_recruiting_counts, path=['negative_reasons'], values='count', color='count', color_continuous_scale='RdBu')
+
+    # Show the chart
+    st.plotly_chart(fig13, use_container_width=True)
+    st.plotly_chart(fig14, use_container_width=True)
+
+    #positive reasons for onboarding process
+    q23_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 23]})
+    q23_data['positive_reasons'] = q23_data['positive_reasons'].str.rstrip(';').str.split(';')
+    q23_data = q23_data.explode('positive_reasons')
+    q23_data.dropna(inplace=True)
+
+    # Count the occurrences of each positive reason
+    positive_reason_recruiting_counts = q23_data['positive_reasons'].value_counts().reset_index()
+    positive_reason_recruiting_counts.columns = ['positive_reasons', 'count']
+
+    # Calculate percentage
+    positive_reason_recruiting_counts['percentage'] = positive_reason_recruiting_counts['count'] / len(filtered_data) * 100
+
+    # Create a vertical bar chart
+    fig15 = px.bar(positive_reason_recruiting_counts, x='positive_reasons', y='percentage', text='count', color='positive_reasons', color_discrete_sequence=['#519DE9'])
+
+    #make a tree map on the positive reasons
+    fig16 = px.treemap(positive_reason_recruiting_counts, path=['positive_reasons'], values='count', color='count', color_continuous_scale='RdBu')
+
+    # Show the chart
+    st.plotly_chart(fig15, use_container_width=True)
+    st.plotly_chart(fig16, use_container_width=True)
+
+    #helpful onboarding process 
+    q24_data = pd.DataFrame({'helpful_onboarding_process': filtered_data.iloc[:, 24]})
+    q24_data['helpful_onboarding_process'] = q24_data['helpful_onboarding_process'].str.rstrip(';').str.split(';')
+    q24_data = q24_data.explode('helpful_onboarding_process')
+    q24_data.dropna(inplace=True)
+
+    # Count the occurrences of each aspect that required improvement
+    helpful_onboarding_counts = q24_data['helpful_onboarding_process'].value_counts().reset_index()
+    helpful_onboarding_counts.columns = ['helpful_onboarding_process', 'count']
+
+    # Calculate percentage
+    helpful_onboarding_counts['percentage'] = helpful_onboarding_counts['count'] / len(filtered_data) * 100
+
+    # Create a vertical bar chart
+    fig17 = px.bar(helpful_onboarding_counts, x='helpful_onboarding_process', y='percentage', text='count', color='helpful_onboarding_process', color_discrete_sequence=['#519DE9'])
+
+    #make a tree map on the aspect that required improvement
+    fig18 = px.treemap(helpful_onboarding_counts, path=['helpful_onboarding_process'], values='count', color='count', color_continuous_scale='RdBu')
+
+    # Show the chart
+    st.plotly_chart(fig17, use_container_width=True)
+    st.plotly_chart(fig18, use_container_width=True)
+
+    #onboarding process to improve
+    q25_data = pd.DataFrame({'onboarding_process_to_improve': filtered_data.iloc[:, 25]})
+    q25_data['onboarding_process_to_improve'] = q25_data['onboarding_process_to_improve'].str.rstrip(';').str.split(';')
+    q25_data = q25_data.explode('onboarding_process_to_improve')
+    q25_data.dropna(inplace=True)
+
+    # Count the occurrences of each aspect that required improvement
+    aspect_onboarding_counts = q25_data['onboarding_process_to_improve'].value_counts().reset_index()
+    aspect_onboarding_counts.columns = ['onboarding_process_to_improve', 'count']
+
+    # Calculate percentage
+    aspect_onboarding_counts['percentage'] = aspect_onboarding_counts['count'] / len(filtered_data) * 100
+
+    # Create a vertical bar chart
+    fig19 = px.bar(aspect_onboarding_counts, x='onboarding_process_to_improve', y='percentage', text='count', color='onboarding_process_to_improve', color_discrete_sequence=['#FF7F7F'])
+
+    #make a tree map on the aspect that required improvement
+    fig20 = px.treemap(aspect_onboarding_counts, path=['onboarding_process_to_improve'], values='count', color='count', color_continuous_scale='RdBu')
+
+    # Show the chart
+    st.plotly_chart(fig19, use_container_width=True)
+    st.plotly_chart(fig20, use_container_width=True)
+
+
+
+
+
 
 
 
