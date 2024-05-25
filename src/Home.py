@@ -716,8 +716,11 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(filtered_data) * 100
 
     # Create a vertical bar chart
-    fig6 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', color='negative_reasons', color_discrete_sequence=['#004B95'])
-    
+    fig6 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', color='negative_reasons')
+
+    # Show the chart
+    st.plotly_chart(fig6, use_container_width=True)
+
     #positive reasons for recruiting process
     q19_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 19]})
     q19_data['positive_reasons'] = q19_data['positive_reasons'].str.rstrip(';').str.split(';')
@@ -732,26 +735,11 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     positive_reason_recruiting_counts['percentage'] = positive_reason_recruiting_counts['count'] / len(filtered_data) * 100
 
     # Create a vertical bar chart
-    from plotly.subplots import make_subplots
-
-    fig7 = px.bar(positive_reason_recruiting_counts, x='positive_reasons', y='percentage', text='count', color='positive_reasons', color_discrete_sequence=['#519DE9'])
-
-    # Create a grid layout with two columns
-    figs = [fig6, fig7]
-    fig_subplot1 = make_subplots(rows=1, cols=2)
-
-    # Add the charts to the grid layout
-    for i, f in enumerate(figs):
-        fig_subplot1.add_trace(f.data[0], row=1, col=i+1)
-
-    # Update the layout
-    fig_subplot1.update_layout(showlegend=False)
+    fig7 = px.bar(positive_reason_recruiting_counts, x='positive_reasons', y='percentage', text='count', color='positive_reasons')
 
     # Show the chart
-    st.plotly_chart(fig_subplot1, use_container_width=True)
-
+    st.plotly_chart(fig7, use_container_width=True)
     
-
 
 
 
