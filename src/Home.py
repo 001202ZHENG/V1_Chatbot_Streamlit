@@ -1055,14 +1055,14 @@ if dashboard == 'Section 3: Performance & Talent':
     # Calculate percentage
     negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(filtered_data) * 100
 
-    # Create a vertical bar chart
-    fig29 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', orientation='h', color='negative_reasons', color_discrete_sequence=['#FFA500'])
+    # Create a horizontal bar chart
+    fig29 = px.bar(negative_reason_recruiting_counts, x='percentage', y='negative_reasons', text='count', orientation='h', color='negative_reasons', color_discrete_sequence=['#FFA500'])
 
     # Show the chart
     st.plotly_chart(fig29, use_container_width=True)
 
     #available to tag skills in HRIS
-    q30_data_available_count = (filtered_data['Are you able to identify and tag your skills within your HRIS ?'] == 'Yes').sum()
+    q30_data_available_count = (filtered_data.iloc[:,30] == 'Yes').sum()
     q30_data_available_pct = q30_data_available_count/len(filtered_data) * 100
 
     st.write("identify and tag your skills within the HRIS")
