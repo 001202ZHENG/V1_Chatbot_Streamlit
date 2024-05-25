@@ -702,6 +702,48 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
 
     st.plotly_chart(fig5, use_container_width=True)
 
+    #negative reasons for recruiting process
+    q18_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 18]})
+    q18_data['negative_reasons'] = q18_data['negative_reasons'].str.rstrip(';').str.split(';')
+    q18_data = q18_data.explode('negative_reasons')
+    q18_data.dropna(inplace=True)
+
+    # Count the occurrences of each negative reason
+    negative_reason_recruiting_counts = q18_data['negative_reasons'].value_counts().reset_index()
+    negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
+
+    # Calculate percentage
+    negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(filtered_data) * 100
+
+    # Create a vertical bar chart
+    fig6 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', color='negative_reasons')
+
+    # Show the chart
+    st.plotly_chart(fig6, use_container_width=True)
+
+    #positive reasons for recruiting process
+    q19_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 19]})
+    q19_data['positive_reasons'] = q19_data['positive_reasons'].str.rstrip(';').str.split(';')
+    q19_data = q19_data.explode('positive_reasons')
+    q19_data.dropna(inplace=True)
+
+    # Count the occurrences of each positive reason
+    positive_reason_recruiting_counts = q19_data['positive_reasons'].value_counts().reset_index()
+    positive_reason_recruiting_counts.columns = ['positive_reasons', 'count']
+
+    # Calculate percentage
+    positive_reason_recruiting_counts['percentage'] = positive_reason_recruiting_counts['count'] / len(filtered_data) * 100
+
+    # Create a vertical bar chart
+    fig7 = px.bar(positive_reason_recruiting_counts, x='positive_reasons', y='percentage', text='count', color='positive_reasons')
+
+    # Show the chart
+    st.plotly_chart(fig7, use_container_width=True)
+    
+
+
+
+
 
 
 if dashboard == 'Section 3: Performance & Talent':
