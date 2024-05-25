@@ -688,11 +688,11 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     q9_median_score = q9_data['satisfaction_score'].median()
 
     # Determine the color based on the median score
-    if median_score < 2:
+    if q9_median_score < 2:
         color = 'red'
-    elif median_score < 3:
+    elif q9_median_score < 3:
         color = 'orange'
-    elif median_score < 4:
+    elif q9_median_score < 4:
         color = 'yellow'
     else:
         color = 'green'
