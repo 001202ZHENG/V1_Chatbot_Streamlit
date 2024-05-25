@@ -789,7 +789,7 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     q21_score_counts = q21_score_counts.sort_values('onboarding_score', ascending=False)
 
     # Create a horizontal bar chart
-    fig12 = px.bar(q21_score_counts, x='percentage', y='onboarding_category', text='count', orientation='h', color='onboarding_category',
+    fig12 = px.bar(q21_score_counts, x='percentage', y='onboarding_satisfactory_category', text='count', orientation='h', color='onboarding_satisfactory_category',
                   color_discrete_map={
                       'Very Dissatisfied': '#C9190B',
                       'Dissatisfied': '#EC7A08',
