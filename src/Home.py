@@ -1158,7 +1158,7 @@ if dashboard == 'Section 4: Learning':
     
     st.write(f"{q34_data_available_pct:.2f}% of people, which are {q34_data_available_count} person(s), received some recommendations on training.")
 
-    
+
 
 
 
@@ -1224,19 +1224,19 @@ if dashboard == 'Section 5: Compensation':
     campaign_manage_counts = campaign_manage_counts.sort_values(by='Count', ascending=False)
 
     # Create the bar chart using Plotly
-    fig = px.bar(campaign_manage_counts, x='Campaign', y='Count', text='Percentage',
+    fig33 = px.bar(campaign_manage_counts, x='Campaign', y='Count', text='Percentage',
                  title="Do you manage/launch your compensation campaigns nationally or in another way?")
-    fig.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
+    fig33.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
 
     # Customize the layout
-    fig.update_layout(
+    fig33.update_layout(
         xaxis_title="Campaign",
         yaxis_title="Count",
         showlegend=False
     )
 
     # Display the chart in Streamlit
-    st.plotly_chart(fig)
+    st.plotly_chart(fig33)
 
     # Extract the column
     q40_compensation_satisfaction = pd.DataFrame({'satisfaction_score': filtered_data.iloc[:, 40]}).dropna()
@@ -1246,7 +1246,6 @@ if dashboard == 'Section 5: Compensation':
     value_counts = q40_compensation_satisfaction['satisfaction_score'].value_counts().reset_index()
     value_counts.columns = ['satisfaction_score', 'count']
 
-    # Create a dictionary to map values to categories
     # Create a dictionary to map scores to categories
     score_to_category = {
         1: 'Very Dissatisfied',
@@ -1263,14 +1262,100 @@ if dashboard == 'Section 5: Compensation':
     value_counts['percentage'] = value_counts['count'] / value_counts['count'].sum() * 100
 
     # Create a horizontal bar chart
-    fig6 = px.bar(value_counts, x='percentage', y='category', text='count', orientation='h', color='category')
+    fig34 = px.bar(value_counts, x='percentage', y='category', text='count', orientation='h', color='category')
 
     
     # Add interactivity to the bar chart only
-    fig6.update_traces(texttemplate='%{text:.2s}', textposition='inside', selector=dict(type='bar'))
-    fig6.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+    fig34.update_traces(texttemplate='%{text:.2s}', textposition='inside', selector=dict(type='bar'))
+    fig34.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    st.plotly_chart(fig6, use_container_width=True)
+    st.plotly_chart(fig34, use_container_width=True)
+
+    #column 43 available count retroactivity on salary payments
+    q43_data_available_count = (filtered_data.iloc[:,43] == 'Yes').sum()
+    q43_data_available_pct = q43_data_available_count/q36_compensation_count * 100
+
+    st.write("Retroactivity on Salary Payments")
+
+    st.write("Among the people who participate the Compensation Campaign "
+      "%.2f" % q43_data_available_pct, "% of people, which are", q43_data_available_count,
+      "person(s), have retroactivity on salary payments.")
+    
+    #column 44 available count participation in the variable pay/bonus campaign
+    q44_data_available_count = (filtered_data.iloc[:,44] == 'Yes').sum()
+    q44_data_available_pct = q44_data_available_count/q36_compensation_count * 100
+
+    st.write("Variable Pay/Bonus Campaign Participation")
+    st.write("Among the people who participate the Compensation Campaign "
+      "%.2f" % q44_data_available_pct, "% of people, which are", q44_data_available_count,
+      "person(s), participate in the Variable Pay/Bonus Campaign.")
+    
+    # Extract satisfaction scores column for variable pay/bonus campaign
+    q45_data = pd.DataFrame({'variable_pay_satisfaction': filtered_data.iloc[:, 45]})
+
+    # Count the occurrences of each score
+    variable_pay_satisfaction_counts = q45_data['variable_pay_satisfaction'].value_counts().reset_index()
+    variable_pay_satisfaction_counts.columns = ['variable_pay_satisfaction', 'count']
+
+    # Create a new column 'category' by mapping the 'variable_pay_satisfaction' column to the categories
+    variable_pay_satisfaction_counts['category'] = variable_pay_satisfaction_counts['variable_pay_satisfaction'].map(score_to_category)
+
+    # Calculate percentage
+    variable_pay_satisfaction_counts['percentage'] = variable_pay_satisfaction_counts['count'] / variable_pay_satisfaction_counts['count'].sum() * 100
+
+    # Create a horizontal bar chart
+    fig35 = px.bar(variable_pay_satisfaction_counts, x='percentage', y='category', text='count', orientation='h', color='category')
+
+    # Add interactivity to the bar chart only
+    fig35.update_traces(texttemplate='%{text:.2s}', textposition='inside', selector=dict(type='bar'))
+    fig35.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+
+    st.plotly_chart(fig35, use_container_width=True)
+
+    # Convert the data to a DataFrame
+    q46_campaign_manage = pd.DataFrame({'bonus/variable pay campaign': filtered_data.iloc[:, 46]})
+
+    # Drop NaN values
+    q46_campaign_manage.dropna(inplace=True)
+
+    # Count occurrences of each campaign type
+    campaign_manage_counts = q46_campaign_manage['bonus/variable pay campaign'].value_counts().reset_index()
+    campaign_manage_counts.columns = ['bonus/variable pay campaign', 'Count']
+    campaign_manage_counts['Percentage'] = campaign_manage_counts['Count'] / len(q46_campaign_manage) * 100
+
+    # Sort the DataFrame by count
+    campaign_manage_counts = campaign_manage_counts.sort_values(by='Count', ascending=False)
+
+    # Create the bar chart using Plotly
+    fig36 = px.bar(campaign_manage_counts, x='bonus/variable pay campaign', y='Count', text='Percentage',
+                 title="Do you manage/launch your bonus/variable pay campaigns nationally or in another way?")
+    fig36.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
+
+    # Customize the layout
+    fig36.update_layout(
+        xaxis_title="Campaign",
+        yaxis_title="Count",
+        showlegend=False
+    )
+
+    # Display the chart in Streamlit
+    st.plotly_chart(fig36)
+
+    #the dates of your Variable Pay campaign different from the one for the Compensation Campaign
+    q47_data_available_count = (filtered_data.iloc[:,47] == 'Yes').sum()
+    q47_data_available_pct = q47_data_available_count/q36_compensation_count * 100
+
+    st.write("Variable Pay Campaign Dates Different from Compensation Campaign Dates")
+
+    st.write("Among the people who participate the Compensation Campaign "
+      "%.2f" % q47_data_available_pct, "% of people, which are", q47_data_available_count,
+      "person(s), have different dates for the Variable Pay Campaign compared to the Compensation Campaign.")
+    
+    
+
+
+
+
 
 if dashboard == 'Section 6: Payroll':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
