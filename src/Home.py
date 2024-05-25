@@ -182,6 +182,8 @@ def plot_satisfaction_proportions(data_series, title):
 
     st.plotly_chart(fig)  # Display the plot in Streamlit
 
+
+
 dashboard = st.sidebar.radio("Select Dashboard", ('General Survey Results', 
                                              'Section 1: Employee Experience',
                                              'Section 2: Recruiting & Onboarding',
@@ -646,6 +648,59 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
 
     # Display the sentence
     st.markdown(f"The dashboard section above is based on {less_than_a_year_count} out of {total_rows} respondents, who have been less than a year.")
+
+    # Extract the satisfaction scores column
+    q9_data = pd.DataFrame({'satisfaction_score': filtered_data["How would rate the recruiting process ?"]})
+    
+    # Count the occurrences of each score
+    q9_score_counts = q9_data['satisfaction_score'].value_counts().reset_index()
+    q9_score_counts.columns = ['satisfaction_score', 'count']
+    
+    # Create a dictionary to map scores to categories
+    score_to_category = {
+        1: 'Very Dissatisfied',
+        2: 'Dissatisfied',
+        3: 'Neutral',
+        4: 'Satisfied',
+        5: 'Very Satisfied'
+    }
+
+    # Create a new column 'satisfaction_category' by mapping the 'satisfaction_score' column to the categories
+    q9_score_counts['satisfaction_category'] = q9_score_counts['satisfaction_score'].map(score_to_category)
+
+    # Calculate percentage
+    q9_score_counts['percentage'] = q9_score_counts['count'] / q9_score_counts['count'].sum() * 100
+
+    # Sort score_counts by 'satisfaction_score' in descending order
+    q9_score_counts = q9_score_counts.sort_values('satisfaction_score', ascending=False)
+
+    # Create a horizontal bar chart
+    fig5 = px.bar(q9_score_counts, x='percentage', y='satisfaction_category', text='count', orientation='h', color='satisfaction_category',
+                  color_discrete_map={
+                      'Very Dissatisfied': '#C9190B',
+                      'Dissatisfied': '#EC7A08',
+                      'Neutral': '#F0AB00',
+                      'Satisfied': '#519DE9',
+                      'Very Satisfied': '#004B95'
+                  })
+
+    # Calculate median score
+    q9_median_score = q9_data['satisfaction_score'].median()
+
+    # Determine the color based on the median score
+    if median_score < 2:
+        color = 'red'
+    elif median_score < 3:
+        color = 'orange'
+    elif median_score < 4:
+        color = 'yellow'
+    else:
+        color = 'green'
+    
+    # Display the median score in a text box
+    st.markdown(f'<p style="color: {color};">Median Satisfaction Score: {q9_median_score:.2f}</p>', unsafe_allow_html=True)
+
+    st.plotly_chart(fig5, use_container_width=True)
 
 
 
