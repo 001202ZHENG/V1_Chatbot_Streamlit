@@ -989,11 +989,11 @@ if dashboard == 'Section 3: Performance & Talent':
     st.plotly_chart(fig26, use_container_width=True)
 
     # Extract the satisfaction scores column
-    q28_data = pd.DataFrame({'learning_satisfaction': filtered_data.iloc[:, 28]})
+    q28_data = pd.DataFrame({'career_goal_satisfaction': filtered_data.iloc[:, 28]})
 
     # Count the occurrences of each score
-    learning_satisfaction_counts = q28_data['learning_satisfaction'].value_counts().reset_index()
-    learning_satisfaction_counts.columns = ['learning_satisfaction', 'count']
+    career_goal_satisfaction_counts = q28_data['career_goal_satisfaction'].value_counts().reset_index()
+    career_goal_satisfaction_counts.columns = ['career_goal_satisfaction', 'count']
     
     #create a dictionary to map scores to categories
     score_to_category = {
@@ -1005,17 +1005,17 @@ if dashboard == 'Section 3: Performance & Talent':
     }
 
    
-    # Create a new column 'learning_satisfaction_category' by mapping the 'learning_satisfaction' column to the categories
-    learning_satisfaction_counts['learning_satisfaction_category'] = learning_satisfaction_counts['learning_satisfaction'].map(score_to_category)
+    # Create a new column 'career_goal_satisfaction_category' by mapping the 'career_goal_satisfaction' column to the categories
+    career_goal_satisfaction_counts['career_goal_satisfaction_category'] = career_goal_satisfaction_counts['career_goal_satisfaction'].map(score_to_category)
 
     # Calculate percentage
-    learning_satisfaction_counts['percentage'] = learning_satisfaction_counts['count'] / learning_satisfaction_counts['count'].sum() * 100
+    career_goal_satisfaction_counts['percentage'] = career_goal_satisfaction_counts['count'] / career_goal_satisfaction_counts['count'].sum() * 100
 
-    # Sort learning_satisfaction_counts by 'learning_satisfaction' in descending order
-    learning_satisfaction_counts = learning_satisfaction_counts.sort_values('learning_satisfaction', ascending=False)
+    # Sort career_goal_satisfaction_counts by 'career_goal_satisfaction' in descending order
+    career_goal_satisfaction_counts = career_goal_satisfaction_counts.sort_values('career_goal_satisfaction', ascending=False)
 
     # Create a horizontal bar chart
-    fig28 = px.bar(learning_satisfaction_counts, x='percentage', y='learning_satisfaction_category', text='count', orientation='h', color='learning_satisfaction_category',
+    fig28 = px.bar(career_goal_satisfaction_counts, x='percentage', y='career_goal_satisfaction_category', text='count', orientation='h', color='career_goal_satisfaction_category',
                   color_discrete_map={
                       'Very Dissatisfied': '#C9190B',
                       'Dissatisfied': '#EC7A08',
@@ -1025,7 +1025,7 @@ if dashboard == 'Section 3: Performance & Talent':
                   })
 
     # Calculate median score
-    median_score_28 = q28_data['learning_satisfaction'].median()
+    median_score_28 = q28_data['career_goal_satisfaction'].median()
 
     # Determine the color based on the median score
     if median_score_28 < 2:
@@ -1038,9 +1038,39 @@ if dashboard == 'Section 3: Performance & Talent':
         color = 'green'
     
     # Display the median score in a text box
-    st.markdown(f'<p style="color: {color};">Median Learning Satisfaction Score: {median_score_28:.2f}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p style="color: {color};">Median Career Goal Satisfaction Score: {median_score_28:.2f}</p>', unsafe_allow_html=True)
 
     st.plotly_chart(fig28, use_container_width=True)
+
+    #negative reasons for career goals
+    q29_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 29]})
+    q29_data['negative_reasons'] = q29_data['negative_reasons'].str.rstrip(';').str.split(';')
+    q29_data = q29_data.explode('negative_reasons')
+    q29_data.dropna(inplace=True)
+
+    # Count the occurrences of each negative reason
+    negative_reason_recruiting_counts = q29_data['negative_reasons'].value_counts().reset_index()
+    negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
+
+    # Calculate percentage
+    negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(filtered_data) * 100
+
+    # Create a vertical bar chart
+    fig29 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count', orientation='h', color='negative_reasons', color_discrete_sequence=['#FFA500'])
+
+    # Show the chart
+    st.plotly_chart(fig29, use_container_width=True)
+
+    #available to tag skills in HRIS
+    q30_data_available_count = (filtered_data['Are you able to identify and tag your skills within your HRIS ?'] == 'Yes').sum()
+    q30_data_available_pct = q30_data_available_count/len(filtered_data) * 100
+
+    st.write("identify and tag your skills within the HRIS")
+    
+    st.write(f"{q30_data_available_pct:.2f}% of people, which are {q30_data_available_count} person(s), are able to identify and tag their skills within the HRIS.")
+    
+
+
 
 if dashboard == 'Section 4: Learning':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
