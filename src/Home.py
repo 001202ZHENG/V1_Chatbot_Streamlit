@@ -995,15 +995,6 @@ if dashboard == 'Section 3: Performance & Talent':
     career_goal_satisfaction_counts = q28_data['career_goal_satisfaction'].value_counts().reset_index()
     career_goal_satisfaction_counts.columns = ['career_goal_satisfaction', 'count']
     
-    #create a dictionary to map scores to categories
-    score_to_category = {
-        1: 'Very Dissatisfied',
-        2: 'Dissatisfied',
-        3: 'Neutral',
-        4: 'Satisfied',
-        5: 'Very Satisfied'
-    }
-
    
     # Create a new column 'career_goal_satisfaction_category' by mapping the 'career_goal_satisfaction' column to the categories
     career_goal_satisfaction_counts['career_goal_satisfaction_category'] = career_goal_satisfaction_counts['career_goal_satisfaction'].map(score_to_category)
@@ -1068,9 +1059,6 @@ if dashboard == 'Section 3: Performance & Talent':
     st.write("identify and tag your skills within the HRIS")
     
     st.write(f"{q30_data_available_pct:.2f}% of people, which are {q30_data_available_count} person(s), are able to identify and tag their skills within the HRIS.")
-    
-
-
 
 if dashboard == 'Section 4: Learning':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
@@ -1082,6 +1070,99 @@ if dashboard == 'Section 4: Learning':
             (data['Function'].isin(selected_function)) &
             (data['Location'].isin(selected_location))
         ]
+    
+    # Extract the satisfaction scores column
+    q31_data = pd.DataFrame({'learning_satisfaction': filtered_data.iloc[:, 31]})
+
+    # Count the occurrences of each score
+    learning_satisfaction_counts = q31_data['learning_satisfaction'].value_counts().reset_index()
+    learning_satisfaction_counts.columns = ['learning_satisfaction', 'count']
+    
+    # Create a dictionary to map scores to categories
+    score_to_category = {
+        1: 'Very Dissatisfied',
+        2: 'Dissatisfied',
+        3: 'Neutral',
+        4: 'Satisfied',
+        5: 'Very Satisfied'
+    }
+
+    # Create a new column 'learning_satisfaction_category' by mapping the 'learning_satisfaction' column to the categories
+    learning_satisfaction_counts['learning_satisfaction_category'] = learning_satisfaction_counts['learning_satisfaction'].map(score_to_category)
+
+    # Calculate percentage
+    learning_satisfaction_counts['percentage'] = learning_satisfaction_counts['count'] / learning_satisfaction_counts['count'].sum() * 100
+
+    # Sort learning_satisfaction_counts by 'learning_satisfaction' in descending order
+    learning_satisfaction_counts = learning_satisfaction_counts.sort_values('learning_satisfaction', ascending=False)
+
+    # Create a horizontal bar chart
+    fig31 = px.bar(learning_satisfaction_counts, x='percentage', y='learning_satisfaction_category', text='count', orientation='h', color='learning_satisfaction_category',
+                  color_discrete_map={
+                      'Very Dissatisfied': '#C9190B',
+                      'Dissatisfied': '#EC7A08',
+                      'Neutral': '#F0AB00',
+                      'Satisfied': '#519DE9',
+                      'Very Satisfied': '#004B95'
+                  })
+
+    # Calculate median score
+    median_score_31 = q31_data['learning_satisfaction'].median()
+
+    # Determine the color based on the median score
+    if median_score_31 < 2:
+        color = 'red'
+    elif median_score_31 < 3:
+        color = 'orange'
+    elif median_score_31 < 4:
+        color = 'yellow'
+    else:
+        color = 'green'
+    
+    # Display the median score in a text box
+    st.markdown(f'<p style="color: {color};">Median Learning Satisfaction Score: {median_score_31:.2f}</p>', unsafe_allow_html=True)
+
+    st.plotly_chart(fig31, use_container_width=True)
+
+    #learning format distribution
+    q32_data = pd.DataFrame({'learning_format': filtered_data.iloc[:, 32]})
+    q32_data['learning_format'] = q32_data['learning_format'].str.rstrip(';')
+    q32_data.dropna(inplace=True)
+
+    # Count the occurrences of each learning format
+    learning_format_counts = q32_data['learning_format'].value_counts().reset_index()
+    learning_format_counts.columns = ['learning_format', 'count']
+
+    # Calculate percentage
+    learning_format_counts['percentage'] = learning_format_counts['count'] / learning_format_counts['count'].sum() * 100
+
+    # Create a horizontal bar chart
+    fig32 = px.bar(learning_format_counts, x='percentage', y='learning_format', text='count', orientation='h', color='learning_format')
+    
+    # Show the chart
+    st.plotly_chart(fig32, use_container_width=True)
+
+    #training/development program participation
+    q33_data_available_count = (filtered_data.iloc[:,33] == 'Yes').sum()
+    q33_data_available_pct = q33_data_available_count/len(filtered_data) * 100
+
+    st.write("Training/Development Program Participation (something wrong with the data)")
+    
+    st.write(f"{q33_data_available_pct:.2f}% of people, which are {q33_data_available_count} person(s), are able to identify and tag their skills within the HRIS.")
+
+    #Whether receive recommendation on training
+    q34_data_available_count = (filtered_data.iloc[:,34] == 'Yes').sum()
+    q34_data_available_pct = q34_data_available_count/len(filtered_data) * 100
+
+    st.write("Whether to Receive Recommendation on training (something wrong with the data)")
+    
+    st.write(f"{q34_data_available_pct:.2f}% of people, which are {q34_data_available_count} person(s), received some recommendations on training.")
+
+    
+
+
+
+
 
 if dashboard == 'Section 5: Compensation':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
