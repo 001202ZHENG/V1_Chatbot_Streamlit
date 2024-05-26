@@ -1484,7 +1484,7 @@ if dashboard == 'Section 6: Payroll':
 
     #mass entries ability
     q55_mass_count = (filtered_data.iloc[:,55] == 'Yes').sum()
-    q55_mass_pct = q55_mass_count/len(q53_global_count) * 100
+    q55_mass_pct = q55_mass_count/q53_global_count * 100
     st.write("Mass Entries Ability")
     st.write("%.2f" % q55_mass_pct, "% of people, which are", q55_mass_count, "person(s), have the tool to make mass entries.")
 
