@@ -1465,41 +1465,28 @@ if dashboard == 'Section 6: Payroll':
     st.plotly_chart(fig39, use_container_width=True)
 
     #global platform or not
-    q53_global_count = (filtered_data.iloc[:,53] == 'Yes').sum()
-    q53_global_pct = q53_global_count/q48_compensation_count * 100
+    q54_global_count = (filtered_data.iloc[:,54] == 'Yes').sum()
+    q54_global_pct = q54_global_count/q48_compensation_count * 100
     st.write("Global Platform")
-    st.write("If the payroll system is used in several countries," "%.2f" % q53_global_pct, "% of people, which are", q53_global_count, "person(s), have a global platform for consolidating all the employees' country data.")
+    st.write("If the payroll system is used in several countries," "%.2f" % q54_global_pct, "% of people, which are", q54_global_count, "person(s), have a global platform for consolidating all the employees' country data.")
 
     #automatically generate KPIs relating to the payroll
-    q54_auto_count_yes = (filtered_data.iloc[:,54] == 'Yes').sum()
-    q54_auto_pct_yes = q54_auto_count_yes/q53_global_count * 100
+    q55_auto_count_yes = (filtered_data.iloc[:,55] == 'Yes').sum()
+    q55_auto_pct_yes = q55_auto_count_yes/q53_global_count * 100
 
-    q54_auto_count_no = (filtered_data.iloc[:,54] == 'No').sum()
-    q54_auto_pct_no = q54_auto_count_no/q53_global_count* 100
+    q55_auto_count_no = (filtered_data.iloc[:,55] == 'No').sum()
+    q55_auto_pct_no = q55_auto_count_no/q53_global_count* 100
 
-    q54_auto_count_not_concerned = (filtered_data.iloc[:,54] == 'Not concerned').sum()
-    q54_auto_pct_not_concerned = q54_auto_count_not_concerned/q53_global_count * 100
+    q55_auto_count_not_concerned = (filtered_data.iloc[:,55] == 'Not concerned').sum()
+    q55_auto_pct_not_concerned = q55_auto_count_not_concerned/q53_global_count * 100
     st.write("Automatically Generate KPIs")
-    st.write("Among the people who have a global platform for consolidating all the employees' country data," "%.2f" % q54_auto_pct_yes, "% of people, which are", q54_auto_count_yes, "person(s), automatically generate KPIs relating to the payroll." "\n" "%.2f" % q54_auto_pct_no, "% of people, which are", q54_auto_count_no, "person(s), do not automatically generate KPIs relating to the payroll." "\n" "%.2f" % q54_auto_pct_not_concerned, "% of people, which are", q54_auto_count_not_concerned, "person(s), are not concerned about automatically generating KPIs relating to the payroll.")
+    st.write("Among the people who have a global platform for consolidating all the employees' country data," "%.2f" % q55_auto_pct_yes, "% of people, which are", q55_auto_count_yes, "person(s), automatically generate KPIs relating to the payroll." "\n" "%.2f" % q55_auto_pct_no, "% of people, which are", q55_auto_count_no, "person(s), do not automatically generate KPIs relating to the payroll." "\n" "%.2f" % q55_auto_pct_not_concerned, "% of people, which are", q55_auto_count_not_concerned, "person(s), are not concerned about automatically generating KPIs relating to the payroll.")
 
     #mass entries ability
-    q55_mass_count = (filtered_data.iloc[:,55] == 'Yes').sum()
-    q55_mass_pct = q55_mass_count/q53_global_count * 100
+    q56_mass_count = (filtered_data.iloc[:,56] == 'Yes').sum()
+    q56_mass_pct = q56_mass_count/q53_global_count * 100
     st.write("Mass Entries Ability")
-    st.write("%.2f" % q55_mass_pct, "% of people, which are", q55_mass_count, "person(s), have the tool to make mass entries.")
-
-    #connectivity with the time management system
-    q56_connectivity_count_yes = (filtered_data.iloc[:,56] == 'Yes').sum()
-    q56_connectivity_pct_yes = q56_connectivity_count_yes/q53_global_count * 100
-
-    q56_connectivity_count_no = (filtered_data.iloc[:,56] == 'No').sum()
-    q56_connectivity_pct_no = q56_connectivity_count_no/q53_global_count * 100
-
-    q56_connectivity_count_not_management = (filtered_data.iloc[:,56] == 'I do not have a time management system currently').sum()
-    q56_connectivity_pct_not_management = q56_connectivity_count_not_management/q53_global_count * 100
-
-    st.write("Connectivity with the Time Management System")
-    st.write("In the payroll team," "%.2f" % q56_connectivity_pct_yes, "% of people, which are", q56_connectivity_count_yes, "person(s), have connectivity with the time management system." "\n" "%.2f" % q56_connectivity_pct_no, "% of people, which are", q56_connectivity_count_no, "person(s), do not have connectivity with the time management system." "\n" "%.2f" % q56_connectivity_pct_not_management, "% of people, which are", q56_connectivity_count_not_management, "person(s), do not have a time management system currently.")
+    st.write("%.2f" % q56_mass_pct, "% of people, which are", q56_mass_count, "person(s), have the tool to make mass entries.")
 
     #connectivity with the core HR function
     q57_connectivity_count_yes = (filtered_data.iloc[:,57] == 'Yes').sum()
@@ -1514,6 +1501,18 @@ if dashboard == 'Section 6: Payroll':
     st.write("Connectivity with the Core HR/Administration Function")
     st.write("In the payroll team," "%.2f" % q57_connectivity_pct_yes, "% of people, which are", q57_connectivity_count_yes, "person(s), have connectivity with the core HR function." "\n" "%.2f" % q57_connectivity_pct_no, "% of people, which are", q57_connectivity_count_no, "person(s), do not have connectivity with the core HR function." "\n" "%.2f" % q57_connectivity_pct_not_core, "% of people, which are", q57_connectivity_count_not_core, "person(s), do not have this type of system currently.")
 
+    #connectivity with the core HR function
+    q58_connectivity_count_yes = (filtered_data.iloc[:,58] == 'Yes').sum()
+    q58_connectivity_pct_yes = q58_connectivity_count_yes/q53_global_count * 100
+
+    q58_connectivity_count_no = (filtered_data.iloc[:,58] == 'No').sum()
+    q58_connectivity_pct_no = q58_connectivity_count_no/q53_global_count * 100
+
+    q58_connectivity_count_not_core = (filtered_data.iloc[:,58] == 'I do not have this type of system currently').sum()
+    q58_connectivity_pct_not_core = q58_connectivity_count_not_core/q53_global_count * 100
+
+    st.write("Connectivity with the Core HR/Administration Function")
+    st.write("In the payroll team," "%.2f" % q58_connectivity_pct_yes, "% of people, which are", q58_connectivity_count_yes, "person(s), have connectivity with the core HR function." "\n" "%.2f" % q58_connectivity_pct_no, "% of people, which are", q58_connectivity_count_no, "person(s), do not have connectivity with the core HR function." "\n" "%.2f" % q58_connectivity_pct_not_core, "% of people, which are", q58_connectivity_count_not_core, "person(s), do not have this type of system currently.")
 
 
 
@@ -1529,6 +1528,122 @@ if dashboard == 'Section 7: Time Management':
         (data['Function'].isin(selected_function)) &
         (data['Location'].isin(selected_location))
     ]
+
+    #part of time management team
+    q59_time_management_count = (filtered_data.iloc[:,59] == 'Yes').sum()
+    q59_time_management_pct = q59_time_management_count/len(filtered_data) * 100
+
+    st.write("Time Management Team")
+    st.write("%.2f" % q59_time_management_pct, "% of people, which are", q59_time_management_count, "person(s), are part of the time management team.")
+
+    # do you have a time management system
+    q60_data = filtered_data.iloc[:,60]
+    q60_yes_count = (q60_data == 'Yes').sum()
+    q60_yes_pct = q60_yes_count/q59_time_management_count * 100
+
+    st.write("Time Management System")
+    st.write("%.2f" % q60_yes_pct, "% of people, which are", q60_yes_count, "person(s), have a time management system.")
+
+    #time management satisfaction
+    q61_data = pd.DataFrame({'time_management_satisfaction': filtered_data.iloc[:, 61]})
+    q61_data.dropna(inplace=True)
+
+    # Count the occurrences of each score
+    time_management_satisfaction_counts = q61_data['time_management_satisfaction'].value_counts().reset_index()
+    time_management_satisfaction_counts.columns = ['time_management_satisfaction', 'count']
+
+    # Create a dictionary to map scores to categories
+    score_to_category = {
+        1: 'Very Dissatisfied',
+        2: 'Dissatisfied',
+        3: 'Neutral',
+        4: 'Satisfied',
+        5: 'Very Satisfied'
+    }
+
+    # Create a new column 'category' by mapping the 'time_management_satisfaction' column to the categories
+    time_management_satisfaction_counts['category'] = time_management_satisfaction_counts['time_management_satisfaction'].map(score_to_category)
+
+    # Calculate percentage
+    time_management_satisfaction_counts['percentage'] = time_management_satisfaction_counts['count'] / time_management_satisfaction_counts['count'].sum() * 100
+    
+    # Sort time management by 'time_management_satisfaction' in descending order
+    time_management_satisfaction_counts = time_management_satisfaction_counts.sort_values('time_management_satisfaction', ascending=False)
+
+    # Create a horizontal bar chart
+    fig40 = px.bar(time_management_satisfaction_counts, x='percentage', y='time_management_satisfaction', text='count', orientation='h', color='category',
+                  color_discrete_map={
+                      'Very Dissatisfied': '#C9190B',
+                      'Dissatisfied': '#EC7A08',
+                      'Neutral': '#F0AB00',
+                      'Satisfied': '#519DE9',
+                      'Very Satisfied': '#004B95'
+                  })
+
+    # Calculate median score
+    median_score_61 = q61_data['time_management_satisfaction'].median()
+
+    # Determine the color based on the median score
+    if median_score_61 < 2:
+        color = 'red'
+    elif median_score_61 < 3:
+        color = 'orange'
+    elif median_score_61 < 4:
+        color = 'yellow'
+    else:
+        color = 'green'
+    
+    # Display the median score in a text box
+    st.markdown(f'<p style="color: {color};">Median Time Management Satisfaction Score: {median_score_61:.2f}</p>', unsafe_allow_html=True)
+
+    st.plotly_chart(fig40, use_container_width=True)
+
+    #self-service
+    q62_yes = (filtered_data.iloc[:,62] == 'Yes').sum()
+    q62_yes_pct = q62_yes/q59_time_management_count * 100
+
+    st.write("Self-Service")
+    st.write("%.2f" % q62_yes_pct, "% of people, which are", q62_yes, "person(s), have a self-service for the employees.")
+
+    #vacation counters
+    q63_yes = (filtered_data.iloc[:,63] == 'Yes').sum()
+    q63_yes_pct = q63_yes/q59_time_management_count * 100
+
+    st.write("Vacation Counters")
+    st.write("%.2f" % q63_yes_pct, "% of people, which are", q63_yes, "person(s), have the system allow employees to view their vacation counters (entitlement / taken / balance).")
+
+    #cover shift scheduling shifts
+    q64_yes = (filtered_data.iloc[:,64] == 'Yes').sum()
+    q64_yes_pct = q64_yes/q59_time_management_count * 100
+
+    st.write("Cover Shift Scheduling Shifts")
+    st.write("%.2f" % q64_yes_pct, "% of people, which are", q64_yes, "person(s), have the system cover all the shift scheduling functions needed.")
+
+    #capability to run all the report needed
+    q65_yes = (filtered_data.iloc[:,65] == 'Yes').sum()
+    q65_yes_pct = q65_yes/q59_time_management_count * 100
+
+    st.write("Capability to Run All the Reports Needed")
+    st.write("%.2f" % q65_yes_pct, "% of people, which are", q65_yes, "person(s), have the capability to run all the report needed.")
+
+    #allow employees to take their own leave
+    q67_yes = (filtered_data.iloc[:,67] == 'Yes').sum()
+    q67_yes_pct = q67_yes/q59_time_management_count * 100
+
+    st.write("Allow Employees to Take Their Own Leave")
+    st.write("%.2f" % q67_yes_pct, "% of people, which are", q67_yes, "person(s), have the system allow employees to take their own leave, with workflow validation by their manager or HR.")
+
+    #automatically take retroactive items into account
+    q68_yes = (filtered_data.iloc[:,68] == 'Yes').sum()
+    q68_yes_pct = q68_yes/q59_time_management_count * 100
+
+    st.write("Automatically Take Retroactive Items into Account")
+    st.write("%.2f" % q68_yes_pct, "% of people, which are", q68_yes, "person(s), have the system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1).")
+
+    
+
+
+
 
 
 if dashboard == 'Section 8: User Experience':
