@@ -1365,12 +1365,12 @@ if dashboard == 'Section 6: Payroll':
     ]
 
     #Payroll team
-    q48_compensation_count = (filtered_data.iloc[:,48] == 'Yes').sum()
-    q48_compensation_pct = q48_compensation_count/len(filtered_data) * 100
+    q48_payroll_count = (filtered_data.iloc[:,48] == 'Yes').sum()
+    q48_payroll_pct = q48_payroll_count/len(filtered_data) * 100
 
     st.write("Payroll Team")
     
-    st.write("%.2f" % q48_compensation_pct, "% of people, which are", q48_compensation_count, "person(s), are part of the payroll team.")
+    st.write("%.2f" % q48_payroll_pct, "% of people, which are", q48_payroll_count, "person(s), are part of the payroll team.")
 
     # Extract the satisfaction scores column
     q49_data = pd.DataFrame({'Payroll_satisfaction': filtered_data.iloc[:, 49]})
@@ -1443,7 +1443,7 @@ if dashboard == 'Section 6: Payroll':
 
     #cover legal updates
     q51_legal_count = (filtered_data.iloc[:,51] == 'Yes').sum()
-    q51_legal_pct = q51_legal_count/q48_compensation_count * 100
+    q51_legal_pct = q51_legal_count/q48_payroll_count * 100
 
     st.write("Cover Legal Updates")
     st.write("%.2f" % q51_legal_pct, "% of people, which are", q51_legal_count, "person(s), have the systems cover legal updates.")
@@ -1466,56 +1466,53 @@ if dashboard == 'Section 6: Payroll':
 
     #global platform or not
     q54_global_count = (filtered_data.iloc[:,54] == 'Yes').sum()
-    q54_global_pct = q54_global_count/q48_compensation_count * 100
+    q54_global_pct = q54_global_count/q48_payroll_count * 100
     st.write("Global Platform")
     st.write("If the payroll system is used in several countries," "%.2f" % q54_global_pct, "% of people, which are", q54_global_count, "person(s), have a global platform for consolidating all the employees' country data.")
 
     #automatically generate KPIs relating to the payroll
     q55_auto_count_yes = (filtered_data.iloc[:,55] == 'Yes').sum()
-    q55_auto_pct_yes = q55_auto_count_yes/q53_global_count * 100
+    q55_auto_pct_yes = q55_auto_count_yes/q54_global_count * 100
 
     q55_auto_count_no = (filtered_data.iloc[:,55] == 'No').sum()
-    q55_auto_pct_no = q55_auto_count_no/q53_global_count* 100
+    q55_auto_pct_no = q55_auto_count_no/q54_global_count* 100
 
     q55_auto_count_not_concerned = (filtered_data.iloc[:,55] == 'Not concerned').sum()
-    q55_auto_pct_not_concerned = q55_auto_count_not_concerned/q53_global_count * 100
+    q55_auto_pct_not_concerned = q55_auto_count_not_concerned/q54_global_count * 100
     st.write("Automatically Generate KPIs")
     st.write("Among the people who have a global platform for consolidating all the employees' country data," "%.2f" % q55_auto_pct_yes, "% of people, which are", q55_auto_count_yes, "person(s), automatically generate KPIs relating to the payroll." "\n" "%.2f" % q55_auto_pct_no, "% of people, which are", q55_auto_count_no, "person(s), do not automatically generate KPIs relating to the payroll." "\n" "%.2f" % q55_auto_pct_not_concerned, "% of people, which are", q55_auto_count_not_concerned, "person(s), are not concerned about automatically generating KPIs relating to the payroll.")
 
     #mass entries ability
     q56_mass_count = (filtered_data.iloc[:,56] == 'Yes').sum()
-    q56_mass_pct = q56_mass_count/q53_global_count * 100
+    q56_mass_pct = q56_mass_count/q48_payroll_count * 100
     st.write("Mass Entries Ability")
     st.write("%.2f" % q56_mass_pct, "% of people, which are", q56_mass_count, "person(s), have the tool to make mass entries.")
 
     #connectivity with the core HR function
     q57_connectivity_count_yes = (filtered_data.iloc[:,57] == 'Yes').sum()
-    q57_connectivity_pct_yes = q57_connectivity_count_yes/q53_global_count * 100
+    q57_connectivity_pct_yes = q57_connectivity_count_yes/q48_payroll_count * 100
 
     q57_connectivity_count_no = (filtered_data.iloc[:,57] == 'No').sum()
-    q57_connectivity_pct_no = q57_connectivity_count_no/q53_global_count * 100
+    q57_connectivity_pct_no = q57_connectivity_count_no/q48_payroll_count * 100
 
     q57_connectivity_count_not_core = (filtered_data.iloc[:,57] == 'I do not have this type of system currently').sum()
-    q57_connectivity_pct_not_core = q57_connectivity_count_not_core/q53_global_count * 100
+    q57_connectivity_pct_not_core = q57_connectivity_count_not_core/q48_payroll_count * 100
 
     st.write("Connectivity with the Core HR/Administration Function")
     st.write("In the payroll team," "%.2f" % q57_connectivity_pct_yes, "% of people, which are", q57_connectivity_count_yes, "person(s), have connectivity with the core HR function." "\n" "%.2f" % q57_connectivity_pct_no, "% of people, which are", q57_connectivity_count_no, "person(s), do not have connectivity with the core HR function." "\n" "%.2f" % q57_connectivity_pct_not_core, "% of people, which are", q57_connectivity_count_not_core, "person(s), do not have this type of system currently.")
 
     #connectivity with the core HR function
     q58_connectivity_count_yes = (filtered_data.iloc[:,58] == 'Yes').sum()
-    q58_connectivity_pct_yes = q58_connectivity_count_yes/q53_global_count * 100
+    q58_connectivity_pct_yes = q58_connectivity_count_yes/q48_payroll_count * 100
 
     q58_connectivity_count_no = (filtered_data.iloc[:,58] == 'No').sum()
-    q58_connectivity_pct_no = q58_connectivity_count_no/q53_global_count * 100
+    q58_connectivity_pct_no = q58_connectivity_count_no/q48_payroll_count * 100
 
     q58_connectivity_count_not_core = (filtered_data.iloc[:,58] == 'I do not have this type of system currently').sum()
-    q58_connectivity_pct_not_core = q58_connectivity_count_not_core/q53_global_count * 100
+    q58_connectivity_pct_not_core = q58_connectivity_count_not_core/q48_payroll_count * 100
 
     st.write("Connectivity with the Core HR/Administration Function")
     st.write("In the payroll team," "%.2f" % q58_connectivity_pct_yes, "% of people, which are", q58_connectivity_count_yes, "person(s), have connectivity with the core HR function." "\n" "%.2f" % q58_connectivity_pct_no, "% of people, which are", q58_connectivity_count_no, "person(s), do not have connectivity with the core HR function." "\n" "%.2f" % q58_connectivity_pct_not_core, "% of people, which are", q58_connectivity_count_not_core, "person(s), do not have this type of system currently.")
-
-
-
 
 
 if dashboard == 'Section 7: Time Management':
@@ -1641,10 +1638,6 @@ if dashboard == 'Section 7: Time Management':
     st.write("%.2f" % q68_yes_pct, "% of people, which are", q68_yes, "person(s), have the system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1).")
 
     
-
-
-
-
 
 if dashboard == 'Section 8: User Experience':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
