@@ -1443,7 +1443,7 @@ if dashboard == 'Section 6: Payroll':
 
     #cover legal updates
     q51_legal_count = (filtered_data.iloc[:,51] == 'Yes').sum()
-    q51_legal_pct = q51_legal_count/len(q48_compensation_count) * 100
+    q51_legal_pct = q51_legal_count/q48_compensation_count * 100
 
     st.write("Cover Legal Updates")
     st.write("%.2f" % q51_legal_pct, "% of people, which are", q51_legal_count, "person(s), have the systems cover legal updates.")
@@ -1466,19 +1466,19 @@ if dashboard == 'Section 6: Payroll':
 
     #global platform or not
     q53_global_count = (filtered_data.iloc[:,53] == 'Yes').sum()
-    q53_global_pct = q53_global_count/len(q48_compensation_count) * 100
+    q53_global_pct = q53_global_count/q48_compensation_count * 100
     st.write("Global Platform")
     st.write("If the payroll system is used in several countries," "%.2f" % q53_global_pct, "% of people, which are", q53_global_count, "person(s), have a global platform for consolidating all the employees' country data.")
 
     #automatically generate KPIs relating to the payroll
     q54_auto_count_yes = (filtered_data.iloc[:,54] == 'Yes').sum()
-    q54_auto_pct_yes = q54_auto_count_yes/len(q53_global_count) * 100
+    q54_auto_pct_yes = q54_auto_count_yes/q53_global_count * 100
 
     q54_auto_count_no = (filtered_data.iloc[:,54] == 'No').sum()
-    q54_auto_pct_no = q54_auto_count_no/len(q53_global_count) * 100
+    q54_auto_pct_no = q54_auto_count_no/q53_global_count* 100
 
     q54_auto_count_not_concerned = (filtered_data.iloc[:,54] == 'Not concerned').sum()
-    q54_auto_pct_not_concerned = q54_auto_count_not_concerned/len(q53_global_count) * 100
+    q54_auto_pct_not_concerned = q54_auto_count_not_concerned/q53_global_count * 100
     st.write("Automatically Generate KPIs")
     st.write("Among the people who have a global platform for consolidating all the employees' country data," "%.2f" % q54_auto_pct_yes, "% of people, which are", q54_auto_count_yes, "person(s), automatically generate KPIs relating to the payroll." "\n" "%.2f" % q54_auto_pct_no, "% of people, which are", q54_auto_count_no, "person(s), do not automatically generate KPIs relating to the payroll." "\n" "%.2f" % q54_auto_pct_not_concerned, "% of people, which are", q54_auto_count_not_concerned, "person(s), are not concerned about automatically generating KPIs relating to the payroll.")
 
@@ -1490,26 +1490,26 @@ if dashboard == 'Section 6: Payroll':
 
     #connectivity with the time management system
     q56_connectivity_count_yes = (filtered_data.iloc[:,56] == 'Yes').sum()
-    q56_connectivity_pct_yes = q56_connectivity_count_yes/len(q53_global_count) * 100
+    q56_connectivity_pct_yes = q56_connectivity_count_yes/q53_global_count * 100
 
     q56_connectivity_count_no = (filtered_data.iloc[:,56] == 'No').sum()
-    q56_connectivity_pct_no = q56_connectivity_count_no/len(q53_global_count) * 100
+    q56_connectivity_pct_no = q56_connectivity_count_no/q53_global_count * 100
 
     q56_connectivity_count_not_management = (filtered_data.iloc[:,56] == 'I do not have a time management system currently').sum()
-    q56_connectivity_pct_not_management = q56_connectivity_count_not_management/len(q53_global_count) * 100
+    q56_connectivity_pct_not_management = q56_connectivity_count_not_management/q53_global_count * 100
 
     st.write("Connectivity with the Time Management System")
     st.write("In the payroll team," "%.2f" % q56_connectivity_pct_yes, "% of people, which are", q56_connectivity_count_yes, "person(s), have connectivity with the time management system." "\n" "%.2f" % q56_connectivity_pct_no, "% of people, which are", q56_connectivity_count_no, "person(s), do not have connectivity with the time management system." "\n" "%.2f" % q56_connectivity_pct_not_management, "% of people, which are", q56_connectivity_count_not_management, "person(s), do not have a time management system currently.")
 
     #connectivity with the core HR function
     q57_connectivity_count_yes = (filtered_data.iloc[:,57] == 'Yes').sum()
-    q57_connectivity_pct_yes = q57_connectivity_count_yes/len(q53_global_count) * 100
+    q57_connectivity_pct_yes = q57_connectivity_count_yes/q53_global_count * 100
 
     q57_connectivity_count_no = (filtered_data.iloc[:,57] == 'No').sum()
-    q57_connectivity_pct_no = q57_connectivity_count_no/len(q53_global_count) * 100
+    q57_connectivity_pct_no = q57_connectivity_count_no/q53_global_count * 100
 
     q57_connectivity_count_not_core = (filtered_data.iloc[:,57] == 'I do not have this type of system currently').sum()
-    q57_connectivity_pct_not_core = q57_connectivity_count_not_core/len(q53_global_count) * 100
+    q57_connectivity_pct_not_core = q57_connectivity_count_not_core/q53_global_count * 100
 
     st.write("Connectivity with the Core HR/Administration Function")
     st.write("In the payroll team," "%.2f" % q57_connectivity_pct_yes, "% of people, which are", q57_connectivity_count_yes, "person(s), have connectivity with the core HR function." "\n" "%.2f" % q57_connectivity_pct_no, "% of people, which are", q57_connectivity_count_no, "person(s), do not have connectivity with the core HR function." "\n" "%.2f" % q57_connectivity_pct_not_core, "% of people, which are", q57_connectivity_count_not_core, "person(s), do not have this type of system currently.")
