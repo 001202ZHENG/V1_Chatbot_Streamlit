@@ -1351,10 +1351,6 @@ if dashboard == 'Section 5: Compensation':
       "%.2f" % q47_data_available_pct, "% of people, which are", q47_data_available_count,
       "person(s), have different dates for the Variable Pay Campaign compared to the Compensation Campaign.")
     
-    
-
-
-
 
 
 if dashboard == 'Section 6: Payroll':
@@ -1362,13 +1358,189 @@ if dashboard == 'Section 6: Payroll':
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
     selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
 
+    filtered_data = data[
+        (data['Role'].isin(selected_role)) &
+        (data['Function'].isin(selected_function)) &
+        (data['Location'].isin(selected_location))
+    ]
+
+    #Payroll team
+    q48_compensation_count = (filtered_data[:,48] == 'Yes').sum()
+    q48_compensation_pct = q36_compensation_count/len(filtered_data) * 100
+
+    st.write("Payroll Team")
+    
+    st.write("%.2f" % q48_compensation_pct, "% of people, which are", q48_compensation_count, "person(s), are part of the payroll team.")
+
+    # Extract the satisfaction scores column
+    q49_data = pd.DataFrame({'Payroll_satisfaction': filtered_data.iloc[:, 49]})
+
+    # Count the occurrences of each score
+    payroll_satisfaction_counts = q49_data['Payroll_satisfaction'].value_counts().reset_index()
+    payroll_satisfaction_counts.columns = ['Payroll_satisfaction', 'count']
+    
+    # Create a dictionary to map scores to categories
+    score_to_category = {
+        1: 'Very Dissatisfied',
+        2: 'Dissatisfied',
+        3: 'Neutral',
+        4: 'Satisfied',
+        5: 'Very Satisfied'
+    }
+
+    # Create a new column 'Payroll_satisfaction_category' by mapping the 'Payroll_satisfaction' column to the categories
+    payroll_satisfaction_counts['Payroll_satisfaction_category'] = payroll_satisfaction_counts['Payroll_satisfaction'].map(score_to_category)
+
+    # Calculate percentage
+    payroll_satisfaction_counts['percentage'] = payroll_satisfaction_counts['count'] / payroll_satisfaction_counts['count'].sum() * 100
+
+    # Sort payroll_satisfaction_counts by 'Payroll_satisfaction' in descending order
+    payroll_satisfaction_counts = payroll_satisfaction_counts.sort_values('Payroll_satisfaction', ascending=False)
+
+    # Create a horizontal bar chart
+    fig37 = px.bar(payroll_satisfaction_counts, x='percentage', y='Payroll_satisfaction_category', text='count', orientation='h', color='Payroll_satisfaction_category',
+                  color_discrete_map={
+                      'Very Dissatisfied': '#C9190B',
+                      'Dissatisfied': '#EC7A08',
+                      'Neutral': '#F0AB00',
+                      'Satisfied': '#519DE9',
+                      'Very Satisfied': '#004B95'
+                  })
+
+    # Calculate median score
+    median_score_49 = q49_data['Payroll_satisfaction'].median()
+
+    # Determine the color based on the median score
+    if median_score_49 < 2:
+        color = 'red'
+    elif median_score_49 < 3:
+        color = 'orange'
+    elif median_score_49 < 4:
+        color = 'yellow'
+    else:
+        color = 'green'
+    
+    # Display the median score in a text box
+    st.markdown(f'<p style="color: {color};">Median Payroll Satisfaction Score: {median_score_49:.2f}</p>', unsafe_allow_html=True)
+
+    st.plotly_chart(fig37, use_container_width=True)
+
+    #internally or outsourced
+    q50_data = filtered_data.iloc[:,50]
+    
+    # Count the occurrences of each value
+    q50_counts = q50_data.value_counts().reset_index()
+    q50_counts.columns = ['internally or outsourced', 'count']
+
+    # Calculate percentage
+    q50_counts['percentage'] = q50_counts['count'] / q50_counts['count'].sum() * 100
+
+    # Create a horizontal bar chart
+    fig38 = px.bar(q50_counts, x='percentage', y='internally or outsourced', text='count', orientation='h', color='internally or outsourced', title='Do you realize your payroll activities internally or is it outsourced ?')
+
+    #show the chart
+    st.plotly_chart(fig38, use_container_width=True)
+
+    #cover legal updates
+    q51_legal_count = (filtered_data.iloc[:,51] == 'Yes').sum()
+    q51_legal_pct = q51_legal_count/len(q48_compensation_count) * 100
+
+    st.write("Cover Legal Updates")
+    st.write("%.2f" % q51_legal_pct, "% of people, which are", q51_legal_count, "person(s), have the systems cover legal updates.")
+
+    #autonomous or outsourced
+    q52_data = filtered_data.iloc[:,52]
+
+    # Count the occurrences of each value
+    q52_counts = q52_data.value_counts().reset_index()
+    q52_counts.columns = ['autonomous or outsourced', 'count']
+
+    # Calculate percentage
+    q52_counts['percentage'] = q52_counts['count'] / q52_counts['count'].sum() * 100
+
+    # Create a horizontal bar chart
+    fig39 = px.bar(q52_counts, x='percentage', y='autonomous or outsourced', text='count', orientation='h', color='autonomous or outsourced', title='Are you autonomous when it comes to updating simple data, or do you systematically rely on outside firms for updates?')
+
+    #show the chart
+    st.plotly_chart(fig39, use_container_width=True)
+
+    #global platform or not
+    q53_global_count = (filtered_data.iloc[:,53] == 'Yes').sum()
+    q53_global_pct = q53_global_count/len(q48_compensation_count) * 100
+    st.write("Global Platform")
+    st.write("If the payroll system is used in several countries," "%.2f" % q53_global_pct, "% of people, which are", q53_global_count, "person(s), have a global platform for consolidating all the employees' country data.")
+
+    #automatically generate KPIs relating to the payroll
+    q54_auto_count_yes = (filtered_data.iloc[:,54] == 'Yes').sum()
+    q54_auto_pct_yes = q54_auto_count_yes/len(q53_global_count) * 100
+
+    q54_auto_count_no = (filtered_data.iloc[:,54] == 'No').sum()
+    q54_auto_pct_no = q54_auto_count_no/len(q53_global_count) * 100
+
+    q54_auto_count_not_concerned = (filtered_data.iloc[:,54] == 'Not concerned').sum()
+    q54_auto_pct_not_concerned = q54_auto_count_not_concerned/len(q53_global_count) * 100
+    st.write("Automatically Generate KPIs")
+    st.write("Among the people who have a global platform for consolidating all the employees' country data," "%.2f" % q54_auto_pct_yes, "% of people, which are", q54_auto_count_yes, "person(s), automatically generate KPIs relating to the payroll." "\n" "%.2f" % q54_auto_pct_no, "% of people, which are", q54_auto_count_no, "person(s), do not automatically generate KPIs relating to the payroll." "\n" "%.2f" % q54_auto_pct_not_concerned, "% of people, which are", q54_auto_count_not_concerned, "person(s), are not concerned about automatically generating KPIs relating to the payroll.")
+
+    #mass entries ability
+    q55_mass_count = (filtered_data.iloc[:,55] == 'Yes').sum()
+    q55_mass_pct = q55_mass_count/len(q53_global_count) * 100
+    st.write("Mass Entries Ability")
+    st.write("%.2f" % q55_mass_pct, "% of people, which are", q55_mass_count, "person(s), have the tool to make mass entries.")
+
+    #connectivity with the time management system
+    q56_connectivity_count_yes = (filtered_data.iloc[:,56] == 'Yes').sum()
+    q56_connectivity_pct_yes = q56_connectivity_count_yes/len(q53_global_count) * 100
+
+    q56_connectivity_count_no = (filtered_data.iloc[:,56] == 'No').sum()
+    q56_connectivity_pct_no = q56_connectivity_count_no/len(q53_global_count) * 100
+
+    q56_connectivity_count_not_management = (filtered_data.iloc[:,56] == 'I do not have a time management system currently').sum()
+    q56_connectivity_pct_not_management = q56_connectivity_count_not_management/len(q53_global_count) * 100
+
+    st.write("Connectivity with the Time Management System")
+    st.write("In the payroll team," "%.2f" % q56_connectivity_pct_yes, "% of people, which are", q56_connectivity_count_yes, "person(s), have connectivity with the time management system." "\n" "%.2f" % q56_connectivity_pct_no, "% of people, which are", q56_connectivity_count_no, "person(s), do not have connectivity with the time management system." "\n" "%.2f" % q56_connectivity_pct_not_management, "% of people, which are", q56_connectivity_count_not_management, "person(s), do not have a time management system currently.")
+
+    #connectivity with the core HR function
+    q57_connectivity_count_yes = (filtered_data.iloc[:,57] == 'Yes').sum()
+    q57_connectivity_pct_yes = q57_connectivity_count_yes/len(q53_global_count) * 100
+
+    q57_connectivity_count_no = (filtered_data.iloc[:,57] == 'No').sum()
+    q57_connectivity_pct_no = q57_connectivity_count_no/len(q53_global_count) * 100
+
+    q57_connectivity_count_not_core = (filtered_data.iloc[:,57] == 'I do not have this type of system currently').sum()
+    q57_connectivity_pct_not_core = q57_connectivity_count_not_core/len(q53_global_count) * 100
+
+    st.write("Connectivity with the Core HR/Administration Function")
+    st.write("In the payroll team," "%.2f" % q57_connectivity_pct_yes, "% of people, which are", q57_connectivity_count_yes, "person(s), have connectivity with the core HR function." "\n" "%.2f" % q57_connectivity_pct_no, "% of people, which are", q57_connectivity_count_no, "person(s), do not have connectivity with the core HR function." "\n" "%.2f" % q57_connectivity_pct_not_core, "% of people, which are", q57_connectivity_count_not_core, "person(s), do not have this type of system currently.")
+
+
+
+
+
+
 if dashboard == 'Section 7: Time Management':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
     selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
 
+    filtered_data = data[
+        (data['Role'].isin(selected_role)) &
+        (data['Function'].isin(selected_function)) &
+        (data['Location'].isin(selected_location))
+    ]
+
+
 if dashboard == 'Section 8: User Experience':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
     selected_location = st.sidebar.multiselect('Select Location', options=data['Location'].unique(), default=data['Location'].unique())
+
+    filtered_data = data[
+        (data['Role'].isin(selected_role)) &
+        (data['Function'].isin(selected_function)) &
+        (data['Location'].isin(selected_location))
+    ]
+
+
 
