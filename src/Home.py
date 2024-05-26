@@ -1650,5 +1650,13 @@ if dashboard == 'Section 8: User Experience':
         (data['Location'].isin(selected_location))
     ]
 
+    #time well spent
+    q71_yes = (filtered_data.iloc[:,71] == 'Yes').sum()
+    q71_yes_pct = q71_yes/len(filtered_data) * 100
+
+    st.write("Time Well Spent")
+    st.write("%.2f" % q71_yes_pct, "% of people, which are", q71_yes, "person(s), think that the time spent on the system is well spent.")
+
+
 
 
