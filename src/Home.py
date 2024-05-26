@@ -1365,7 +1365,7 @@ if dashboard == 'Section 6: Payroll':
     ]
 
     #Payroll team
-    q48_compensation_count = (filtered_data[:,48] == 'Yes').sum()
+    q48_compensation_count = (filtered_data.iloc[:,48] == 'Yes').sum()
     q48_compensation_pct = q36_compensation_count/len(filtered_data) * 100
 
     st.write("Payroll Team")
