@@ -909,13 +909,6 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
 
 
 
-
-
-
-
-
-
-
 if dashboard == 'Section 3: Performance & Talent':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
@@ -1059,6 +1052,7 @@ if dashboard == 'Section 3: Performance & Talent':
     
     st.write(f"{q30_data_available_pct:.2f}% of people, which are {q30_data_available_count} person(s), are able to identify and tag their skills within the HRIS.")
 
+
 if dashboard == 'Section 4: Learning':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
     selected_function = st.sidebar.multiselect('Select Function', options=data['Function'].unique(), default=data['Function'].unique())
@@ -1156,11 +1150,6 @@ if dashboard == 'Section 4: Learning':
     st.write("Whether to Receive Recommendation on training (something wrong with the data)")
     
     st.write(f"{q34_data_available_pct:.2f}% of people, which are {q34_data_available_count} person(s), received some recommendations on training.")
-
-
-
-
-
 
 
 if dashboard == 'Section 5: Compensation':
@@ -1350,7 +1339,6 @@ if dashboard == 'Section 5: Compensation':
       "%.2f" % q47_data_available_pct, "% of people, which are", q47_data_available_count,
       "person(s), have different dates for the Variable Pay Campaign compared to the Compensation Campaign.")
     
-
 
 if dashboard == 'Section 6: Payroll':
     selected_role = st.sidebar.multiselect('Select Role', options=data['Role'].unique(), default=data['Role'].unique())
