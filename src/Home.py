@@ -192,8 +192,7 @@ dashboard = st.sidebar.radio("Select Dashboard", ('General Survey Results',
                                              'Section 5: Compensation',
                                              'Section 6: Payroll',
                                              'Section 7: Time Management',
-                                             'Section 8: User Experience',
-                                             'Chatbot'
+                                             'Section 8: User Experience'
                                              ))
 
 # Sidebar for tags selection
