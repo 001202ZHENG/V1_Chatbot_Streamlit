@@ -1694,6 +1694,78 @@ if dashboard == 'Section 8: User Experience':
     st.write("Time Well Spent")
     st.write("%.2f" % q71_yes_pct, "% of people, which are", q71_yes, "person(s), think that the time spent on the system is well spent.")
 
+    import pandas as pd
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForSeq2SeqLM
+    import torch
+    import numpy as np
+
+    def load_models():
+        # Load the tokenizers and models
+        tokenizer_1 = AutoTokenizer.from_pretrained("j-hartmann/emotion-english-distilroberta-base")
+        model_1 = AutoModelForSequenceClassification.from_pretrained("j-hartmann/emotion-english-distilroberta-base")
+
+        tokenizer_2 = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-emotion")
+        model_2 = AutoModelForSeq2SeqLM.from_pretrained("mrm8488/t5-base-finetuned-emotion")
+
+        return tokenizer_1, model_1, tokenizer_2, model_2
+
+    def predict_emotions_hybrid(df, text_columns):
+        tokenizer_1, model_1, tokenizer_2, model_2 = load_models()
+
+        emotion_labels_1 = ["anger", "disgust", "fear", "joy", "neutral", "sadness", "surprise"]
+        emotion_labels_2 = ["anger", "joy", "optimism", "sadness"]
+
+        for column in text_columns:
+            if column not in df.columns:
+                raise ValueError(f"Column '{column}' does not exist in DataFrame")
+            df[column] = df[column].fillna("")
+
+        for column in text_columns:
+            # Predictions from the first model
+            encoded_texts_1 = tokenizer_1(df[column].tolist(), padding=True, truncation=True, return_tensors='pt')
+            with torch.no_grad():
+                outputs_1 = model_1(**encoded_texts_1)
+                probabilities_1 = torch.nn.functional.softmax(outputs_1.logits, dim=-1)
+
+            # Predictions from the second model
+            encoded_texts_2 = tokenizer_2(df[column].tolist(), padding=True, truncation=True, return_tensors='pt')
+            with torch.no_grad():
+                outputs_2 = model_2.generate(input_ids=encoded_texts_2['input_ids'], attention_mask=encoded_texts_2['attention_mask'])
+                predicted_labels_2 = [tokenizer_2.decode(output, skip_special_tokens=True) for output in outputs_2]
+                probabilities_2 = torch.tensor([[1 if label == emotion else 0 for emotion in emotion_labels_2] for label in predicted_labels_2])
+
+            # Adjust probabilities_2 to match the length of emotion_labels_1 by filling missing labels with zero probabilities
+            adjusted_probabilities_2 = torch.zeros(probabilities_2.size(0), len(emotion_labels_1))
+            for i, emotion in enumerate(emotion_labels_2):
+                if emotion in emotion_labels_1:
+                    adjusted_probabilities_2[:, emotion_labels_1.index(emotion)] = probabilities_2[:, i]
+
+            # Average the probabilities
+            averaged_probabilities = (probabilities_1 + adjusted_probabilities_2) / 2
+            predicted_emotions = [emotion_labels_1[probability.argmax()] for probability in averaged_probabilities]
+
+            df[f'{column}_predicted_emotion'] = predicted_emotions
+
+        return df
+
+    # Load the DataFrame from the Excel file
+    df = pd.read_excel('/content/data.xlsx')
+
+    # Specify the columns to analyze
+    columns_to_analyze = [
+        'What could be improved or what kind of format is missing today ?',
+        'In the context of your job, what are the most valuable activities your current HRIS enable you to do?',
+        'In the context of your job, what do your current HRIS fail to address?',
+        'In 3 words, how would you describe your current user-experience with the HRIS ?'
+    ]
+
+    # Run the function
+    df_with_emotions = predict_emotions_hybrid(df, columns_to_analyze)
+
+    # Display the DataFrame with predicted emotions
+    df_with_emotions.head()
+
+
 
 
 
