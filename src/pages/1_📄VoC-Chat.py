@@ -36,10 +36,10 @@ layout.show_header("PDF, TXT, CSV")
 # 确保聊天记录和上传的文件在 session state 中初始化
 if 'chat_history' not in st.session_state:
     st.session_state['chat_history'] = []
-if 'uploaded_file' not in st.session_state:
-    st.session_state['uploaded_file'] = None
-if 'ready' not in st.session_state:
-    st.session_state['ready'] = False
+#if 'uploaded_file' not in st.session_state:
+#    st.session_state['uploaded_file'] = None
+#if 'ready' not in st.session_state:
+#    st.session_state['ready'] = False
 
 user_api_key = utils.load_api_key()
 
