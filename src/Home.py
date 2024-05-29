@@ -10,11 +10,7 @@ import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
 
-# 确保聊天记录和上传的文件在 session state 中初始化
-if 'chat_history' not in st.session_state:
-    st.session_state['chat_history'] = []
-if 'uploaded_file' not in st.session_state:
-    st.session_state['uploaded_file'] = None
+
     
 # Sets the page to wide layout.
 st.set_page_config(layout="wide")
