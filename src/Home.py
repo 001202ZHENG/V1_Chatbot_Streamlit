@@ -588,6 +588,8 @@ if dashboard == "Section 1: Employee Experience":
 
     categories.append('None')
 
+    categories = categories.dropna()
+
     q4_q5_count['HR Function'] = pd.Categorical(q4_q5_count['HR Function'], categories=categories, ordered=True)
 
     # Reshape data into tidy format
