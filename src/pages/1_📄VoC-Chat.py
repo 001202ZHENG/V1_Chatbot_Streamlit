@@ -36,7 +36,8 @@ layout.show_header("PDF, TXT, CSV")
 # 确保聊天记录和上传的文件在 session state 中初始化
 if 'chat_history' not in st.session_state:
     st.session_state['chat_history'] = []
-
+if 'uploaded_file' not in st.session_state:
+    st.session_state['uploaded_file'] = None
 
 user_api_key = utils.load_api_key()
 
@@ -105,7 +106,7 @@ else:
                         with st.expander("Display the agent's thoughts"):
                             st.write(cleaned_thoughts)
 
-                    history.generate_messages(response_container)
+                history.generate_messages(response_container)
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
