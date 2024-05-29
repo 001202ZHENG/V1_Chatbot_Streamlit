@@ -126,10 +126,3 @@ else:
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
-        #新加的代码    
-        if st.session_state['chat_history']:
-            for entry in st.session_state['chat_history']:
-                history.append(entry['mode'], entry['message'])
-
-            # 显示已保存的聊天历史
-            history.generate_messages(response_container)
