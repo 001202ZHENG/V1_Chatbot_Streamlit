@@ -77,10 +77,10 @@ else:
                     if st.session_state['chat_history']:
                         for entry in st.session_state['chat_history']:
                             history.append(entry['mode'], entry['message'])
-                            
+
                     # Reset the chat history if button clicked
-                    if st.session_state["reset_chat"]:
-                        history.reset(uploaded_file)
+                    #if st.session_state["reset_chat"]:
+                    #    history.reset(uploaded_file)
 
                     if is_ready:
                         # Update the chat history and display the chat messages
