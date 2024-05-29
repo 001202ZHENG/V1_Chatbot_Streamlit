@@ -10,6 +10,7 @@ import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
 
+
 # Sets the page to wide layout.
 st.set_page_config(layout="wide")
 
@@ -1692,6 +1693,7 @@ if dashboard == 'Section 8: User Experience':
 
     st.write("Time Well Spent")
     st.write("%.2f" % q71_yes_pct, "% of people, which are", q71_yes, "person(s), think that the time spent on the system is well spent.")
+
 
 
 
