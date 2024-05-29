@@ -108,7 +108,7 @@ def render_header(title, subtitle=None):
 if dashboard == 'General Survey Results':
     render_header("General Survey Results", "A summary of the respondent profiles and the general sentiment analysis")
 elif dashboard == 'Section 1: Employee Experience':
-    render_header("General Employee Experience")
+    render_header("Employee Experience", "General HR Services Evaluation")
 elif dashboard == 'Section 2: Recruiting & Onboarding':
     render_header("Recruiting & Onboarding")
 elif dashboard == 'Section 3: Performance & Talent':
@@ -175,7 +175,6 @@ if dashboard == "General Survey Results":
         f'<div class="top-bar" style="font-weight: bold; font-size: 20px; padding: 10px 0; color: #333333;">{len(filtered_data)} total survey respondents</div>',
         unsafe_allow_html=True
     )
-
 
     map_ratio = 0.55
     barcharts_ratio = 1 - map_ratio
@@ -255,6 +254,110 @@ if dashboard == "General Survey Results":
 
 ############ GENERAL DASHBOARD ENDS ############
 
+##### THIS SECTION FOR SATISFACTION SCORES START ####
+# MARIAS SCORE DISTRIBUTION FUNCTION
+def score_distribution(column_index, title):
+    # Extract the data series based on the column index
+    data_series = data.iloc[:, column_index]
+    
+    # Calculate the percentage of each response
+    value_counts = data_series.value_counts(normalize=True).sort_index() * 100
+    categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+    ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': value_counts})
+    
+    # Calculate the median score
+    scores = np.repeat([1, 2, 3, 4, 5], data_series.value_counts().sort_index())
+    median_score = np.median(scores)
+    
+    # Create a horizontal bar chart with Plotly
+    fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage',
+                 title=title, text='Percentage',
+                 orientation='h',
+                 color='Satisfaction Level', color_discrete_map={
+                     'Very Dissatisfied': px.colors.diverging.RdYlGn[0],  # Red
+                     'Dissatisfied': px.colors.diverging.RdYlGn[1],        # Less red
+                     'Neutral': px.colors.diverging.RdYlGn[6],             # Neutral (middle)
+                     'Satisfied': px.colors.diverging.RdYlGn[8],           # Less green
+                     'Very Satisfied': px.colors.diverging.RdYlGn[10]       # Green
+                 })
+    
+    # Remove legend and axes titles
+    fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None)
+    
+    # Format text on bars
+    fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+    
+    # Improve layout aesthetics
+    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+    
+    # Use Streamlit to display the Plotly chart
+    st.plotly_chart(fig)
+    
+    # Display median score graphically
+    star_full = '★'
+    star_empty = '☆'
+    median_visual = star_full * int(median_score) + star_empty * (5 - int(median_score))
+    st.markdown(f"**Median Score:** {median_visual}")
+
+
+# Function to plot satisfaction proportions -- OLD
+def plot_satisfaction_proportions(data_series, title):
+    # Calculate satisfaction proportions
+    score_counts = data_series.value_counts().sort_index().astype(int)
+    total_satisfied = score_counts.get(4, 0) + score_counts.get(5, 0)
+    total_dissatisfied = score_counts.get(1, 0) + score_counts.get(2, 0) + score_counts.get(3, 0)
+    
+    # Calculate proportions
+    dissatisfied_proportions = [score_counts.get(i, 0) / total_dissatisfied if total_dissatisfied > 0 else 0 for i in range(1, 4)]
+    satisfied_proportions = [score_counts.get(i, 0) / total_satisfied if total_satisfied > 0 else 0 for i in range(4, 6)]
+
+    # Create the plotly figure for stacked bar chart
+    fig = go.Figure()
+
+    # Add 'Dissatisfied' segments
+    cumulative_size = 0
+    colors_dissatisfied = sns.color_palette("Blues_d", n_colors=3)
+    for i, prop in enumerate(dissatisfied_proportions):
+        fig.add_trace(go.Bar(
+            x=[prop],
+            y=['Dissatisfied'],
+            orientation='h',
+            name=f'{i+1}',
+            marker=dict(color=f'rgb({colors_dissatisfied[i][0]*255},{colors_dissatisfied[i][1]*255},{colors_dissatisfied[i][2]*255})'),
+            base=cumulative_size
+        ))
+        cumulative_size += prop
+
+    # Add 'Satisfied' segments
+    cumulative_size = 0
+    colors_satisfied = sns.color_palette("Greens_d", n_colors=2)
+    for i, prop in enumerate(satisfied_proportions):
+        fig.add_trace(go.Bar(
+            x=[prop],
+            y=['Satisfied'],
+            orientation='h',
+            name=f'{i+4}',
+            marker=dict(color=f'rgb({colors_satisfied[i][0]*255},{colors_satisfied[i][1]*255},{colors_satisfied[i][2]*255})'),
+            base=cumulative_size
+        ))
+        cumulative_size += prop
+
+    # Update layout and display in Streamlit
+    fig.update_layout(
+        title=title,
+        barmode='stack',
+        annotations=[
+            dict(x=1.05, y=0, text=f'Total: {total_dissatisfied}', showarrow=False),
+            dict(x=1.05, y=1, text=f'Total: {total_satisfied}', showarrow=False)
+        ]
+    )
+    fig.update_xaxes(title_text="", visible=True, showticklabels=False)
+    fig.update_yaxes(title_text="")
+
+    st.plotly_chart(fig)  # Display the plot in Streamlit
+
+##### THIS SECTION FOR SATISFACTION SCORES ENDS ####
+
 
 ##### THIS SECTION FOR SIDEBAR AND SENTIMENT ANALYSIS CHARTS START START START START ####
 # Function to create Streamlit sentiment dashboard
@@ -332,80 +435,49 @@ def sentiment_dashboard(data_series, title):
 ##### THIS SECTION FOR SIDEBAR AND SENTIMENT ANALYSIS CHARTS END END END END ####
 
 
-##### THIS SECTION FOR SATISFACTION SCORES START ####
-# Function to plot satisfaction proportions
-def plot_satisfaction_proportions(data_series, title):
-    # Calculate satisfaction proportions
-    score_counts = data_series.value_counts().sort_index().astype(int)
-    total_satisfied = score_counts.get(4, 0) + score_counts.get(5, 0)
-    total_dissatisfied = score_counts.get(1, 0) + score_counts.get(2, 0) + score_counts.get(3, 0)
-    
-    # Calculate proportions
-    dissatisfied_proportions = [score_counts.get(i, 0) / total_dissatisfied if total_dissatisfied > 0 else 0 for i in range(1, 4)]
-    satisfied_proportions = [score_counts.get(i, 0) / total_satisfied if total_satisfied > 0 else 0 for i in range(4, 6)]
-
-    # Create the plotly figure for stacked bar chart
-    fig = go.Figure()
-
-    # Add 'Dissatisfied' segments
-    cumulative_size = 0
-    colors_dissatisfied = sns.color_palette("Blues_d", n_colors=3)
-    for i, prop in enumerate(dissatisfied_proportions):
-        fig.add_trace(go.Bar(
-            x=[prop],
-            y=['Dissatisfied'],
-            orientation='h',
-            name=f'{i+1}',
-            marker=dict(color=f'rgb({colors_dissatisfied[i][0]*255},{colors_dissatisfied[i][1]*255},{colors_dissatisfied[i][2]*255})'),
-            base=cumulative_size
-        ))
-        cumulative_size += prop
-
-    # Add 'Satisfied' segments
-    cumulative_size = 0
-    colors_satisfied = sns.color_palette("Greens_d", n_colors=2)
-    for i, prop in enumerate(satisfied_proportions):
-        fig.add_trace(go.Bar(
-            x=[prop],
-            y=['Satisfied'],
-            orientation='h',
-            name=f'{i+4}',
-            marker=dict(color=f'rgb({colors_satisfied[i][0]*255},{colors_satisfied[i][1]*255},{colors_satisfied[i][2]*255})'),
-            base=cumulative_size
-        ))
-        cumulative_size += prop
-
-    # Update layout and display in Streamlit
-    fig.update_layout(
-        title=title,
-        barmode='stack',
-        annotations=[
-            dict(x=1.05, y=0, text=f'Total: {total_dissatisfied}', showarrow=False),
-            dict(x=1.05, y=1, text=f'Total: {total_satisfied}', showarrow=False)
-        ]
-    )
-
-    st.plotly_chart(fig)  # Display the plot in Streamlit
-
-##### THIS SECTION FOR SATISFACTION SCORES ENDS ####
-
-
 ############ SECTION 1 STARTS ############
 
 if dashboard == "Section 1: Employee Experience":
-    
     filtered_data = data[
         (data['Role'].isin(selected_role)) &
         (data['Function'].isin(selected_function)) &
         (data['Location'].isin(selected_location))
     ]
     
-    import altair as alt
-    from altair import expr, datum
-    import plotly.express as px
-    import plotly.graph_objects as go
-
+    st.markdown(
+    """
+    <style>
+    .top-bar {
+        background-color: #f0f2f6;  /* Light grey background */
+        text-align: center;  /* Center-align text */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: auto;  /* Let the height be dynamic */
+    }
+    </style>
+    """, unsafe_allow_html=True
+    )
     
+    # The top bar with centered and styled text
+    st.markdown(
+        f'<div class="top-bar" style="font-weight: bold; font-size: 20px; padding: 10px 0; color: #333333;">{len(filtered_data)} survey respondents</div>',
+        unsafe_allow_html=True
+    )
+    
+    #q10 how you find the HR services responsive
+    q10_responsiveness_count = (filtered_data.iloc[:, 15] == 'Yes').sum()
+    q10_responsiveness_pct = q10_responsiveness_count/len(filtered_data) * 100
+    # st.write("Responsiveness to Inquiries and Concerns")
+    st.write("%.2f" % q10_responsiveness_pct, "% of people, which are", q10_responsiveness_count, "person(s), find the HR department responsive to their inquiries and concerns.")
+    
+    # Question 6: From 1 to 5, how satisfied are you with the overall HR services and support provided by the company?
+    score_distribution(11, "Overall Rating on HR Services and Support")
+    
+    # Question 8: From 1 to 5, how satisfied are you with the communication channels used to relay important HR information to employees?
+    # score_distribution(13, "Rating on HR Communication Channels")
+    
+
     # Extract the satisfaction scores column
     q6_data = pd.DataFrame({'satisfaction_score': filtered_data["From 1 to 5, how satisfied are you with the overall HR services and support provided by the company?\xa0"]})
     
@@ -461,6 +533,7 @@ if dashboard == "Section 1: Employee Experience":
 
 
     import plotly.graph_objects as go
+    
 
     q4_data = pd.DataFrame({
         'ID': filtered_data['ID'],
