@@ -8,7 +8,7 @@ from modules.layout import Layout
 from modules.utils import Utilities
 from modules.sidebar import Sidebar
 
-#To be able to update the changes made to modules in localhost (press r)
+# To be able to update the changes made to modules in localhost (press r)
 def reload_module(module_name):
     import importlib
     import sys
@@ -38,6 +38,8 @@ if 'chat_history' not in st.session_state:
     st.session_state['chat_history'] = []
 if 'uploaded_file' not in st.session_state:
     st.session_state['uploaded_file'] = None
+if 'ready' not in st.session_state:
+    st.session_state['ready'] = False
 
 user_api_key = utils.load_api_key()
 
@@ -49,12 +51,12 @@ else:
     uploaded_file = utils.handle_upload(["pdf", "txt", "csv", "xlsx"])
 
     if uploaded_file:
-
         #新修改
         st.session_state['uploaded_file'] = uploaded_file
         st.session_state['ready'] = True
-        if st.session_state['uploaded_file']:
-            uploaded_file = st.session_state['uploaded_file']
+
+    if st.session_state['uploaded_file']:
+        uploaded_file = st.session_state['uploaded_file']
 
         # Configure the sidebar
         sidebar.show_options()
@@ -64,7 +66,7 @@ else:
         history = ChatHistory()
         try:
             chatbot = utils.setup_chatbot(
-                uploaded_file, st.session_state["model"], st.session_state["temperature"]
+                uploaded_file, st.session_state.get("model", "default-model"), st.session_state.get("temperature", 0.7)
             )
             st.session_state["chatbot"] = chatbot
 
@@ -93,7 +95,7 @@ else:
                     if is_ready:
                         # Update the chat history and display the chat messages
                         history.append("user", user_input)
-                        #st.session_state['chat_history'].append({"mode": "user", "message": user_input})
+                        st.session_state['chat_history'].append({"mode": "user", "message": user_input})
 
                         old_stdout = sys.stdout
                         sys.stdout = captured_output = StringIO()
@@ -117,5 +119,3 @@ else:
                 history.generate_messages(response_container)
         except Exception as e:
             st.error(f"Error: {str(e)}")
-
-
