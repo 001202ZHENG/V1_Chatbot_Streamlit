@@ -44,11 +44,11 @@ user_api_key = utils.load_api_key()
 if not user_api_key:
     layout.show_api_key_missing()
 else:
-        os.environ["OPENAI_API_KEY"] = user_api_key
+    os.environ["OPENAI_API_KEY"] = user_api_key
 
-        uploaded_file = utils.handle_upload(["pdf", "txt", "csv", "xlsx"])
+    uploaded_file = utils.handle_upload(["pdf", "txt", "csv", "xlsx"])
 
-    #if uploaded_file:
+    if uploaded_file:
 
         # Configure the sidebar
         sidebar.show_options()
