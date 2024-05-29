@@ -64,6 +64,13 @@ else:
 
         # Initialize chat history
         history = ChatHistory()
+
+        # 新添加Load saved chat history if available
+        if 'chat_history' in st.session_state:
+            saved_chat_history = st.session_state['chat_history']
+            for entry in saved_chat_history:
+                history.append(entry['mode'], entry['message'])
+        
         try:
             chatbot = utils.setup_chatbot(
                 uploaded_file, st.session_state.get("model", "default-model"), st.session_state.get("temperature", 0.7)
