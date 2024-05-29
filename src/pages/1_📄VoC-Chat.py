@@ -93,7 +93,7 @@ else:
                     if is_ready:
                         # Update the chat history and display the chat messages
                         history.append("user", user_input)
-                        st.session_state['chat_history'].append({"mode": "user", "message": user_input})
+                        #st.session_state['chat_history'].append({"mode": "user", "message": user_input})
 
                         old_stdout = sys.stdout
                         sys.stdout = captured_output = StringIO()
