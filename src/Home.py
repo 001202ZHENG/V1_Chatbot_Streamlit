@@ -10,7 +10,12 @@ import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
 
-
+# Ensure that chat history and uploaded file are initialized in session state
+if 'chat_history' not in st.session_state:
+    st.session_state['chat_history'] = []
+if 'uploaded_file' not in st.session_state:
+    st.session_state['uploaded_file'] = None
+    
 # Sets the page to wide layout.
 st.set_page_config(layout="wide")
 
