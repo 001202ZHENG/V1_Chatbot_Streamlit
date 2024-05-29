@@ -33,6 +33,13 @@ layout, sidebar, utils = Layout(), Sidebar(), Utilities()
 
 layout.show_header("PDF, TXT, CSV")
 
+# 确保聊天记录和上传的文件在 session state 中初始化
+if 'chat_history' not in st.session_state:
+    st.session_state['chat_history'] = []
+if 'uploaded_file' not in st.session_state:
+    st.session_state['uploaded_file'] = None
+if 'ready' not in st.session_state:
+    st.session_state['ready'] = False
 
 user_api_key = utils.load_api_key()
 
@@ -115,3 +122,13 @@ else:
 
         except Exception as e:
             st.error(f"Error: {str(e)}")
+
+
+# 显示聊天记录
+if st.session_state['chat_history']:
+    st.write("Chat History:")
+    for entry in st.session_state['chat_history']:
+        if entry['mode'] == 'user':
+            st.write(f"User: {entry['message']}")
+        else:
+            st.write(f"Assistant: {entry['message']}")
