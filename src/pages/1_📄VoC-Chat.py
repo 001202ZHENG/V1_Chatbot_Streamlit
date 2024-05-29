@@ -50,6 +50,12 @@ else:
 
     if uploaded_file:
 
+        #新修改
+        st.session_state['uploaded_file'] = uploaded_file
+        st.session_state['ready'] = True
+        if st.session_state['uploaded_file']:
+            uploaded_file = st.session_state['uploaded_file']
+
         # Configure the sidebar
         sidebar.show_options()
         sidebar.about()
@@ -73,7 +79,7 @@ else:
                     # Initialize the chat history
                     history.initialize(uploaded_file)
 
-                    # 从 session state 加载聊天记录
+                    # 新加的代码，从 session state 加载聊天记录
                     if st.session_state['chat_history']:
                         for entry in st.session_state['chat_history']:
                             history.append(entry['mode'], entry['message'])
@@ -81,11 +87,13 @@ else:
                     # Reset the chat history if button clicked
                     if st.session_state["reset_chat"]:
                         history.reset(uploaded_file)
+                        st.session_state['chat_history'] = []
+                        st.session_state["reset_chat"] = False
 
                     if is_ready:
                         # Update the chat history and display the chat messages
                         history.append("user", user_input)
-                        #st.session_state['chat_history'].append({"mode": "user", "message": user_input})
+                        st.session_state['chat_history'].append({"mode": "user", "message": user_input})
 
                         old_stdout = sys.stdout
                         sys.stdout = captured_output = StringIO()
