@@ -64,12 +64,8 @@ else:
 
         # Initialize chat history
         history = ChatHistory()
+        # 新加的代码，从 session state 加载聊天历史
 
-        # 新添加Load saved chat history if available
-        if 'chat_history' in st.session_state:
-            saved_chat_history = st.session_state['chat_history']
-            for entry in saved_chat_history:
-                history.append(entry['mode'], entry['message'])
         
         try:
             chatbot = utils.setup_chatbot(
@@ -112,6 +108,8 @@ else:
                         sys.stdout = old_stdout
 
                         history.append("assistant", output)
+
+                        # 保存聊天历史到 session state 中
                         st.session_state['chat_history'].append({"mode": "assistant", "message": output})
 
                         # Clean up the agent's thoughts to remove unwanted characters
@@ -124,5 +122,14 @@ else:
                             st.write(cleaned_thoughts)
 
                 history.generate_messages(response_container)
+        
         except Exception as e:
             st.error(f"Error: {str(e)}")
+
+        #新加的代码    
+        if st.session_state['chat_history']:
+            for entry in st.session_state['chat_history']:
+                history.append(entry['mode'], entry['message'])
+
+            # 显示已保存的聊天历史
+            history.generate_messages(response_container)
