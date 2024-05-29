@@ -33,6 +33,12 @@ layout, sidebar, utils = Layout(), Sidebar(), Utilities()
 
 layout.show_header("PDF, TXT, CSV")
 
+# 确保聊天记录和上传的文件在 session state 中初始化
+if 'chat_history' not in st.session_state:
+    st.session_state['chat_history'] = []
+if 'uploaded_file' not in st.session_state:
+    st.session_state['uploaded_file'] = None
+
 user_api_key = utils.load_api_key()
 
 if not user_api_key:
@@ -67,6 +73,11 @@ else:
                     # Initialize the chat history
                     history.initialize(uploaded_file)
 
+                    # 从 session state 加载聊天记录
+                    if st.session_state['chat_history']:
+                        for entry in st.session_state['chat_history']:
+                            history.append(entry['mode'], entry['message'])
+                            
                     # Reset the chat history if button clicked
                     if st.session_state["reset_chat"]:
                         history.reset(uploaded_file)
