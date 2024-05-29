@@ -77,14 +77,15 @@ else:
                     if st.session_state['chat_history']:
                         for entry in st.session_state['chat_history']:
                             history.append(entry['mode'], entry['message'])
-
+                            
                     # Reset the chat history if button clicked
-                    #if st.session_state["reset_chat"]:
-                    #    history.reset(uploaded_file)
+                    if st.session_state["reset_chat"]:
+                        history.reset(uploaded_file)
 
                     if is_ready:
                         # Update the chat history and display the chat messages
                         history.append("user", user_input)
+                        st.session_state['chat_history'].append({"mode": "user", "message": user_input})
 
                         old_stdout = sys.stdout
                         sys.stdout = captured_output = StringIO()
@@ -94,6 +95,7 @@ else:
                         sys.stdout = old_stdout
 
                         history.append("assistant", output)
+                        st.session_state['chat_history'].append({"mode": "assistant", "message": output})
 
                         # Clean up the agent's thoughts to remove unwanted characters
                         thoughts = captured_output.getvalue()
