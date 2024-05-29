@@ -9,8 +9,7 @@ from wordcloud import WordCloud
 import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import torch
+
 
 # Sets the page to wide layout.
 st.set_page_config(layout="wide")
@@ -1692,61 +1691,7 @@ if dashboard == 'Section 8: User Experience':
 
     st.write("Time Well Spent")
     st.write("%.2f" % q71_yes_pct, "% of people, which are", q71_yes, "person(s), think that the time spent on the system is well spent.")
-    def predict_emotions_multiple_columns(df, text_columns):
-        # Load the tokenizer and model
-        tokenizer = AutoTokenizer.from_pretrained("j-hartmann/emotion-english-distilroberta-base")
-        model = AutoModelForSequenceClassification.from_pretrained("j-hartmann/emotion-english-distilroberta-base")
 
-        # Define the emotions corresponding to the model's output labels
-        emotion_labels = ["anger", "disgust", "fear", "joy", "neutral", "sadness", "surprise"]
-
-        # Ensure columns exist and handle NaN values
-        for column in text_columns:
-            if column not in df.columns:
-                raise ValueError(f"Column '{column}' does not exist in DataFrame")
-            df[column] = df[column].fillna("")
-
-        # Process each specified column
-        for column in text_columns:
-            encoded_texts = tokenizer(df[column].tolist(), padding=True, truncation=True, return_tensors='pt')
-            with torch.no_grad():
-                outputs = model(**encoded_texts)
-                predictions = torch.nn.functional.softmax(outputs.logits, dim=-1)
-            predicted_emotions = [emotion_labels[prediction.argmax()] for prediction in predictions]
-            df[f'{column}_predicted_emotion'] = predicted_emotions
-
-        return df
-
-    # Load your data
-    df = data
-
-    # Specify the columns to analyze
-    columns_to_analyze = [
-         'What could be improved or what kind of format is missing today ?',
-         'In the context of your job, what are the most valuable activities your current HRIS enable you to do?',
-         'In the context of your job, what do your current HRIS fail to address?',
-        'In 3 words, how would you describe your current user-experience with the HRIS ?'
-        ]
-
-    # Run the function
-    df_with_emotions = predict_emotions_multiple_columns(df, columns_to_analyze)
-    # Define a helper function to create emotion distribution plots
-    def plot_emotion_distribution(column_name, title):
-        emotion_counts = filtered_data[f'{column_name}_predicted_emotion'].value_counts().reset_index()
-        emotion_counts.columns = ['Emotion', 'Count']
-        fig = px.bar(emotion_counts, x='Count', y='Emotion', orientation='h', title=title, text='Count', color='Emotion')
-        st.plotly_chart(fig, use_container_width=True)
-
-    # Visualize the emotion distributions for each column
-    columns_to_visualize = {
-        'What could be improved or what kind of format is missing today ?': 'Emotion Distribution for Improvements/Missing Formats',
-        'In the context of your job, what are the most valuable activities your current HRIS enable you to do?': 'Emotion Distribution for Valuable HRIS Activities',
-        'In the context of your job, what do your current HRIS fail to address?': 'Emotion Distribution for HRIS Failures',
-        'In 3 words, how would you describe your current user-experience with the HRIS ?': 'Emotion Distribution for HRIS User Experience'
-    }
-
-    for column, title in columns_to_visualize.items():
-        plot_emotion_distribution(column, title)
 
 
 
