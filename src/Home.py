@@ -16,9 +16,6 @@ if 'chat_history' not in st.session_state:
 if 'uploaded_file' not in st.session_state:
     st.session_state['uploaded_file'] = None
 
-# 调试输出
-st.write("Home - st.session_state: ", st.session_state)
-
 # Sets the page to wide layout.
 st.set_page_config(layout="wide")
 
@@ -1778,30 +1775,3 @@ if dashboard == 'Section 8: User Experience':
 
 
 
-# Display some content as an example
-st.write(f"Currently selected dashboard: {dashboard}")
-
-# 显示上传的文件和聊天记录
-if st.session_state['uploaded_file']:
-    st.write(f"Uploaded file: {st.session_state['uploaded_file'].name}")
-
-if st.session_state['chat_history']:
-    st.write("Chat History:")
-    for entry in st.session_state['chat_history']:
-        if entry['mode'] == 'user':
-            st.write(f"User: {entry['message']}")
-        else:
-            st.write(f"Assistant: {entry['message']}")
-
-# 添加新的聊天消息输入框
-user_input = st.text_input("You:", "")
-
-if user_input:
-    st.session_state['chat_history'].append({"mode": "user", "message": user_input})
-    st.session_state['chat_history'].append({"mode": "assistant", "message": "This is a dummy response"})
-    st.experimental_rerun()
-
-# 添加按钮切换到聊天页面
-if st.button('Go to Chat Page'):
-    st.session_state['current_page'] = 'chat'
-    st.experimental_rerun()
