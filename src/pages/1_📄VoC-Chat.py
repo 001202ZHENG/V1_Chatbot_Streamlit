@@ -40,7 +40,8 @@ if 'uploaded_file' not in st.session_state:
     st.session_state['uploaded_file'] = None
 if 'ready' not in st.session_state:
     st.session_state['ready'] = False
-
+# 调试输出
+st.write("Chat - st.session_state: ", st.session_state)
 user_api_key = utils.load_api_key()
 
 if not user_api_key:
@@ -131,3 +132,8 @@ if st.session_state['chat_history']:
             st.write(f"User: {entry['message']}")
         else:
             st.write(f"Assistant: {entry['message']}")
+
+# 添加按钮切换到主页
+if st.button('Go to Home Page'):
+    st.session_state['current_page'] = 'home'
+    st.experimental_rerun()
