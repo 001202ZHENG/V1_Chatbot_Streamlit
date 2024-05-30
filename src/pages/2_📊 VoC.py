@@ -8,7 +8,11 @@ from modules.robby_sheet.table_tool import PandasAgent
 from modules.layout import Layout
 from modules.utils import Utilities
 from modules.sidebar import Sidebar
-
+# 确保聊天记录和上传的文件在 session state 中初始化
+if 'chat_history' not in st.session_state:
+    st.session_state['chat_history'] = []
+if 'uploaded_file' not in st.session_state:
+    st.session_state['uploaded_file'] = None
 def reload_module(module_name):
     """For update changes
     made to modules in localhost (press r)"""
