@@ -643,14 +643,6 @@ if dashboard == "Section 1: Employee Experience":
 
     q4_q5_count.sort_values('HR_Process_Interacted', ascending=False, inplace=True)
 
-    categories = [cat for cat in q4_q5_count['HR Function'].unique() if cat != 'None']
-
-    categories.append('None')
-
-    categories = categories.dropna()
-
-    q4_q5_count['HR Function'] = pd.Categorical(q4_q5_count['HR Function'], categories=categories, ordered=True)
-
     # Reshape data into tidy format
     df_tidy = q4_q5_count.melt(id_vars='HR Function', var_name='Type', value_name='Count')
 
@@ -758,7 +750,7 @@ if dashboard == "Section 1: Employee Experience":
 
 ############ SECTION 1 ENDS ############
 
-
+############ SECTION 2 STARTS ############
 if dashboard == 'Section 2: Recruiting & Onboarding':
     plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'],
                                   'Proportion of Onboarding Process Satisfaction Scores')
