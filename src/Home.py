@@ -221,10 +221,33 @@ if dashboard == "General Survey Results":
         function_summary.columns = ['Function', 'Count']
         return location_summary, role_summary, function_summary
 
-
     location_summary, role_summary, function_summary = prepare_summaries(filtered_data)
-
     
+    st.markdown(
+    """
+    <style>
+    .text-container {
+        font-size: 15px;
+        padding: 10px 0px;
+        color: #333333;
+    }
+    </style>
+    """, unsafe_allow_html=True
+    )
+
+    # A new text container for filtering instructions
+    st.markdown(
+        f"""
+        <div class="text-container" style="font-style: italic;">
+        Filter the data by selecting tags from the sidebar. The charts below will update to reflect the distribution of the&nbsp;
+        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+
     map_ratio = 0.5
     barcharts_ratio = 1 - map_ratio
     mark_color = '#336699' # Steel Blue
