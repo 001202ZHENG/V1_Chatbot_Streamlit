@@ -134,7 +134,7 @@ def apply_filters(data, roles, functions, locations):
 if dashboard == 'General Survey Results':
     render_header("General Survey Results")
 elif dashboard == 'Section 1: Employee Experience':
-    render_header("Employee Experience", "General HR Services Evaluation")
+    render_header("Employee Experience: General HR Services Evaluation")
 elif dashboard == 'Section 2: Recruiting & Onboarding':
     render_header("Recruiting & Onboarding")
 elif dashboard == 'Section 3: Performance & Talent':
@@ -235,7 +235,7 @@ if dashboard == "General Survey Results":
     """, unsafe_allow_html=True
     )
 
-    # A new text container for filtering instructions
+    # A text container for filtering instructions
     st.markdown(
         f"""
         <div class="text-container" style="font-style: italic;">
@@ -245,8 +245,6 @@ if dashboard == "General Survey Results":
         """,
         unsafe_allow_html=True
     )
-
-
 
     map_ratio = 0.5
     barcharts_ratio = 1 - map_ratio
@@ -349,21 +347,24 @@ def score_distribution(column_index, title):
     raw_counts = data_series.value_counts().sort_index()
     scores = np.repeat(raw_counts.index, raw_counts.values)
     median_score = np.median(scores)
+    
+    # Display title and median score
+    st.markdown(f"### {title}")
+    st.caption(f"The median satisfaction score is {median_score:.1f}")
 
     # Create a horizontal bar chart with Plotly
-    fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage',
-                 title=title, text='Percentage',
-                 orientation='h',
-                 color='Satisfaction Level', color_discrete_map={
-            'Very Dissatisfied': px.colors.diverging.RdYlGn[0],  # Red
-            'Dissatisfied': px.colors.diverging.RdYlGn[1],  # Less red
-            'Neutral': px.colors.diverging.RdYlGn[6],  # Neutral (middle)
-            'Satisfied': px.colors.diverging.RdYlGn[8],  # Less green
-            'Very Satisfied': px.colors.diverging.RdYlGn[10]  # Green
-        })
+    fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage', text='Percentage',
+             orientation='h',
+             color='Satisfaction Level', color_discrete_map={
+        'Very Dissatisfied': '#440154',  # Dark purple
+        'Dissatisfied': '#3b528b',       # Dark blue
+        'Neutral': '#21918c',            # Cyan
+        'Satisfied': '#5ec962',          # Light green
+        'Very Satisfied': '#fde725'      # Bright yellow
+    })
 
     # Remove legend and axes titles
-    fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None)
+    fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True, height=250,margin=dict(l=20, r=20, t=30, b=20))
 
     # Format text on bars
     fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
@@ -372,13 +373,8 @@ def score_distribution(column_index, title):
     fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
     # Use Streamlit to display the Plotly chart
-    st.plotly_chart(fig)
-
-    # Display median score graphically
-    star_full = '★'
-    star_empty = '☆'
-    median_visual = star_full * int(median_score) + star_empty * (5 - int(median_score))
-    st.markdown(f"**Median Score:** {median_visual}")
+    st.plotly_chart(fig, use_container_width=True)
+    
 
 # Function to plot satisfaction proportions -- OLD
 def plot_satisfaction_proportions(data_series, title):
@@ -528,60 +524,89 @@ def sentiment_dashboard(data_series, title):
 
 
 ############ SECTION 1 STARTS ############
-
 if dashboard == "Section 1: Employee Experience":
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
-
+                                  
     st.markdown(
         """
         <style>
         .top-bar {
             background-color: #f0f2f6;  /* Light grey background */
-            text-align: center;  /* Center-align text */
+            text-align: left;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
-            height: auto;  /* Let the height be dynamic */
+            height: auto;
         }
         </style>
         """, unsafe_allow_html=True
     )
-
-    # The top bar with centered and styled text
+    
+    # Question 10: Do you find the HR department responsive to your inquiries and concerns?
+    q10_responsiveness_count = (data.iloc[:, 15] == 'Yes').sum()
+    q10_responsiveness_pct = q10_responsiveness_count / len(data) * 100
+    
+    # Summary of all outputs in the bar container
     st.markdown(
-        f'<div class="top-bar" style="font-weight: bold; font-size: 20px; padding: 10px 0; color: #333333;">{len(filtered_data)} survey respondents</div>',
+        f"""
+        <style>
+        .top-bar {{
+            font-weight: normal;
+            font-size: 17px;
+            padding: 10px 20px;
+            color: #333333;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }}
+        .top-bar ul {{
+            padding-left: 20px; /* Proper indentation for list */
+        }}
+        .top-bar li {{
+            margin: 0; /* Remove default margin */
+        }}
+        </style>
+        <div class="top-bar">
+        This survey section is answered by all the <strong>{len(data)}</strong> survey participants:
+        <ul>
+            <li>{q10_responsiveness_pct:.0f}% of the respondents, {q10_responsiveness_count} employee(s), find the HR department responsive to their inquiries and concerns.</li>
+            <!-- Add more list items as needed -->
+        </ul>
+        </div>
+        """,
         unsafe_allow_html=True
     )
+    
+    # Question 6
+    satisfaction_ratio = 0.6
+    barcharts_ratio = 1 - satisfaction_ratio
+    satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
+    
+    st.markdown("""
+    <style>
+    .chart-container {
+        padding-top: 20px;  /* Add space above the chart */
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-    # q10 how you find the HR services responsive
-    q10_responsiveness_count = (filtered_data.iloc[:, 15] == 'Yes').sum()
-    q10_responsiveness_pct = q10_responsiveness_count / len(filtered_data) * 100
-    # st.write("Responsiveness to Inquiries and Concerns")
-    st.write("%.2f" % q10_responsiveness_pct, "% of people, which are", q10_responsiveness_count,
-             "person(s), find the HR department responsive to their inquiries and concerns.")
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        score_distribution(11, "Overall Rating on HR Services and Support")
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with barcharts_col:
+        # Filtering the satisfaction bar chart
+        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+        selected_satisfaction = st.selectbox('', satisfaction_options, key='selected_satisfaction')
 
-    satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
-    selected_satisfaction = st.selectbox('Select Satisfaction Level', satisfaction_options, key='selected_satisfaction')
+        satisfaction_filtered_data = filter_by_satisfaction(filtered_data, selected_satisfaction)
 
-    satisfaction_filtered_data = filter_by_satisfaction(filtered_data, selected_satisfaction)
-
-    if selected_satisfaction != 'Select a satisfaction level':
-        location_summary, role_summary, function_summary = prepare_summaries(satisfaction_filtered_data)
-
-        map_col, barcharts_col = st.columns([0.55, 0.45])
-
-        with map_col:
-            fig_continent = px.scatter_geo(location_summary, locations="Country_Code", size="Count", hover_name="Continent", text="Label", color_discrete_sequence=['#336699'])
-            fig_continent.update_geos(projection_type="natural earth", showcountries=True, countrycolor="lightgrey", showcoastlines=False, coastlinecolor="lightgrey", showland=True, landcolor="#F0F0F0", showocean=True, oceancolor="white", lataxis_showgrid=True, lonaxis_showgrid=True, lataxis_range=[-90, 90], lonaxis_range=[-180, 180])
-            fig_continent.update_layout(title='by Continent', margin=dict(l=0, r=0, t=50, b=0), geo=dict(bgcolor='white'))
-            fig_continent.update_traces(marker=dict(size=location_summary['Count'] * 2, line=dict(width=0)), textposition='top center', textfont=dict(color='#333333', size=14))
-            fig_continent.update_layout(hovermode=False)
-            st.plotly_chart(fig_continent, use_container_width=True)
-
-        with barcharts_col:
-            left_margin = 200
-            total_height = 460
+        if selected_satisfaction != 'Select a satisfaction level':
+            location_summary, role_summary, function_summary = prepare_summaries(satisfaction_filtered_data)
+            left_margin = 150
+            total_height = 280
             role_chart_height = total_height * 0.45
             function_chart_height = total_height * 0.55
 
@@ -599,74 +624,12 @@ if dashboard == "Section 1: Employee Experience":
             fig_function.update_xaxes(showticklabels=False, title='')
             st.plotly_chart(fig_function, use_container_width=True)
 
-    # Question 6
-    score_distribution(11, "Overall Rating on HR Services and Support")
 
-    q6_data = pd.DataFrame({'satisfaction_score': filtered_data[
-        "From 1 to 5, how satisfied are you with the overall HR services and support provided by the company?\xa0"]})
-    score_counts = q6_data['satisfaction_score'].value_counts().reset_index()
-    score_counts.columns = ['satisfaction_score', 'count']
-    score_to_category = {
-        1: 'Very Dissatisfied',
-        2: 'Dissatisfied',
-        3: 'Neutral',
-        4: 'Satisfied',
-        5: 'Very Satisfied'
-    }
-    score_counts['satisfaction_category'] = score_counts['satisfaction_score'].map(score_to_category)
-    score_counts['percentage'] = score_counts['count'] / score_counts['count'].sum() * 100
-    score_counts = score_counts.sort_values('satisfaction_score', ascending=False)
-    fig1 = px.bar(score_counts, x='percentage', y='satisfaction_category', text='count', orientation='h',
-                  color='satisfaction_category', color_discrete_map={
-            'Very Dissatisfied': '#C9190B', 'Dissatisfied': '#EC7A08', 'Neutral': '#F0AB00', 'Satisfied': '#519DE9',
-            'Very Satisfied': '#004B95'})
-
-    median_score = q6_data['satisfaction_score'].median()
-    if median_score < 2:
-        color = 'red'
-    elif median_score < 3:
-        color = 'orange'
-    elif median_score < 4:
-        color = 'yellow'
-    else:
-        color = 'green'
-    st.markdown(f'<p style="color: {color};">Median Satisfaction Score: {median_score:.2f}</p>', unsafe_allow_html=True)
-    st.plotly_chart(fig1, use_container_width=True)
 
 
     # Question 8
     score_distribution(13, "Rating on HR Communication Channels")
 
-    q8_data = pd.DataFrame({'satisfaction_score': filtered_data[
-        "From 1 to 5, how satisfied are you with the communication channels used to relay important HR information to employees?"]})
-    score_counts = q8_data['satisfaction_score'].value_counts().reset_index()
-    score_counts.columns = ['satisfaction_score', 'count']
-    score_to_category = {
-        1: 'Very Dissatisfied',
-        2: 'Dissatisfied',
-        3: 'Neutral',
-        4: 'Satisfied',
-        5: 'Very Satisfied'
-    }
-    score_counts['satisfaction_category'] = score_counts['satisfaction_score'].map(score_to_category)
-    score_counts['percentage'] = score_counts['count'] / score_counts['count'].sum() * 100
-    score_counts = score_counts.sort_values('satisfaction_score', ascending=False)
-    fig5 = px.bar(score_counts, x='percentage', y='satisfaction_category', text='count', orientation='h',
-                  color='satisfaction_category', color_discrete_map={
-            'Very Dissatisfied': '#C9190B', 'Dissatisfied': '#EC7A08', 'Neutral': '#F0AB00', 'Satisfied': '#519DE9',
-            'Very Satisfied': '#004B95'})
-
-    median_score = q8_data['satisfaction_score'].median()
-    if median_score < 2:
-        color = 'red'
-    elif median_score < 3:
-        color = 'orange'
-    elif median_score < 4:
-        color = 'yellow'
-    else:
-        color = 'green'
-    st.markdown(f'<p style="color: {color};">Median Satisfaction Score: {median_score:.2f}</p>', unsafe_allow_html=True)
-    st.plotly_chart(fig5, use_container_width=True)
 
     q4_data = pd.DataFrame({
         'ID': filtered_data['ID'],
