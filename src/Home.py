@@ -758,15 +758,19 @@ if dashboard == "Section 1: Employee Experience":
     q4_q5_count.rename(
         columns={'HR_Process': 'HR Function', 'Count_x': 'HR_Process_Interacted', 'Count_y': 'Improvement_Areas'},
         inplace=True)
+    # Separate 'None' row from the DataFrame
+    none_row = q4_q5_count[q4_q5_count['HR Function'] == 'None']
+    q4_q5_count = q4_q5_count[q4_q5_count['HR Function'] != 'None']
+
+    # Sort 'HR_Process_Interacted' in descending order
     q4_q5_count.sort_values('HR_Process_Interacted', ascending=False, inplace=True)
-    categories = [cat for cat in q4_q5_count['HR Function'].unique() if cat != 'None']
-    categories.append('None')
-    categories = [cat for cat in categories if pd.notna(cat)]
-    q4_q5_count['HR Function'] = pd.Categorical(q4_q5_count['HR Function'], categories=categories, ordered=True)
+
+    # Append 'None' row at the end
+    q4_q5_count = pd.concat([q4_q5_count, none_row])
+    
     # Reshape data into tidy format
     df_tidy = q4_q5_count.melt(id_vars='HR Function', var_name='Type', value_name='Count')
-
-
+    
     # Question 7: How do you access HR Information ?
     q7_data = pd.DataFrame({'device': filtered_data["How do you access HR Information ?"]})
     q7_data['device'] = q7_data['device'].str.rstrip(';').str.split(';')
