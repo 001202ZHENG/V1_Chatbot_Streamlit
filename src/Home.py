@@ -10,6 +10,15 @@ import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
 
+score_to_category = {
+    1: 'Very Dissatisfied',
+    2: 'Dissatisfied',
+    3: 'Neutral',
+    4: 'Satisfied',
+    5: 'Very Satisfied'
+}
+
+
 def initialize_state():
     # Initialize session states with default values if not already present
     keys = ['previous_dashboard', 'selected_role', 'selected_function', 'selected_location', 'uploaded_file']
@@ -18,10 +27,12 @@ def initialize_state():
         if key not in st.session_state:
             st.session_state[key] = default
 
+
 def reset_filters():
     st.session_state['selected_role'] = []
     st.session_state['selected_function'] = []
     st.session_state['selected_location'] = []
+
 
 st.set_page_config(layout="wide")
 initialize_state()
@@ -34,6 +45,7 @@ def load_data():
     url = 'https://github.com/001202ZHENG/V1_Chatbot_Streamlit/raw/main/data/Voice%20of%20Customer_Second%20data%20set.xlsx'
     data = pd.read_excel(url)
     return data
+
 
 data = load_data()
 
@@ -59,6 +71,8 @@ st.markdown(
     ''',
     unsafe_allow_html=True
 )
+
+
 # Header Function
 def render_header(title, subtitle=None):
     style = style = """
@@ -90,6 +104,7 @@ def render_header(title, subtitle=None):
     if subtitle:
         st.markdown(f'<h3 class="subheader">{subtitle}</h3>', unsafe_allow_html=True)
 
+
 # Sidebar for dashboard selection
 dashboard = st.sidebar.radio("Select Dashboard", ('General Survey Results',
                                                   'Section 1: Employee Experience',
@@ -111,14 +126,16 @@ if dashboard != st.session_state['previous_dashboard']:
 def get_unique_values(column):
     return data[column].unique()
 
+
 roles = get_unique_values('What is your role at the company ?')
 functions = get_unique_values('What function are you part of ?')
 locations = get_unique_values('Where are you located ?')
 
 st.sidebar.multiselect('Select Role', options=roles, default=st.session_state['selected_role'], key='selected_role')
-st.sidebar.multiselect('Select Function', options=functions, default=st.session_state['selected_function'], key='selected_function')
-st.sidebar.multiselect('Select Location', options=locations, default=st.session_state['selected_location'], key='selected_location')
-
+st.sidebar.multiselect('Select Function', options=functions, default=st.session_state['selected_function'],
+                       key='selected_function')
+st.sidebar.multiselect('Select Location', options=locations, default=st.session_state['selected_location'],
+                       key='selected_location')
 
 def apply_filters(data, roles, functions, locations):
     filtered = data
@@ -129,6 +146,7 @@ def apply_filters(data, roles, functions, locations):
     if locations:
         filtered = filtered[filtered['Where are you located ?'].isin(locations)]
     return filtered
+
 
 # Use the function with both a title and a subtitle
 if dashboard == 'General Survey Results':
@@ -150,29 +168,32 @@ elif dashboard == 'Section 7: Time Management':
 elif dashboard == 'Section 8: User Experience':
     render_header("User Experience")
 
+
 def prepare_summaries(data):
-        continent_to_country_code = {
-            'Asia': 'KAZ',
-            'Oceania': 'AUS',
-            'North America': 'CAN',
-            'South America': 'BRA',
-            'Europe': 'DEU',
-            'Africa': 'TCD'
-        }
-        country_code_to_continent = {v: k for k, v in continent_to_country_code.items()}
-        location_summary = pd.DataFrame(data['Where are you located ?'].value_counts()).reset_index()
-        location_summary.columns = ['Continent', 'Count']
-        location_summary['Country_Code'] = location_summary['Continent'].map(continent_to_country_code)
-        location_summary['Label'] = location_summary['Continent'].apply(lambda x: f"{x}: {location_summary.loc[location_summary['Continent'] == x, 'Count'].iloc[0]}")
+    continent_to_country_code = {
+        'Asia': 'KAZ',
+        'Oceania': 'AUS',
+        'North America': 'CAN',
+        'South America': 'BRA',
+        'Europe': 'DEU',
+        'Africa': 'TCD'
+    }
+    country_code_to_continent = {v: k for k, v in continent_to_country_code.items()}
+    location_summary = pd.DataFrame(data['Where are you located ?'].value_counts()).reset_index()
+    location_summary.columns = ['Continent', 'Count']
+    location_summary['Country_Code'] = location_summary['Continent'].map(continent_to_country_code)
+    location_summary['Label'] = location_summary['Continent'].apply(
+        lambda x: f"{x}: {location_summary.loc[location_summary['Continent'] == x, 'Count'].iloc[0]}")
 
-        role_summary = pd.DataFrame(data['What is your role at the company ?'].value_counts()).reset_index()
-        role_summary.columns = ['Role', 'Count']
-        function_summary = pd.DataFrame(data['What function are you part of ?'].value_counts()).reset_index()
-        function_summary.columns = ['Function', 'Count']
-        return location_summary, role_summary, function_summary
+    role_summary = pd.DataFrame(data['What is your role at the company ?'].value_counts()).reset_index()
+    role_summary.columns = ['Role', 'Count']
+    function_summary = pd.DataFrame(data['What function are you part of ?'].value_counts()).reset_index()
+    function_summary.columns = ['Function', 'Count']
+    return location_summary, role_summary, function_summary
 
 
-filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'], st.session_state['selected_location'])
+filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
+                              st.session_state['selected_location'])
 
 ############ GENERAL DASHBOARD STARTS ############
 if dashboard == "General Survey Results":
@@ -196,6 +217,7 @@ if dashboard == "General Survey Results":
         f'<div class="top-bar" style="font-weight: normal; font-size: 17px; padding: 10px 20px 10px 20px; color: #333333;"> The survey has  &nbsp;<strong>{len(data)}</strong>&nbsp; respondents in total, distributed among different locations, roles and function.</div>',
         unsafe_allow_html=True
     )
+
 
     # Data preparation for display of survey summary
     def prepare_summaries(data):
@@ -221,18 +243,19 @@ if dashboard == "General Survey Results":
         function_summary.columns = ['Function', 'Count']
         return location_summary, role_summary, function_summary
 
+
     location_summary, role_summary, function_summary = prepare_summaries(filtered_data)
-    
+
     st.markdown(
-    """
-    <style>
-    .text-container {
-        font-size: 15px;
-        padding: 10px 0px;
-        color: #333333;
-    }
-    </style>
-    """, unsafe_allow_html=True
+        """
+        <style>
+        .text-container {
+            font-size: 15px;
+            padding: 10px 0px;
+            color: #333333;
+        }
+        </style>
+        """, unsafe_allow_html=True
     )
 
     # A text container for filtering instructions
@@ -248,7 +271,7 @@ if dashboard == "General Survey Results":
 
     map_ratio = 0.5
     barcharts_ratio = 1 - map_ratio
-    mark_color = '#336699' # Steel Blue
+    mark_color = '#336699'  # Steel Blue
 
     map_col, barcharts_col = st.columns([map_ratio, barcharts_ratio])
     # Map visualization
@@ -323,48 +346,54 @@ if dashboard == "General Survey Results":
         fig_function.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function, use_container_width=True)
 
+
 ############ GENERAL DASHBOARD ENDS ############
 
 ##### THIS SECTION FOR SATISFACTION SCORES START ####
 # MARIAS SCORE DISTRIBUTION FUNCTION
-def score_distribution(column_index, title):
+def score_distribution(data, column_index):
     # Extract the data series based on the column index
     data_series = data.iloc[:, column_index]
 
     # Calculate the percentage of each response
     value_counts = data_series.value_counts(normalize=True).sort_index() * 100
 
-    # Define the categories
-    categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
-
     # Ensure the value_counts includes all categories with zero counts for missing categories
     value_counts = value_counts.reindex(range(1, 6), fill_value=0)
 
     # Create the DataFrame
-    ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': value_counts.values})
 
     # Calculate the median score
     raw_counts = data_series.value_counts().sort_index()
     scores = np.repeat(raw_counts.index, raw_counts.values)
     median_score = np.median(scores)
-    
+
+    return value_counts, median_score
+
+
+def displayScoreDistributionChart(title, value_counts, median_score):
+    categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+
+    ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': value_counts.values})
+
     # Display title and median score
     st.markdown(f"### {title}")
     st.caption(f"The median satisfaction score is {median_score:.1f}")
 
     # Create a horizontal bar chart with Plotly
     fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage', text='Percentage',
-             orientation='h',
-             color='Satisfaction Level', color_discrete_map={
-        'Very Dissatisfied': '#440154',  # Dark purple
-        'Dissatisfied': '#3b528b',       # Dark blue
-        'Neutral': '#21918c',            # Cyan
-        'Satisfied': '#5ec962',          # Light green
-        'Very Satisfied': '#fde725'      # Bright yellow
-    })
+                 orientation='h',
+                 color='Satisfaction Level', color_discrete_map={
+            'Very Dissatisfied': '#440154',  # Dark purple
+            'Dissatisfied': '#3b528b',  # Dark blue
+            'Neutral': '#21918c',  # Cyan
+            'Satisfied': '#5ec962',  # Light green
+            'Very Satisfied': '#fde725'  # Bright yellow
+        })
 
     # Remove legend and axes titles
-    fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True, height=250,margin=dict(l=20, r=20, t=30, b=20))
+    fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                      height=250, margin=dict(l=20, r=20, t=30, b=20))
 
     # Format text on bars
     fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
@@ -374,7 +403,6 @@ def score_distribution(column_index, title):
 
     # Use Streamlit to display the Plotly chart
     st.plotly_chart(fig, use_container_width=True)
-    
 
 # Function to plot satisfaction proportions -- OLD
 def plot_satisfaction_proportions(data_series, title):
@@ -436,10 +464,12 @@ def plot_satisfaction_proportions(data_series, title):
 
     st.plotly_chart(fig)  # Display the plot in Streamlit
 
-def filter_by_satisfaction(data, satisfaction_level):
-    if satisfaction_level and satisfaction_level != 'Select a satisfaction level':
-        data = data[data['From 1 to 5, how satisfied are you with the overall HR services and support provided by the company?\xa0'] == satisfaction_options.index(selected_satisfaction) + 1]
+
+def filter_by_satisfaction(data, satisfaction_level, column_index):
+    if satisfaction_level != 'Select a satisfaction level':
+        data = data[data.iloc[:, column_index] == satisfaction_options.index(satisfaction_level)]
     return data
+
 
 ##### THIS SECTION FOR SATISFACTION SCORES ENDS ####
 
@@ -522,12 +552,14 @@ def sentiment_dashboard(data_series, title):
 
 ##### THIS SECTION FOR SIDEBAR AND SENTIMENT ANALYSIS CHARTS END END END END ####
 
-
 ############ SECTION 1 STARTS ############
 if dashboard == "Section 1: Employee Experience":
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
-                                  
+
+    q6ValuesCount, q6MedianScore = score_distribution(filtered_data, 11)
+    q11ValuesCount, q11MedianScore = score_distribution(filtered_data, 13)
+
     st.markdown(
         """
         <style>
@@ -542,94 +574,122 @@ if dashboard == "Section 1: Employee Experience":
         </style>
         """, unsafe_allow_html=True
     )
-    
+
     # Question 10: Do you find the HR department responsive to your inquiries and concerns?
     q10_responsiveness_count = (data.iloc[:, 15] == 'Yes').sum()
     q10_responsiveness_pct = q10_responsiveness_count / len(data) * 100
-    
+
     # Summary of all outputs in the bar container
     st.markdown(
         f"""
-        <style>
-        .top-bar {{
-            font-weight: normal;
-            font-size: 17px;
-            padding: 10px 20px;
-            color: #333333;
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-        }}
-        .top-bar ul {{
-            padding-left: 20px; /* Proper indentation for list */
-        }}
-        .top-bar li {{
-            margin: 0; /* Remove default margin */
-        }}
-        </style>
-        <div class="top-bar">
-        This survey section is answered by all the <strong>{len(data)}</strong> survey participants:
-        <ul>
-            <li>{q10_responsiveness_pct:.0f}% of the respondents, {q10_responsiveness_count} employee(s), find the HR department responsive to their inquiries and concerns.</li>
-            <!-- Add more list items as needed -->
-        </ul>
-        </div>
-        """,
+            <style>
+            .top-bar {{
+                font-weight: normal;
+                font-size: 17px;
+                padding: 10px 20px;
+                color: #333333;
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+            }}
+            .top-bar ul {{
+                padding-left: 20px; /* Proper indentation for list */
+            }}
+            .top-bar li {{
+                margin: 0; /* Remove default margin */
+            }}
+            </style>
+            <div class="top-bar">
+            This survey section is answered by all the <strong>{len(data)}</strong> survey participants:
+            <ul>
+                <li>{q10_responsiveness_pct:.0f}% of the respondents, {q10_responsiveness_count} employee(s), find the HR department responsive to their inquiries and concerns.</li>
+                <li>{q6MedianScore}</li>
+                <li>{q11MedianScore}</li>
+            </ul>
+            </div>
+            """,
         unsafe_allow_html=True
     )
-    
-    # Question 6
+
     satisfaction_ratio = 0.6
     barcharts_ratio = 1 - satisfaction_ratio
     satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
-    
+
     st.markdown("""
-    <style>
-    .chart-container {
-        padding-top: 20px;  /* Add space above the chart */
-    }
-    </style>
-    """, unsafe_allow_html=True)
+        <style>
+        .chart-container {
+            padding-top: 20px;  /* Add space above the chart */
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
     with satisfaction_col:
         st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-        score_distribution(11, "Overall Rating on HR Services and Support")
+        displayScoreDistributionChart("Overall Rating on HR Services and Support", q6ValuesCount, q6MedianScore)
         st.markdown('</div>', unsafe_allow_html=True)
-    
+
     with barcharts_col:
-        # Filtering the satisfaction bar chart
-        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
-        selected_satisfaction = st.selectbox('', satisfaction_options, key='selected_satisfaction')
+        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
+                                'Satisfied', 'Very Satisfied']
+        satisfaction_dropdown1 = st.selectbox('Filter by Satisfaction Level', satisfaction_options,
+                                              key='satisfaction_dropdown1')
 
-        satisfaction_filtered_data = filter_by_satisfaction(filtered_data, selected_satisfaction)
+        satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown1, 11)
 
-        if selected_satisfaction != 'Select a satisfaction level':
-            location_summary, role_summary, function_summary = prepare_summaries(satisfaction_filtered_data)
-            left_margin = 150
-            total_height = 280
-            role_chart_height = total_height * 0.45
-            function_chart_height = total_height * 0.55
+        location_summary1, role_summary1, function_summary1 = prepare_summaries(satisfaction_filtered_data1)
+        left_margin = 150
+        total_height = 280
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
 
-            fig_role = px.bar(role_summary, y='Role', x='Count', orientation='h')
-            fig_role.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0), height=role_chart_height, showlegend=False)
-            fig_role.update_traces(marker_color='#336699', text=role_summary['Count'], textposition='outside')
-            fig_role.update_yaxes(showticklabels=True, title='')
-            fig_role.update_xaxes(showticklabels=False, title='')
-            st.plotly_chart(fig_role, use_container_width=True)
+        fig_role1 = px.bar(role_summary1, y='Role', x='Count', orientation='h')
+        fig_role1.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role1.update_traces(marker_color='#336699', text=role_summary1['Count'], textposition='outside')
+        fig_role1.update_yaxes(showticklabels=True, title='')
+        fig_role1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role1, use_container_width=True, key="roles_bar_chart1")
 
-            fig_function = px.bar(function_summary, y='Function', x='Count', orientation='h')
-            fig_function.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0), height=function_chart_height, showlegend=False)
-            fig_function.update_traces(marker_color='#336699', text=function_summary['Count'], textposition='outside')
-            fig_function.update_yaxes(showticklabels=True, title='')
-            fig_function.update_xaxes(showticklabels=False, title='')
-            st.plotly_chart(fig_function, use_container_width=True)
+        fig_function1 = px.bar(function_summary1, y='Function', x='Count', orientation='h')
+        fig_function1.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function1.update_traces(marker_color='#336699', text=function_summary1['Count'], textposition='outside')
+        fig_function1.update_yaxes(showticklabels=True, title='')
+        fig_function1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
 
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        displayScoreDistributionChart("Rating on HR Communication Channels", q11ValuesCount, q11MedianScore)
+        st.markdown('</div>', unsafe_allow_html=True)
 
+    with barcharts_col:
+        satisfaction_dropdown2 = st.selectbox('Filter by Satisfaction Level', satisfaction_options,
+                                              key='satisfaction_dropdown2')
 
+        satisfaction_filtered_data2 = filter_by_satisfaction(filtered_data, satisfaction_dropdown2, 13)
 
-    # Question 8
-    score_distribution(13, "Rating on HR Communication Channels")
+        location_summary2, role_summary2, function_summary2 = prepare_summaries(satisfaction_filtered_data2)
+        left_margin = 150
+        total_height = 280
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
 
+        fig_role2 = px.bar(role_summary2, y='Role', x='Count', orientation='h')
+        fig_role2.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role2.update_traces(marker_color='#336699', text=role_summary2['Count'], textposition='outside')
+        fig_role2.update_yaxes(showticklabels=True, title='')
+        fig_role2.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role2, use_container_width=True, key="roles_bar_chart2")
+
+        fig_function2 = px.bar(function_summary2, y='Function', x='Count', orientation='h')
+        fig_function2.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function2.update_traces(marker_color='#336699', text=function_summary2['Count'], textposition='outside')
+        fig_function2.update_yaxes(showticklabels=True, title='')
+        fig_function2.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function2, use_container_width=True, key="functions_bar_chart2")
 
     q4_data = pd.DataFrame({
         'ID': filtered_data['ID'],
@@ -1953,9 +2013,3 @@ if dashboard == 'Section 8: User Experience':
 
     # Display the DataFrame with predicted emotions
     df_with_emotions.head()
-
-
-
-
-
-
