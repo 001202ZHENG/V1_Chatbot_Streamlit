@@ -793,19 +793,19 @@ if dashboard == "Section 1: Employee Experience":
         # Plot for HR Processes in the first column
         fig_q4 = go.Figure(data=[
             go.Bar(
-            name='Employee Interaction',
-            y=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['HR Function'],#make it horizontal bar chart to show texts completely
-            x=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['Count'], #make it horizontal bar chart to show texts completely
-            marker_color='#5ec962',
-            orientation='h' #make it horizontal bar chart to show texts completely
-            ),
-            go.Bar(
             name='Improvement Areas',
             y=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['HR Function'],#make it horizontal bar chart to show texts completely
             x=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['Count'], #make it horizontal bar chart to show texts completely
             marker_color='#3b528b',
             orientation='h' #make it horizontal bar chart to show texts completely
-            )
+            ),
+            go.Bar(
+            name='Employee Interaction',
+            y=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['HR Function'],#make it horizontal bar chart to show texts completely
+            x=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['Count'], #make it horizontal bar chart to show texts completely
+            marker_color='#5ec962',
+            orientation='h' #make it horizontal bar chart to show texts completely
+            )            
         ])
         fig_q4.update_layout(
         title='HR Processes: Employee Interaction vs Improvement Areas',
