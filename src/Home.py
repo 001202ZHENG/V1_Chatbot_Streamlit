@@ -763,11 +763,11 @@ if dashboard == "Section 1: Employee Experience":
     q4_q5_count = q4_q5_count[q4_q5_count['HR Function'] != 'None']
 
     # Sort 'HR_Process_Interacted' in descending order
-    q4_q5_count.sort_values('HR_Process_Interacted', ascending=False, inplace=True)
+    q4_q5_count.sort_values(by='HR_Process_Interacted', ascending=False, inplace=True)
 
     # Append 'None' row at the end
     q4_q5_count = pd.concat([q4_q5_count, none_row])
-    
+
     # Reshape data into tidy format
     df_tidy = q4_q5_count.melt(id_vars='HR Function', var_name='Type', value_name='Count')
     
