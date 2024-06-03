@@ -510,29 +510,29 @@ def summarize_text(text):
     return summary[0]['summary_text']
 
 # Summarize text for high and low scores
-def summarize_scores(df, score_col_idx, reasons_col_idx):
+#def summarize_scores(df, score_col_idx, reasons_col_idx):
     # Filter the DataFrame for high scores (4 and 5)
-    df_high_scores = df[df.iloc[:, score_col_idx].isin([4, 5])]
-    text_high_scores = ' '.join(df_high_scores.iloc[:, reasons_col_idx].astype(str))
-    summary_high_scores = summarize_text(text_high_scores)
+    #df_high_scores = df[df.iloc[:, score_col_idx].isin([4, 5])]
+    #text_high_scores = ' '.join(df_high_scores.iloc[:, reasons_col_idx].astype(str))
+    #summary_high_scores = summarize_text(text_high_scores)
 
     # Filter the DataFrame for low scores (1, 2, and 3)
-    df_low_scores = df[df.iloc[:, score_col_idx].isin([1, 2, 3])]
-    text_low_scores = ' '.join(df_low_scores.iloc[:, reasons_col_idx].astype(str))
-    summary_low_scores = summarize_text(text_low_scores)
+    #df_low_scores = df[df.iloc[:, score_col_idx].isin([1, 2, 3])]
+    #text_low_scores = ' '.join(df_low_scores.iloc[:, reasons_col_idx].astype(str))
+    #summary_low_scores = summarize_text(text_low_scores)
 
-    return summary_high_scores, summary_low_scores
+    #return summary_high_scores, summary_low_scores
 
 # Function to display summaries in Streamlit
-def display_summaries(df, score_col_idx, reasons_col_idx):
-    summary_high_scores, summary_low_scores = summarize_scores(df, score_col_idx, reasons_col_idx)
+#def display_summaries(df, score_col_idx, reasons_col_idx):
+    #summary_high_scores, summary_low_scores = summarize_scores(df, score_col_idx, reasons_col_idx)
 
-    st.markdown("<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Summary of Reasons for Scores</h1>", unsafe_allow_html=True)
+    #st.markdown("<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Summary of Reasons for Scores</h1>", unsafe_allow_html=True)
 
-    st.markdown("<h3 style='font-size: 20px; font-weight: normal;'>Summary for High Scores (4 and 5)</h3>", unsafe_allow_html=True)
+    #st.markdown("<h3 style='font-size: 20px; font-weight: normal;'>Summary for High Scores (4 and 5)</h3>", unsafe_allow_html=True)
     #st.write(summary_high_scores)
 
-    st.markdown("<h3 style='font-size: 20px; font-weight: normal;'>Summary for Low Scores (1, 2, and 3)</h3>", unsafe_allow_html=True)
+    #st.markdown("<h3 style='font-size: 20px; font-weight: normal;'>Summary for Low Scores (1, 2, and 3)</h3>", unsafe_allow_html=True)
     #st.write(summary_low_scores)
 
 
