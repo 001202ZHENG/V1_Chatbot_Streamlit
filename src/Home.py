@@ -530,10 +530,10 @@ def display_summaries(df, score_col_idx, reasons_col_idx):
     st.markdown("<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Summary of Reasons for Scores</h1>", unsafe_allow_html=True)
 
     st.markdown("<h3 style='font-size: 20px; font-weight: normal;'>Summary for High Scores (4 and 5)</h3>", unsafe_allow_html=True)
-    #st.write(summary_high_scores)
+    st.write(summary_high_scores)
 
     st.markdown("<h3 style='font-size: 20px; font-weight: normal;'>Summary for Low Scores (1, 2, and 3)</h3>", unsafe_allow_html=True)
-    #st.write(summary_low_scores)
+    st.write(summary_low_scores)
 
 
 ############ SENTIMENT ANALYSIS FUNCTION ENDS ############
