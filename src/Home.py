@@ -348,6 +348,19 @@ if dashboard == "General Survey Results":
         fig_function.update_yaxes(showticklabels=True, title='')
         fig_function.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function, use_container_width=True)
+    
+    import streamlit as st
+    from transformers import pipeline
+
+    st.write("Transformers and Torch installation check")
+
+    # Initialize the multilingual summarization pipeline with the specified model
+    try:
+        summarizer = pipeline("summarization", model="csebuetnlp/mT5_multilingual_XLSum")
+        st.write("Successfully loaded the summarizer model.")
+    except Exception as e:
+        st.write(f"Error loading the summarizer model: {e}")
+
 
 
 ############ GENERAL DASHBOARD ENDS ############
