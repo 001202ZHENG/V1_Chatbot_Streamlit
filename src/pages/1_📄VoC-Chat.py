@@ -65,9 +65,9 @@ else:
         history = ChatHistory()
 
         # 从 session state 加载聊天记录
-        if st.session_state['chat_history']:
-            for entry in st.session_state['chat_history']:
-                history.append(entry['mode'], entry['message'])
+        #if st.session_state['chat_history']:
+        #    for entry in st.session_state['chat_history']:
+        #        history.append(entry['mode'], entry['message'])
 
         try:
             chatbot = utils.setup_chatbot(
