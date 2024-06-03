@@ -5,10 +5,11 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from wordcloud import WordCloud
+from wordcloud import WordCloud, STOPWORDS
 import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
+
 
 score_to_category = {
     1: 'Very Dissatisfied',
@@ -195,6 +196,7 @@ def prepare_summaries(data):
 
 filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                               st.session_state['selected_location'])
+
 
 ############ GENERAL DASHBOARD STARTS ############
 if dashboard == "General Survey Results":
@@ -449,6 +451,42 @@ def filter_by_satisfaction(data, satisfaction_level, column_index):
 # nltk.download('vader_lexicon')
 # sentiment_analyzer = SentimentIntensityAnalyzer()
 
+############ SENTIMENT ANALYSIS FUNCTION STARTS ############
+def generate_wordclouds(df, score_col_idx, reasons_col_idx, custom_stopwords):
+    # Custom stopwords
+    stopwords_set = set(STOPWORDS)
+    stopwords_set.update(custom_stopwords)
+
+    # Filter the DataFrame for scores 4 and 5
+    df_high_scores = df[df.iloc[:, score_col_idx].isin([4, 5])]
+
+    # Filter the DataFrame for scores 1, 2, and 3
+    df_low_scores = df[df.iloc[:, score_col_idx].isin([1, 2, 3])]
+
+    # Generate the text for word clouds
+    text_high_scores = ' '.join(df_high_scores.iloc[:, reasons_col_idx].astype(str))
+    text_low_scores = ' '.join(df_low_scores.iloc[:, reasons_col_idx].astype(str))
+
+    # Generate the word clouds
+    wordcloud_high_scores = WordCloud(width=800, height=400, background_color='white', stopwords=stopwords_set, collocations=False).generate(text_high_scores)
+    wordcloud_low_scores = WordCloud(width=800, height=400, background_color='white', stopwords=stopwords_set, collocations=False).generate(text_low_scores)
+
+    # Display the word cloud for high scores (4 and 5)
+    st.write("Word Cloud for Scores 4 and 5")
+    fig_high_scores, ax_high_scores = plt.subplots(figsize=(10, 5))
+    ax_high_scores.imshow(wordcloud_high_scores, interpolation='bilinear')
+    ax_high_scores.axis('off')
+    st.pyplot(fig_high_scores)
+
+    # Display the word cloud for low scores (1, 2, and 3)
+    st.write("Word Cloud for Scores 1, 2, and 3")
+    fig_low_scores, ax_low_scores = plt.subplots(figsize=(10, 5))
+    ax_low_scores.imshow(wordcloud_low_scores, interpolation='bilinear')
+    ax_low_scores.axis('off')
+    st.pyplot(fig_low_scores)
+
+
+############ SENTIMENT ANALYSIS FUNCTION ENDS ############
 
 # Function for sentiment analysis dashboard
 
@@ -887,6 +925,23 @@ if dashboard == "Section 1: Employee Experience":
         )
         fig_q7.update_traces(texttemplate='%{text:.0f}%', textposition='outside')
         st.plotly_chart(fig_q7, use_container_width=True)
+    
+    # Question 9: Which reason(s) drive that score ?
+    # Display the reasons for communication channel satisfaction
+    st.markdown('<h1 style="font-size:17px;font-family:Arial;color:#333333;">The Reasons for Ratings on Communication Channels</h1>', unsafe_allow_html=True)
+
+    # Example usage
+    custom_stopwords = ["communication", "channels", "HR", "information", "important", "informed", "stay", "communicated", "employees", "company", "help", "communicates", "need", "everyone"]
+
+
+    if __name__ == "__main__":
+        st.title("Word Cloud Visualization")
+        generate_wordclouds(filtered_data, 13, 14, custom_stopwords)
+
+    
+
+
+    
 
 ############ SECTION 1 ENDS ############
 
