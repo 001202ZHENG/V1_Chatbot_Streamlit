@@ -571,10 +571,15 @@ if dashboard == "Section 1: Employee Experience":
         columns={'HR_Process': 'HR Function', 'Count_x': 'HR_Process_Interacted', 'Count_y': 'Improvement_Areas'},
         inplace=True)
     q4_q5_count.sort_values('HR_Process_Interacted', ascending=False, inplace=True)
-    categories = [cat for cat in q4_q5_count['HR Function'].unique() if cat != 'None']
-    categories.append('None')
-    categories = [cat for cat in categories if pd.notna(cat)]
-    q4_q5_count['HR Function'] = pd.Categorical(q4_q5_count['HR Function'], categories=categories, ordered=True)
+    # Separate 'None' row from the DataFrame
+    none_row = q4_q5_count[q4_q5_count['HR Function'] == 'None']
+    q4_q5_count = q4_q5_count[q4_q5_count['HR Function'] != 'None']
+
+    # Sort 'HR_Process_Interacted' in descending order
+    q4_q5_count.sort_values(by='HR_Process_Interacted', ascending=True, inplace=True)
+
+    # Append 'None' row at the end
+    q4_q5_count = pd.concat([none_row, q4_q5_count])
     # Reshape data into tidy format
     df_tidy = q4_q5_count.melt(id_vars='HR Function', var_name='Type', value_name='Count')
 
@@ -830,16 +835,18 @@ if dashboard == "Section 1: Employee Experience":
         # Plot for HR Processes in the first column
         fig_q4 = go.Figure(data=[
             go.Bar(
-                name='Employee Interaction',
-                x=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['HR Function'],
-                y=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['Count'],
-                marker_color='#5ec962'
+            name='Improvement Areas',
+            y=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['HR Function'],#make it horizontal bar chart to show texts completely
+            x=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['Count'], #make it horizontal bar chart to show texts completely
+            marker_color='#3b528b',
+            orientation='h' #make it horizontal bar chart to show texts completely
             ),
             go.Bar(
-                name='Improvement Areas',
-                x=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['HR Function'],
-                y=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['Count'],
-                marker_color='#3b528b'
+            name='Employee Interaction',
+            y=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['HR Function'],#make it horizontal bar chart to show texts completely
+            x=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['Count'], #make it horizontal bar chart to show texts completely
+            marker_color='#5ec962',
+            orientation='h' #make it horizontal bar chart to show texts completely
             )
         ])
         fig_q4.update_layout(
