@@ -14,4 +14,3 @@ openpyxl==3.1.2
 wordcloud
 nltk
 transformers
-torch
