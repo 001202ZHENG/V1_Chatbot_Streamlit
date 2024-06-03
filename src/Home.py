@@ -488,6 +488,40 @@ def generate_wordclouds(df, score_col_idx, reasons_col_idx, custom_stopwords):
         ax_low_scores.axis('off')
         st.pyplot(fig_low_scores)
 
+# Initialize the multilingual summarization pipeline with the specified model
+summarizer = pipeline("summarization", model="csebuetnlp/mT5_multilingual_XLSum")
+
+# Function to summarize text
+def summarize_text(text):
+    summary = summarizer(text, max_length=130, min_length=30, do_sample=False)
+    return summary[0]['summary_text']
+
+# Summarize text for high and low scores
+def summarize_scores(df, score_col_idx, reasons_col_idx):
+    # Filter the DataFrame for high scores (4 and 5)
+    df_high_scores = df[df.iloc[:, score_col_idx].isin([4, 5])]
+    text_high_scores = ' '.join(df_high_scores.iloc[:, reasons_col_idx].astype(str))
+    summary_high_scores = summarize_text(text_high_scores)
+
+    # Filter the DataFrame for low scores (1, 2, and 3)
+    df_low_scores = df[df.iloc[:, score_col_idx].isin([1, 2, 3])]
+    text_low_scores = ' '.join(df_low_scores.iloc[:, reasons_col_idx].astype(str))
+    summary_low_scores = summarize_text(text_low_scores)
+
+    return summary_high_scores, summary_low_scores
+
+# Function to display summaries in Streamlit
+def display_summaries(df, score_col_idx, reasons_col_idx):
+    summary_high_scores, summary_low_scores = summarize_scores(df, score_col_idx, reasons_col_idx)
+
+    st.markdown("<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Summary of Reasons for Scores</h1>", unsafe_allow_html=True)
+
+    st.markdown("<h3 style='font-size: 20px; font-weight: normal;'>Summary for High Scores (4 and 5)</h3>", unsafe_allow_html=True)
+    st.write(summary_high_scores)
+
+    st.markdown("<h3 style='font-size: 20px; font-weight: normal;'>Summary for Low Scores (1, 2, and 3)</h3>", unsafe_allow_html=True)
+    st.write(summary_low_scores)
+
 
 ############ SENTIMENT ANALYSIS FUNCTION ENDS ############
 
@@ -934,12 +968,16 @@ if dashboard == "Section 1: Employee Experience":
     st.markdown('<h1 style="font-size:17px;font-family:Arial;color:#333333;">The Reasons for Ratings on Communication Channels</h1>', unsafe_allow_html=True)
 
     # Example usage
-    communication_stopwords = ["communication", "channels", "HR", "information", "important", "informed", "stay", "communicated", "employees", "company", "help", "communicates", "need", "everyone"]
+    communication_stopwords = ["communication", "channels", "HR", "information", "important", "informed", "stay", "communicated", "employees", "company", "help", "communicates", "need", "everyone", "makes"]
 
     # Run this code in a Streamlit app
     if __name__ == "__main__":
         st.markdown("<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Word Cloud Visualization</h1>", unsafe_allow_html=True)
         generate_wordclouds(filtered_data, 13, 14, communication_stopwords)
+
+        st.set_page_config(layout="wide")
+        display_summaries(filtered_data, 13, 14)
+    
     
 
 
