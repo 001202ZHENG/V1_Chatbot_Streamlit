@@ -9,6 +9,7 @@ from wordcloud import WordCloud, STOPWORDS
 import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
+from transformers import pipeline
 
 
 score_to_category = {
@@ -40,7 +41,7 @@ initialize_state()
 
 
 # Load and clean data
-@st.cache_data(persist=True)
+#@st.cache_data(persist=True)
 def load_data():
     # Load data and cache the DataFrame to avoid reloads on each user interaction
     url = 'https://github.com/001202ZHENG/V1_Chatbot_Streamlit/raw/main/data/Voice%20of%20Customer_Second%20data%20set.xlsx'
@@ -123,7 +124,7 @@ if dashboard != st.session_state['previous_dashboard']:
     st.session_state['previous_dashboard'] = dashboard
 
 
-@st.cache_data
+#@st.cache_data
 def get_unique_values(column):
     return data[column].unique()
 
@@ -349,8 +350,7 @@ if dashboard == "General Survey Results":
         fig_function.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function, use_container_width=True)
     
-    import streamlit as st
-    from transformers import pipeline
+
 
     st.write("Transformers and Torch installation check")
 
