@@ -941,9 +941,8 @@ if dashboard == "Section 1: Employee Experience":
         st.markdown("<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Word Cloud Visualization</h1>", unsafe_allow_html=True)
         generate_wordclouds(filtered_data, 13, 14, communication_stopwords)
 
-    import streamlit as st
+    
     from transformers import pipeline
-    import torch
 
     @st.cache_resource(show_spinner=False)
     def load_model():
