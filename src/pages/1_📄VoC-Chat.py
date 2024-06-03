@@ -123,12 +123,3 @@ else:
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
-# 显示聊天记录
-if st.session_state['chat_history']:
-    st.write("Chat History:")
-    for entry in st.session_state['chat_history']:
-        if entry['mode'] == 'user':
-            st.write(f"User: {entry['message']}")
-        else:
-            st.write(f"Assistant: {entry['message']}")
-
