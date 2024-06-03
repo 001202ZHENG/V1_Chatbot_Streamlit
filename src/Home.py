@@ -471,19 +471,22 @@ def generate_wordclouds(df, score_col_idx, reasons_col_idx, custom_stopwords):
     wordcloud_high_scores = WordCloud(width=800, height=400, background_color='white', stopwords=stopwords_set, collocations=False).generate(text_high_scores)
     wordcloud_low_scores = WordCloud(width=800, height=400, background_color='white', stopwords=stopwords_set, collocations=False).generate(text_low_scores)
 
-    # Display the word cloud for high scores (4 and 5)
-    st.write("Word Cloud for Scores 4 and 5")
-    fig_high_scores, ax_high_scores = plt.subplots(figsize=(10, 5))
-    ax_high_scores.imshow(wordcloud_high_scores, interpolation='bilinear')
-    ax_high_scores.axis('off')
-    st.pyplot(fig_high_scores)
+    # Create columns for displaying the word clouds side by side
+    col1, col2 = st.columns(2)
 
-    # Display the word cloud for low scores (1, 2, and 3)
-    st.write("Word Cloud for Scores 1, 2, and 3")
-    fig_low_scores, ax_low_scores = plt.subplots(figsize=(10, 5))
-    ax_low_scores.imshow(wordcloud_low_scores, interpolation='bilinear')
-    ax_low_scores.axis('off')
-    st.pyplot(fig_low_scores)
+    with col1:
+        st.markdown("<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud for High Scores</h3>", unsafe_allow_html=True)
+        fig_high_scores, ax_high_scores = plt.subplots(figsize=(10, 5))
+        ax_high_scores.imshow(wordcloud_high_scores, interpolation='bilinear')
+        ax_high_scores.axis('off')
+        st.pyplot(fig_high_scores)
+
+    with col2:
+        st.markdown("<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud for Low Scores</h3>", unsafe_allow_html=True)
+        fig_low_scores, ax_low_scores = plt.subplots(figsize=(10, 5))
+        ax_low_scores.imshow(wordcloud_low_scores, interpolation='bilinear')
+        ax_low_scores.axis('off')
+        st.pyplot(fig_low_scores)
 
 
 ############ SENTIMENT ANALYSIS FUNCTION ENDS ############
@@ -931,13 +934,12 @@ if dashboard == "Section 1: Employee Experience":
     st.markdown('<h1 style="font-size:17px;font-family:Arial;color:#333333;">The Reasons for Ratings on Communication Channels</h1>', unsafe_allow_html=True)
 
     # Example usage
-    custom_stopwords = ["communication", "channels", "HR", "information", "important", "informed", "stay", "communicated", "employees", "company", "help", "communicates", "need", "everyone"]
+    communication_stopwords = ["communication", "channels", "HR", "information", "important", "informed", "stay", "communicated", "employees", "company", "help", "communicates", "need", "everyone"]
 
-
+    # Run this code in a Streamlit app
     if __name__ == "__main__":
-        st.title("Word Cloud Visualization")
-        generate_wordclouds(filtered_data, 13, 14, custom_stopwords)
-
+        st.markdown("<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Word Cloud Visualization</h1>", unsafe_allow_html=True)
+        generate_wordclouds(filtered_data, 13, 14, communication_stopwords)
     
 
 
