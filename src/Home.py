@@ -440,6 +440,10 @@ def filter_by_satisfaction(data, satisfaction_level, column_index):
         data = data[data.iloc[:, column_index] == satisfaction_options.index(satisfaction_level)]
     return data
 
+def filter_by_comfort(data, comfort_level, column_index):
+    if comfort_level != 'Select a comfort level':
+        data = data[data.iloc[:, column_index] == comfort_options.index(comfort_level)]
+    return data
 
 ##### THIS SECTION FOR SATISFACTION SCORES ENDS ####
 
@@ -984,92 +988,139 @@ if dashboard == "Section 1: Employee Experience":
 
 ############ SECTION 2 STARTS ############
 if dashboard == 'Section 2: Recruiting & Onboarding':
-    plot_satisfaction_proportions(data['From 1 to 5, how would you rate the onboarding process ?'],
-                                  'Proportion of Onboarding Process Satisfaction Scores')
-    sentiment_dashboard(data['Which reason(s) drive that score ?'], 'Sentiment Analysis Dashboard')
-
-    filtered_data = data[
-        (data['Role'].isin(selected_role)) &
-        (data['Function'].isin(selected_function)) &
-        (data['Location'].isin(selected_location))
-        ]
-
-    column_16 = filtered_data.iloc[:, 16]
-
-    # Count the number of 'Less than a year' and 'More than a year' responses
-    less_than_a_year_count = (column_16 == 'Less than a year').sum()
-    more_than_a_year_count = (column_16 == 'More than a year').sum()
-
-    # Get the total number of rows in the DataFrame
-    total_rows = filtered_data.shape[0]
-
-    # Display the sentence
+    filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
+                                  st.session_state['selected_location'])
+    
+    
+    # A text container for filtering instructions
     st.markdown(
-        f"The dashboard section above is based on {less_than_a_year_count} out of {total_rows} respondents, who have been less than a year.")
+        f"""
+        <div class="text-container" style="font-style: italic;">
+        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
+        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    ### Question11: How long have you been part of the company ?
+    q11_data_available_count = (filtered_data.iloc[:, 16] == 'Less than a year').sum()
+    q11_data_available_pct = q11_data_available_count / len(filtered_data) * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    How long have you been part of the company?
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
 
-    # Extract the satisfaction scores column
-    q9_data = pd.DataFrame({'satisfaction_score': filtered_data["How would rate the recruiting process ?"]})
+    st.write(
+        f"{q11_data_available_pct:.2f}% of the respondents, {q11_data_available_count} employee(s), have been part of the company LESS THAN a year.")
+    
+    
+    ### Question12: How would rate the recruiting process ?
+    satisfaction_ratio = 0.6
+    barcharts_ratio = 1 - satisfaction_ratio
+    satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
 
-    # Count the occurrences of each score
-    q9_score_counts = q9_data['satisfaction_score'].value_counts().reset_index()
-    q9_score_counts.columns = ['satisfaction_score', 'count']
+    st.markdown("""
+        <style>
+        .chart-container {
+            padding-top: 20px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
-    # Create a dictionary to map scores to categories
-    score_to_category = {
-        1: 'Very Dissatisfied',
-        2: 'Dissatisfied',
-        3: 'Neutral',
-        4: 'Satisfied',
-        5: 'Very Satisfied'
-    }
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+        q12ValuesCount, q12MedianScore = score_distribution(filtered_data, 17)
 
-    # Create a new column 'satisfaction_category' by mapping the 'satisfaction_score' column to the categories
-    q9_score_counts['satisfaction_category'] = q9_score_counts['satisfaction_score'].map(score_to_category)
+        ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q12ValuesCount.values})
 
-    # Calculate percentage
-    q9_score_counts['percentage'] = q9_score_counts['count'] / q9_score_counts['count'].sum() * 100
+        # Display title and median score
+        title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on the Recruiting Process</h2>"
+        caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q12MedianScore:.1f}</div>"
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(caption_html, unsafe_allow_html=True)
 
-    # Sort score_counts by 'satisfaction_score' in descending order
-    q9_score_counts = q9_score_counts.sort_values('satisfaction_score', ascending=False)
+        # Create a horizontal bar chart with Plotly
+        fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage', text='Percentage',
+                     orientation='h',
+                     color='Satisfaction Level', color_discrete_map={
+                'Very Dissatisfied': '#440154',  # Dark purple
+                'Dissatisfied': '#3b528b',  # Dark blue
+                'Neutral': '#21918c',  # Cyan
+                'Satisfied': '#5ec962',  # Light green
+                'Very Satisfied': '#fde725'  # Bright yellow
+            })
 
-    # Create a horizontal bar chart
-    fig5 = px.bar(q9_score_counts, x='percentage', y='satisfaction_category', text='count', orientation='h',
-                  color='satisfaction_category',
-                  color_discrete_map={
-                      'Very Dissatisfied': '#C9190B',
-                      'Dissatisfied': '#EC7A08',
-                      'Neutral': '#F0AB00',
-                      'Satisfied': '#519DE9',
-                      'Very Satisfied': '#004B95'
-                  })
+        # Remove legend and axes titles
+        fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                          height=300, margin=dict(l=20, r=20, t=30, b=20))
 
-    # Calculate median score
-    q9_median_score = q9_data['satisfaction_score'].median()
+        # Format text on bars
+        fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+        fig.update_xaxes(range=[0, max(ratings_df['Percentage']) * 1.1])
 
-    # Determine the color based on the median score
-    if q9_median_score < 2:
-        color = 'red'
-    elif q9_median_score < 3:
-        color = 'orange'
-    elif q9_median_score < 4:
-        color = 'yellow'
-    else:
-        color = 'green'
+        # Improve layout aesthetics
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    # Display the median score in a text box
-    st.markdown(f'<p style="color: {color};">Median Satisfaction Score: {q9_median_score:.2f}</p>',
-                unsafe_allow_html=True)
+        # Use Streamlit to display the Plotly chart
+        st.plotly_chart(fig, use_container_width=True, key="overall_rating_bar_chart")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.plotly_chart(fig5, use_container_width=True)
+    with barcharts_col:
+        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
+                                'Satisfied', 'Very Satisfied']
+        satisfaction_dropdown1 = st.selectbox('', satisfaction_options,
+                                              key='satisfaction_dropdown1')
 
-    # negative reasons for recruiting process
-    q18_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 18]})
-    q18_data['negative_reasons'] = q18_data['negative_reasons'].str.rstrip(';').str.split(';')
-    q18_data = q18_data.explode('negative_reasons')
-    q18_data.dropna(inplace=True)
+        satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown1, 17)
+
+        location_summary1, role_summary1, function_summary1 = prepare_summaries(satisfaction_filtered_data1)
+        left_margin = 150
+        total_height = 310
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
+
+        fig_role1 = px.bar(role_summary1, y='Role', x='Count', orientation='h')
+        fig_role1.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role1.update_traces(marker_color='#336699', text=role_summary1['Count'], textposition='outside')
+        fig_role1.update_yaxes(showticklabels=True, title='')
+        fig_role1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role1, use_container_width=True, key="roles_bar_chart1")
+
+        fig_function1 = px.bar(function_summary1, y='Function', x='Count', orientation='h')
+        fig_function1.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function1.update_traces(marker_color='#336699', text=function_summary1['Count'], textposition='outside')
+        fig_function1.update_yaxes(showticklabels=True, title='')
+        fig_function1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
+        
+        
+    ### Question13: What reason(s) drive that score ?
+    ### Part I: negative reasons for recruiting process
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Reasons that drive scores: 1 - Very Dissatisfied / 2 - Dissatisfied / 3 - Neutral 
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
+    q13a_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 18]})
+    q13a_data['negative_reasons'] = q13a_data['negative_reasons'].str.rstrip(';').str.split(';')
+    q13a_data = q13a_data.explode('negative_reasons')
+    q13a_data.dropna(inplace=True)
 
     # Count the occurrences of each negative reason
-    negative_reason_recruiting_counts = q18_data['negative_reasons'].value_counts().reset_index()
+    negative_reason_recruiting_counts = q13a_data['negative_reasons'].value_counts().reset_index()
     negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
 
     # Calculate percentage
@@ -1085,17 +1136,27 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
                        color_continuous_scale='RdBu')
 
     # Show the chart
-    st.plotly_chart(fig6, use_container_width=True)
-    st.plotly_chart(fig10, use_container_width=True)
+    st.plotly_chart(fig6, use_container_width=False)
+    st.plotly_chart(fig10, use_container_width=False)
 
-    # positive reasons for recruiting process
-    q19_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 19]})
-    q19_data['positive_reasons'] = q19_data['positive_reasons'].str.rstrip(';').str.split(';')
-    q19_data = q19_data.explode('positive_reasons')
-    q19_data.dropna(inplace=True)
+    ### Part II:  positive reasons for recruiting process
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Reasons that drive scores: 4 - Satisfied / 5 - Very Satisfied
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
+    
+    q13b_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 19]})
+    q13b_data['positive_reasons'] = q13b_data['positive_reasons'].str.rstrip(';').str.split(';')
+    q13b_data = q13b_data.explode('positive_reasons')
+    q13b_data.dropna(inplace=True)
 
     # Count the occurrences of each positive reason
-    positive_reason_recruiting_counts = q19_data['positive_reasons'].value_counts().reset_index()
+    positive_reason_recruiting_counts = q13b_data['positive_reasons'].value_counts().reset_index()
     positive_reason_recruiting_counts.columns = ['positive_reasons', 'count']
 
     # Calculate percentage
@@ -1111,19 +1172,31 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
                       color_continuous_scale='RdBu')
 
     # Show the chart
-    st.plotly_chart(fig7, use_container_width=True)
-    st.plotly_chart(fig9, use_container_width=True)
+    st.plotly_chart(fig7, use_container_width=False)
+    st.plotly_chart(fig9, use_container_width=False)
+    
+    
+    
+    ### Question14: What aspect of the recruiting process took the most time and requires improvements ?
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Aspects of the Recruiting Process that Require Improvements
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
+   
+    q14_data = pd.DataFrame({'recruting process that required improvement': filtered_data.iloc[:, 20]})
 
-    # recruting process that took longest time and require improvement
-    q20_data = pd.DataFrame({'recruting process that required improvement': filtered_data.iloc[:, 20]})
-
-    q20_data['recruting process that required improvement'] = q20_data[
+    q14_data['recruting process that required improvement'] = q14_data[
         'recruting process that required improvement'].str.rstrip(';').str.split(';')
-    q20_data = q20_data.explode('recruting process that required improvement')
-    q20_data.dropna(inplace=True)
+    q14_data = q14_data.explode('recruting process that required improvement')
+    q14_data.dropna(inplace=True)
 
     # Count the occurrences of each aspect that required improvement
-    aspect_recruiting_counts = q20_data['recruting process that required improvement'].value_counts().reset_index()
+    aspect_recruiting_counts = q14_data['recruting process that required improvement'].value_counts().reset_index()
     aspect_recruiting_counts.columns = ['recruting process that required improvement', 'count']
 
     # Calculate percentage
@@ -1139,63 +1212,112 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
                        color='count', color_continuous_scale='RdBu')
 
     # Show the chart
-    st.plotly_chart(fig8, use_container_width=True)
-    st.plotly_chart(fig11, use_container_width=True)
+    st.plotly_chart(fig8, use_container_width=False)
+    st.plotly_chart(fig11, use_container_width=False)
+    
+    
+    ### Question15: From 1 to 5, how would you rate the onboarding process ?
+    satisfaction_ratio = 0.6
+    barcharts_ratio = 1 - satisfaction_ratio
+    satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
 
-    # score analysis on onboarding process
-    q21_data = pd.DataFrame({'onboarding_score': filtered_data.iloc[:, 21]})
+    st.markdown("""
+        <style>
+        .chart-container {
+            padding-top: 20px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
-    # Count the occurrences of each score
-    q21_score_counts = q21_data['onboarding_score'].value_counts().reset_index()
-    q21_score_counts.columns = ['onboarding_score', 'count']
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+        q15ValuesCount, q15MedianScore = score_distribution(filtered_data, 21)
 
-    # Create a new column 'onboarding_category' by mapping the 'onboarding_score' column to the categories
-    q21_score_counts['onboarding_satisfactory_category'] = q21_score_counts['onboarding_score'].map(score_to_category)
+        ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q15ValuesCount.values})
 
-    # Calculate percentage
-    q21_score_counts['percentage'] = q21_score_counts['count'] / q21_score_counts['count'].sum() * 100
+        # Display title and median score
+        title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on the Onboarding Process</h2>"
+        caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q15MedianScore:.1f}</div>"
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(caption_html, unsafe_allow_html=True)
 
-    # Sort score_counts by 'onboarding_score' in descending order
-    q21_score_counts = q21_score_counts.sort_values('onboarding_score', ascending=False)
+        # Create a horizontal bar chart with Plotly
+        fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage', text='Percentage',
+                     orientation='h',
+                     color='Satisfaction Level', color_discrete_map={
+                'Very Dissatisfied': '#440154',  # Dark purple
+                'Dissatisfied': '#3b528b',  # Dark blue
+                'Neutral': '#21918c',  # Cyan
+                'Satisfied': '#5ec962',  # Light green
+                'Very Satisfied': '#fde725'  # Bright yellow
+            })
 
-    # Create a horizontal bar chart
-    fig12 = px.bar(q21_score_counts, x='percentage', y='onboarding_satisfactory_category', text='count',
-                   orientation='h', color='onboarding_satisfactory_category',
-                   color_discrete_map={
-                       'Very Dissatisfied': '#C9190B',
-                       'Dissatisfied': '#EC7A08',
-                       'Neutral': '#F0AB00',
-                       'Satisfied': '#519DE9',
-                       'Very Satisfied': '#004B95'
-                   })
+        # Remove legend and axes titles
+        fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                          height=300, margin=dict(l=20, r=20, t=30, b=20))
 
-    # Calculate median score
-    q21_median_score = q21_data['onboarding_score'].median()
+        # Format text on bars
+        fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+        fig.update_xaxes(range=[0, max(ratings_df['Percentage']) * 1.1])
 
-    # Determine the color based on the median score
-    if q21_median_score < 2:
-        color = 'red'
-    elif q21_median_score < 3:
-        color = 'orange'
-    elif q21_median_score < 4:
-        color = 'yellow'
-    else:
-        color = 'green'
+        # Improve layout aesthetics
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    # Display the median score in a text box
-    st.markdown(f'<p style="color: {color};">Median Onboarding Score: {q21_median_score:.2f}</p>',
-                unsafe_allow_html=True)
+        # Use Streamlit to display the Plotly chart
+        st.plotly_chart(fig, use_container_width=True, key="overall_rating_bar_chart")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.plotly_chart(fig12, use_container_width=True)
+    with barcharts_col:
+        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
+                                'Satisfied', 'Very Satisfied']
+        satisfaction_dropdown15 = st.selectbox('', satisfaction_options,
+                                              key='satisfaction_dropdown15')
 
-    # negative reasons for onboarding process
-    q22_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 22]})
-    q22_data['negative_reasons'] = q22_data['negative_reasons'].str.rstrip(';').str.split(';')
-    q22_data = q22_data.explode('negative_reasons')
-    q22_data.dropna(inplace=True)
+        satisfaction_filtered_data15 = filter_by_satisfaction(filtered_data, satisfaction_dropdown15, 21)
+
+        location_summary1, role_summary1, function_summary1 = prepare_summaries(satisfaction_filtered_data15)
+        left_margin = 150
+        total_height = 310
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
+
+        fig_role1 = px.bar(role_summary1, y='Role', x='Count', orientation='h')
+        fig_role1.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role1.update_traces(marker_color='#336699', text=role_summary1['Count'], textposition='outside')
+        fig_role1.update_yaxes(showticklabels=True, title='')
+        fig_role1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role1, use_container_width=True, key="roles_bar_chart1")
+
+        fig_function1 = px.bar(function_summary1, y='Function', x='Count', orientation='h')
+        fig_function1.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function1.update_traces(marker_color='#336699', text=function_summary1['Count'], textposition='outside')
+        fig_function1.update_yaxes(showticklabels=True, title='')
+        fig_function1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
+    
+    
+    ### Question16: What reason(s) drive that score ?
+    ### Part I: negative reasons for onboarding process
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Reasons that drive scores: 1 - Very Dissatisfied / 2 - Dissatisfied / 3 - Neutral 
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
+    
+    q16a_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 22]})
+    q16a_data['negative_reasons'] = q16a_data['negative_reasons'].str.rstrip(';').str.split(';')
+    q16a_data = q16a_data.explode('negative_reasons')
+    q16a_data.dropna(inplace=True)
 
     # Count the occurrences of each negative reason
-    negative_reason_recruiting_counts = q22_data['negative_reasons'].value_counts().reset_index()
+    negative_reason_recruiting_counts = q16a_data['negative_reasons'].value_counts().reset_index()
     negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
 
     # Calculate percentage
@@ -1211,17 +1333,27 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
                        color_continuous_scale='RdBu')
 
     # Show the chart
-    st.plotly_chart(fig13, use_container_width=True)
-    st.plotly_chart(fig14, use_container_width=True)
-
-    # positive reasons for onboarding process
-    q23_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 23]})
-    q23_data['positive_reasons'] = q23_data['positive_reasons'].str.rstrip(';').str.split(';')
-    q23_data = q23_data.explode('positive_reasons')
-    q23_data.dropna(inplace=True)
+    st.plotly_chart(fig13, use_container_width=False)
+    st.plotly_chart(fig14, use_container_width=False)
+    
+    
+    ### Part II:  positive reasons for onboarding process
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Reasons that drive scores: 4 - Satisfied / 5 - Very Satisfied
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
+    q16b_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 23]})
+    q16b_data['positive_reasons'] = q16b_data['positive_reasons'].str.rstrip(';').str.split(';')
+    q16b_data = q16b_data.explode('positive_reasons')
+    q16b_data.dropna(inplace=True)
 
     # Count the occurrences of each positive reason
-    positive_reason_recruiting_counts = q23_data['positive_reasons'].value_counts().reset_index()
+    positive_reason_recruiting_counts = q16b_data['positive_reasons'].value_counts().reset_index()
     positive_reason_recruiting_counts.columns = ['positive_reasons', 'count']
 
     # Calculate percentage
@@ -1237,17 +1369,27 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
                        color_continuous_scale='RdBu')
 
     # Show the chart
-    st.plotly_chart(fig15, use_container_width=True)
-    st.plotly_chart(fig16, use_container_width=True)
-
-    # helpful onboarding process
-    q24_data = pd.DataFrame({'helpful_onboarding_process': filtered_data.iloc[:, 24]})
-    q24_data['helpful_onboarding_process'] = q24_data['helpful_onboarding_process'].str.rstrip(';').str.split(';')
-    q24_data = q24_data.explode('helpful_onboarding_process')
-    q24_data.dropna(inplace=True)
+    st.plotly_chart(fig15, use_container_width=False)
+    st.plotly_chart(fig16, use_container_width=False)
+    
+    
+    ### Question17: What part of the Onboarding process was particulary helpful ?
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Part of the Onboarding process that is Helpful
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
+    q17_data = pd.DataFrame({'helpful_onboarding_process': filtered_data.iloc[:, 24]})
+    q17_data['helpful_onboarding_process'] = q17_data['helpful_onboarding_process'].str.rstrip(';').str.split(';')
+    q17_data = q17_data.explode('helpful_onboarding_process')
+    q17_data.dropna(inplace=True)
 
     # Count the occurrences of each aspect that required improvement
-    helpful_onboarding_counts = q24_data['helpful_onboarding_process'].value_counts().reset_index()
+    helpful_onboarding_counts = q17_data['helpful_onboarding_process'].value_counts().reset_index()
     helpful_onboarding_counts.columns = ['helpful_onboarding_process', 'count']
 
     # Calculate percentage
@@ -1262,17 +1404,28 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
                        color_continuous_scale='RdBu')
 
     # Show the chart
-    st.plotly_chart(fig17, use_container_width=True)
-    st.plotly_chart(fig18, use_container_width=True)
+    st.plotly_chart(fig17, use_container_width=False)
+    st.plotly_chart(fig18, use_container_width=False)
+    
+    
+    ### Question 18: What part of the Onboarding process could be improved
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Part of the Onboarding Process Could Be Improved
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
 
     # onboarding process to improve
-    q25_data = pd.DataFrame({'onboarding_process_to_improve': filtered_data.iloc[:, 25]})
-    q25_data['onboarding_process_to_improve'] = q25_data['onboarding_process_to_improve'].str.rstrip(';').str.split(';')
-    q25_data = q25_data.explode('onboarding_process_to_improve')
-    q25_data.dropna(inplace=True)
+    q18_data = pd.DataFrame({'onboarding_process_to_improve': filtered_data.iloc[:, 25]})
+    q18_data['onboarding_process_to_improve'] = q18_data['onboarding_process_to_improve'].str.rstrip(';').str.split(';')
+    q18_data = q18_data.explode('onboarding_process_to_improve')
+    q18_data.dropna(inplace=True)
 
     # Count the occurrences of each aspect that required improvement
-    aspect_onboarding_counts = q25_data['onboarding_process_to_improve'].value_counts().reset_index()
+    aspect_onboarding_counts = q18_data['onboarding_process_to_improve'].value_counts().reset_index()
     aspect_onboarding_counts.columns = ['onboarding_process_to_improve', 'count']
 
     # Calculate percentage
@@ -1287,285 +1440,475 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
                        color_continuous_scale='RdBu')
 
     # Show the chart
-    st.plotly_chart(fig19, use_container_width=True)
-    st.plotly_chart(fig20, use_container_width=True)
+    st.plotly_chart(fig19, use_container_width=False)
+    st.plotly_chart(fig20, use_container_width=False)
+    
+############ SECTION 2 ENDS ############
 
+
+############ SECTION 3 STARTS ############    
 if dashboard == 'Section 3: Performance & Talent':
-    filtered_data = data[
-        (data['Role'].isin(selected_role)) &
-        (data['Function'].isin(selected_function)) &
-        (data['Location'].isin(selected_location))
-        ]
+    filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
+                                  st.session_state['selected_location'])
+    
+    
+    # A text container for filtering instructions
+    st.markdown(
+        f"""
+        <div class="text-container" style="font-style: italic;">
+        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
+        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    ### Question19: From 1 to 5, how satisfied are you with the company's performance evaluation and feedback process ?
+    satisfaction_ratio = 0.6
+    barcharts_ratio = 1 - satisfaction_ratio
+    satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
 
-    import altair as alt
-    from altair import expr, datum
-    import plotly.express as px
-    import plotly.graph_objects as go
+    st.markdown("""
+        <style>
+        .chart-container {
+            padding-top: 20px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
-    # Extract the satisfaction scores column
-    q26_data = pd.DataFrame({'performance_satisfaction': filtered_data.iloc[:, 26]})
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+        q19ValuesCount, q19MedianScore = score_distribution(filtered_data, 26)
 
-    # Count the occurrences of each score
-    performance_satisfaction_counts = q26_data['performance_satisfaction'].value_counts().reset_index()
-    performance_satisfaction_counts.columns = ['performance_satisfaction', 'count']
+        ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q19ValuesCount.values})
 
-    # create a dictionary to map scores to categories
-    score_to_category = {
-        1: 'Very Dissatisfied',
-        2: 'Dissatisfied',
-        3: 'Neutral',
-        4: 'Satisfied',
-        5: 'Very Satisfied'
-    }
+        # Display title and median score
+        title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Company's Performance Evaluation and Feedback Process</h2>"
+        caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q19MedianScore:.1f}</div>"
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(caption_html, unsafe_allow_html=True)
 
-    # Create a new column 'performance_satisfaction_category' by mapping the 'performance_satisfaction' column to the categories
-    performance_satisfaction_counts['performance_satisfaction_category'] = performance_satisfaction_counts[
-        'performance_satisfaction'].map(score_to_category)
+        # Create a horizontal bar chart with Plotly
+        fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage', text='Percentage',
+                     orientation='h',
+                     color='Satisfaction Level', color_discrete_map={
+                'Very Dissatisfied': '#440154',  # Dark purple
+                'Dissatisfied': '#3b528b',  # Dark blue
+                'Neutral': '#21918c',  # Cyan
+                'Satisfied': '#5ec962',  # Light green
+                'Very Satisfied': '#fde725'  # Bright yellow
+            })
 
-    # Calculate percentage
-    performance_satisfaction_counts['percentage'] = performance_satisfaction_counts['count'] / \
-                                                    performance_satisfaction_counts['count'].sum() * 100
+        # Remove legend and axes titles
+        fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                          height=300, margin=dict(l=20, r=20, t=30, b=20))
 
-    # Sort performance_satisfaction_counts by 'performance_satisfaction' in descending order
-    performance_satisfaction_counts = performance_satisfaction_counts.sort_values('performance_satisfaction',
-                                                                                  ascending=False)
+        # Format text on bars
+        fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+        fig.update_xaxes(range=[0, max(ratings_df['Percentage']) * 1.1])
 
-    # Create a horizontal bar chart
-    fig26 = px.bar(performance_satisfaction_counts, x='percentage', y='performance_satisfaction_category', text='count',
-                   orientation='h', color='performance_satisfaction_category',
-                   color_discrete_map={
-                       'Very Dissatisfied': '#C9190B',
-                       'Dissatisfied': '#EC7A08',
-                       'Neutral': '#F0AB00',
-                       'Satisfied': '#519DE9',
-                       'Very Satisfied': '#004B95'
-                   })
+        # Improve layout aesthetics
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    # Calculate median score
-    median_score_26 = q26_data['performance_satisfaction'].median()
+        # Use Streamlit to display the Plotly chart
+        st.plotly_chart(fig, use_container_width=True, key="overall_rating_bar_chart")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # Determine the color based on the median score
-    if median_score_26 < 2:
-        color = 'red'
-    elif median_score_26 < 3:
-        color = 'orange'
-    elif median_score_26 < 4:
-        color = 'yellow'
-    else:
-        color = 'green'
+    with barcharts_col:
+        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
+                                'Satisfied', 'Very Satisfied']
+        satisfaction_dropdown1 = st.selectbox('', satisfaction_options,
+                                              key='satisfaction_dropdown1')
 
-    # Display the median score in a text box
-    st.markdown(f'<p style="color: {color};">Median Performance Satisfaction Score: {median_score_26:.2f}</p>',
-                unsafe_allow_html=True)
+        satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown1, 26)
 
-    st.plotly_chart(fig26, use_container_width=True)
+        location_summary1, role_summary1, function_summary1 = prepare_summaries(satisfaction_filtered_data1)
+        left_margin = 150
+        total_height = 310
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
 
-    # Extract the satisfaction scores column
-    q28_data = pd.DataFrame({'career_goal_satisfaction': filtered_data.iloc[:, 28]})
+        fig_role1 = px.bar(role_summary1, y='Role', x='Count', orientation='h')
+        fig_role1.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role1.update_traces(marker_color='#336699', text=role_summary1['Count'], textposition='outside')
+        fig_role1.update_yaxes(showticklabels=True, title='')
+        fig_role1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role1, use_container_width=True, key="roles_bar_chart1")
 
-    # Count the occurrences of each score
-    career_goal_satisfaction_counts = q28_data['career_goal_satisfaction'].value_counts().reset_index()
-    career_goal_satisfaction_counts.columns = ['career_goal_satisfaction', 'count']
+        fig_function1 = px.bar(function_summary1, y='Function', x='Count', orientation='h')
+        fig_function1.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function1.update_traces(marker_color='#336699', text=function_summary1['Count'], textposition='outside')
+        fig_function1.update_yaxes(showticklabels=True, title='')
+        fig_function1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
+    
+    
+    ### Question20: Which reason(s) drive that score ?
+    ### Missing worcloud
+    
+    
+    ### Question21: From 1 to 5, how comfortable do you feel discussing your career goals and development with your manager? 
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        categories = ['Very Uncomfortable', 'Uncomfortable', 'Hesitant', 'Comfortable', 'Very Comfortable']
+        q21ValuesCount, q21MedianScore = score_distribution(filtered_data, 28)
 
-    # Create a new column 'career_goal_satisfaction_category' by mapping the 'career_goal_satisfaction' column to the categories
-    career_goal_satisfaction_counts['career_goal_satisfaction_category'] = career_goal_satisfaction_counts[
-        'career_goal_satisfaction'].map(score_to_category)
+        ratings_df = pd.DataFrame({'Comfort Level': categories, 'Percentage': q21ValuesCount.values})
 
-    # Calculate percentage
-    career_goal_satisfaction_counts['percentage'] = career_goal_satisfaction_counts['count'] / \
-                                                    career_goal_satisfaction_counts['count'].sum() * 100
+        # Display title and median score
+        title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Comfort Level in Discussing Career Goals         and Development with Manager</h2>"
+        caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median comfort score is                   {q21MedianScore:.1f}</div>"
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(caption_html, unsafe_allow_html=True)
 
-    # Sort career_goal_satisfaction_counts by 'career_goal_satisfaction' in descending order
-    career_goal_satisfaction_counts = career_goal_satisfaction_counts.sort_values('career_goal_satisfaction',
-                                                                                  ascending=False)
+        # Create a horizontal bar chart with Plotly
+        fig = px.bar(ratings_df, y='Comfort Level', x='Percentage', text='Percentage',
+                     orientation='h',
+                     color='Comfort Level', color_discrete_map={
+                'Very Uncomfortable': '#440154',  # Dark purple
+                'Uncomfortable': '#3b528b',  # Dark blue
+                'Hesitant': '#21918c',  # Cyan
+                'Comfortable': '#5ec962',  # Light green
+                'Very Comfortable': '#fde725'  # Bright yellow
+            })
 
-    # Create a horizontal bar chart
-    fig28 = px.bar(career_goal_satisfaction_counts, x='percentage', y='career_goal_satisfaction_category', text='count',
-                   orientation='h', color='career_goal_satisfaction_category',
-                   color_discrete_map={
-                       'Very Dissatisfied': '#C9190B',
-                       'Dissatisfied': '#EC7A08',
-                       'Neutral': '#F0AB00',
-                       'Satisfied': '#519DE9',
-                       'Very Satisfied': '#004B95'
-                   })
+        # Remove legend and axes titles
+        fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                          height=300, margin=dict(l=20, r=20, t=30, b=20))
 
-    # Calculate median score
-    median_score_28 = q28_data['career_goal_satisfaction'].median()
+        # Format text on bars
+        fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+        fig.update_xaxes(range=[0, max(ratings_df['Percentage']) * 1.1])
 
-    # Determine the color based on the median score
-    if median_score_28 < 2:
-        color = 'red'
-    elif median_score_28 < 3:
-        color = 'orange'
-    elif median_score_28 < 4:
-        color = 'yellow'
-    else:
-        color = 'green'
+        # Improve layout aesthetics
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    # Display the median score in a text box
-    st.markdown(f'<p style="color: {color};">Median Career Goal Satisfaction Score: {median_score_28:.2f}</p>',
-                unsafe_allow_html=True)
+        # Use Streamlit to display the Plotly chart
+        st.plotly_chart(fig, use_container_width=True, key="overall_rating_bar_chart")
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+    with barcharts_col:
+        comfort_options = ['Select a comfort level', 'Very Uncomfortable', 'Uncomfortable', 'Hesitant',
+                                'Comfortable', 'Very Comfortable']
+        comfort_dropdown1 = st.selectbox('', comfort_options,
+                                              key='comfort_dropdown1')
 
-    st.plotly_chart(fig28, use_container_width=True)
+        comfort_filtered_data1 = filter_by_comfort(filtered_data, comfort_dropdown1, 28)
 
-    # negative reasons for career goals
-    q29_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 29]})
-    q29_data['negative_reasons'] = q29_data['negative_reasons'].str.rstrip(';').str.split(';')
-    q29_data = q29_data.explode('negative_reasons')
-    q29_data.dropna(inplace=True)
+        location_summary1, role_summary1, function_summary1 = prepare_summaries(comfort_filtered_data1)
+        left_margin = 150
+        total_height = 310
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
 
-    # Count the occurrences of each negative reason
-    negative_reason_recruiting_counts = q29_data['negative_reasons'].value_counts().reset_index()
-    negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
+        fig_role1 = px.bar(role_summary1, y='Role', x='Count', orientation='h')
+        fig_role1.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role1.update_traces(marker_color='#336699', text=role_summary1['Count'], textposition='outside')
+        fig_role1.update_yaxes(showticklabels=True, title='')
+        fig_role1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role1, use_container_width=True, key="roles_bar_chart1")
 
-    # Calculate percentage
-    negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(
-        filtered_data) * 100
+        fig_function1 = px.bar(function_summary1, y='Function', x='Count', orientation='h')
+        fig_function1.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function1.update_traces(marker_color='#336699', text=function_summary1['Count'], textposition='outside')
+        fig_function1.update_yaxes(showticklabels=True, title='')
+        fig_function1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
+    
+    
+    ### Question22: Which reason(s) drive that score ?
+    ### Missing wordcloud
+    
+    
+    ### Question23: Are you able to identify and tag your skills within your HRIS ?
+    q23_data_available_count = (filtered_data.iloc[:, 30] == 'Yes').sum()
+    q23_data_available_pct = q23_data_available_count / len(filtered_data) * 100
 
-    # Create a horizontal bar chart
-    fig29 = px.bar(negative_reason_recruiting_counts, x='percentage', y='negative_reasons', text='count',
-                   orientation='h', color='negative_reasons', color_discrete_sequence=['#FFA500'])
-
-    # Show the chart
-    st.plotly_chart(fig29, use_container_width=True)
-
-    # available to tag skills in HRIS
-    q30_data_available_count = (filtered_data.iloc[:, 30] == 'Yes').sum()
-    q30_data_available_pct = q30_data_available_count / len(filtered_data) * 100
-
-    st.write("identify and tag your skills within the HRIS")
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Identify and tag your skills within the HRIS
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
 
     st.write(
-        f"{q30_data_available_pct:.2f}% of people, which are {q30_data_available_count} person(s), are able to identify and tag their skills within the HRIS.")
+        f"{q23_data_available_pct:.2f}% of the respondents, {q23_data_available_count} employee(s), are able to identify and tag         their skills within the HRIS.")
+       
+############ SECTION 3 ENDS ############
 
+
+############ SECTION 4 STARTS ############      
 if dashboard == 'Section 4: Learning':
-    filtered_data = data[
-        (data['Role'].isin(selected_role)) &
-        (data['Function'].isin(selected_function)) &
-        (data['Location'].isin(selected_location))
-        ]
+    filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
+                                  st.session_state['selected_location'])
+        
+    # A text container for filtering instructions
+    st.markdown(
+        f"""
+        <div class="text-container" style="font-style: italic;">
+        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
+        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    
+    satisfaction_ratio = 0.6
+    barcharts_ratio = 1 - satisfaction_ratio
+    satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
 
-    # Extract the satisfaction scores column
-    q31_data = pd.DataFrame({'learning_satisfaction': filtered_data.iloc[:, 31]})
+    st.markdown("""
+        <style>
+        .chart-container {
+            padding-top: 20px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    
+    
+    ### Question24: From 1 to 5, how satisfied are you with your current learning management system ?
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+        q24ValuesCount, q24MedianScore = score_distribution(filtered_data, 31)
 
-    # Count the occurrences of each score
-    learning_satisfaction_counts = q31_data['learning_satisfaction'].value_counts().reset_index()
-    learning_satisfaction_counts.columns = ['learning_satisfaction', 'count']
+        ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q24ValuesCount.values})
 
-    # Create a dictionary to map scores to categories
-    score_to_category = {
-        1: 'Very Dissatisfied',
-        2: 'Dissatisfied',
-        3: 'Neutral',
-        4: 'Satisfied',
-        5: 'Very Satisfied'
-    }
+        # Display title and median score
+        title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Current Learning Management System</h2>"
+        caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q24MedianScore:.1f}</div>"
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(caption_html, unsafe_allow_html=True)
 
-    # Create a new column 'learning_satisfaction_category' by mapping the 'learning_satisfaction' column to the categories
-    learning_satisfaction_counts['learning_satisfaction_category'] = learning_satisfaction_counts[
-        'learning_satisfaction'].map(score_to_category)
+        # Create a horizontal bar chart with Plotly
+        fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage', text='Percentage',
+                     orientation='h',
+                     color='Satisfaction Level', color_discrete_map={
+                'Very Dissatisfied': '#440154',  # Dark purple
+                'Dissatisfied': '#3b528b',  # Dark blue
+                'Neutral': '#21918c',  # Cyan
+                'Satisfied': '#5ec962',  # Light green
+                'Very Satisfied': '#fde725'  # Bright yellow
+            })
 
-    # Calculate percentage
-    learning_satisfaction_counts['percentage'] = learning_satisfaction_counts['count'] / learning_satisfaction_counts[
-        'count'].sum() * 100
+        # Remove legend and axes titles
+        fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                          height=300, margin=dict(l=20, r=20, t=30, b=20))
 
-    # Sort learning_satisfaction_counts by 'learning_satisfaction' in descending order
-    learning_satisfaction_counts = learning_satisfaction_counts.sort_values('learning_satisfaction', ascending=False)
+        # Format text on bars
+        fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+        fig.update_xaxes(range=[0, max(ratings_df['Percentage']) * 1.1])
 
-    # Create a horizontal bar chart
-    fig31 = px.bar(learning_satisfaction_counts, x='percentage', y='learning_satisfaction_category', text='count',
-                   orientation='h', color='learning_satisfaction_category',
-                   color_discrete_map={
-                       'Very Dissatisfied': '#C9190B',
-                       'Dissatisfied': '#EC7A08',
-                       'Neutral': '#F0AB00',
-                       'Satisfied': '#519DE9',
-                       'Very Satisfied': '#004B95'
-                   })
+        # Improve layout aesthetics
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    # Calculate median score
-    median_score_31 = q31_data['learning_satisfaction'].median()
+        # Use Streamlit to display the Plotly chart
+        st.plotly_chart(fig, use_container_width=True, key="overall_rating_bar_chart")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # Determine the color based on the median score
-    if median_score_31 < 2:
-        color = 'red'
-    elif median_score_31 < 3:
-        color = 'orange'
-    elif median_score_31 < 4:
-        color = 'yellow'
-    else:
-        color = 'green'
+    with barcharts_col:
+        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
+                                'Satisfied', 'Very Satisfied']
+        satisfaction_dropdown1 = st.selectbox('', satisfaction_options,
+                                              key='satisfaction_dropdown1')
 
-    # Display the median score in a text box
-    st.markdown(f'<p style="color: {color};">Median Learning Satisfaction Score: {median_score_31:.2f}</p>',
-                unsafe_allow_html=True)
+        satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown1, 31)
 
-    st.plotly_chart(fig31, use_container_width=True)
+        location_summary1, role_summary1, function_summary1 = prepare_summaries(satisfaction_filtered_data1)
+        left_margin = 150
+        total_height = 310
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
 
-    # learning format distribution
-    q32_data = pd.DataFrame({'learning_format': filtered_data.iloc[:, 32]})
-    q32_data['learning_format'] = q32_data['learning_format'].str.rstrip(';')
-    q32_data.dropna(inplace=True)
+        fig_role1 = px.bar(role_summary1, y='Role', x='Count', orientation='h')
+        fig_role1.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role1.update_traces(marker_color='#336699', text=role_summary1['Count'], textposition='outside')
+        fig_role1.update_yaxes(showticklabels=True, title='')
+        fig_role1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role1, use_container_width=True, key="roles_bar_chart1")
+
+        fig_function1 = px.bar(function_summary1, y='Function', x='Count', orientation='h')
+        fig_function1.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function1.update_traces(marker_color='#336699', text=function_summary1['Count'], textposition='outside')
+        fig_function1.update_yaxes(showticklabels=True, title='')
+        fig_function1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
+        
+    
+    ### Question25: What are the learning format that you prefer ?
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Preferred Learning Format
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    # Create a DataFrame with the learning format data
+    q25_data = pd.DataFrame({'learning_format': filtered_data.iloc[:, 32]})
+    q25_data['learning_format'] = q25_data['learning_format'].str.rstrip(';')
+    q25_data.dropna(inplace=True)
 
     # Count the occurrences of each learning format
-    learning_format_counts = q32_data['learning_format'].value_counts().reset_index()
+    learning_format_counts = q25_data['learning_format'].value_counts().reset_index()
     learning_format_counts.columns = ['learning_format', 'count']
 
     # Calculate percentage
     learning_format_counts['percentage'] = learning_format_counts['count'] / learning_format_counts['count'].sum() * 100
 
+    # Define the preferred order of learning formats
+    preferred_order = ['E-Learning', 'On site', 'Micro-Learning', 'Coaching']
+
+    # Ensure the DataFrame respects the preferred order
+    learning_format_counts['learning_format'] = pd.Categorical(
+        learning_format_counts['learning_format'],
+        categories=preferred_order,
+        ordered=True
+    )
+    learning_format_counts.sort_values('learning_format', inplace=True)
+
     # Create a horizontal bar chart
-    fig32 = px.bar(learning_format_counts, x='percentage', y='learning_format', text='count', orientation='h',
-                   color='learning_format')
+    fig25 = px.bar(learning_format_counts, x='percentage', y='learning_format', text='percentage', 
+                   orientation='h',
+                   color='learning_format', color_discrete_map={
+                       'E-Learning': '#440154',  # Dark purple
+                       'On site': '#3b528b',  # Dark blue
+                       'Micro-Learning': '#21918c',  # Cyan
+                       'Coaching': '#5ec962',  # Light green
+                   })
+
+    # Remove legend and axes titles
+    fig25.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                        height=300, margin=dict(l=20, r=20, t=30, b=20))
+
+    # Format text on bars
+    fig25.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+    fig25.update_xaxes(range=[0, max(learning_format_counts['percentage']) * 1.1])
+
+    # Improve layout aesthetics
+    fig25.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
     # Show the chart
-    st.plotly_chart(fig32, use_container_width=True)
+    st.plotly_chart(fig25, use_container_width=False)
 
-    # training/development program participation
-    q33_data_available_count = (filtered_data.iloc[:, 33] == 'Yes').sum()
-    q33_data_available_pct = q33_data_available_count / len(filtered_data) * 100
+    
+    ### Question26: Have you participated in any training or development programs provided by HR?
+    q26_data_available_count = (filtered_data.iloc[:, 33] == 'Yes').sum()
+    q26_data_available_pct = q26_data_available_count / len(filtered_data) * 100
 
-    st.write("Training/Development Program Participation (something wrong with the data)")
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Participation in any Training or Development Programs Provided by HR
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
 
     st.write(
-        f"{q33_data_available_pct:.2f}% of people, which are {q33_data_available_count} person(s), are able to identify and tag their skills within the HRIS.")
+        f"{q26_data_available_pct:.2f}% of the respondents, {q26_data_available_count} employee(s), participated in training or        development programs provided by HR.")
+    
+    
+    ### Question27: Have you received any recommendations on training (either by the HR team or directly on your Learning    System) ?
+    q27_data_available_count = (filtered_data.iloc[:, 34] == 'Yes').sum()
+    q27_data_available_pct = q27_data_available_count / len(filtered_data) * 100
 
-    # Whether receive recommendation on training
-    q34_data_available_count = (filtered_data.iloc[:, 34] == 'Yes').sum()
-    q34_data_available_pct = q34_data_available_count / len(filtered_data) * 100
-
-    st.write("Whether to Receive Recommendation on training (something wrong with the data)")
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Recommendations on Training (either by the HR team or directly on Learning System)
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
 
     st.write(
-        f"{q34_data_available_pct:.2f}% of people, which are {q34_data_available_count} person(s), received some recommendations on training.")
+        f"{q27_data_available_pct:.2f}% of the respondents, {q27_data_available_count} employee(s), received recommendations on         training.")
+    
+    
+    ### Question28: What could be improved or what kind of format is missing today ?
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    What could be improved or what kind of format is missing today ?
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    ### Missing wordcloud
 
+
+############ SECTION 4 ENDS ############
+
+
+############ SECTION 5 STARTS ############
 if dashboard == 'Section 5: Compensation':
-    filtered_data = data[
-        (data['Role'].isin(selected_role)) &
-        (data['Function'].isin(selected_function)) &
-        (data['Location'].isin(selected_location))
-        ]
+    filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
+                                  st.session_state['selected_location'])
+    
+    # A text container for filtering instructions
+    st.markdown(
+        f"""
+        <div class="text-container" style="font-style: italic;">
+        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
+        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    ### Qustion29: Do you participate in the Compensation Campaign ?
+    q29_data_available_count = (filtered_data.iloc[:, 36] == 'Yes').sum()
+    q29_data_available_pct = q29_data_available_count / len(filtered_data) * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Compensation Campaign Participation
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
 
-    q36_compensation_count = (filtered_data['Do you participate in the Compensation Campaign ?'] == 'Yes').sum()
-    q36_compensation_pct = q36_compensation_count / len(filtered_data) * 100
+    st.write(
+        f"{q29_data_available_pct:.2f}% of the respondents, {q29_data_available_count} employee(s), participated in the   compensation campaign.")
+    
+    ### Qustion30: Do you think that the data available in the Compensation form enables you to make a fair decision regarding a promotion, a bonus or a raise ? (e.g : compa-ratio, variation between years, historical data on salary and bonus, …) 
+    q30_data_available_count = (filtered_data.iloc[:, 37] == 'Yes').sum()
+    q30_data_available_pct = q30_data_available_count / q29_data_available_count * 100
+    
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Data availability in the Compensation Form
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
+    st.write(
+        f"Among the people who participate the Compensation Campaign, {q30_data_available_pct:.2f}% of the respondents, {q30_data_available_count} employee(s), think that the data available in the Compensation form enables him/her to make a fair decision regarding a promotion, a bonus or a raise.")
 
-    st.write("Compensation Campaign Participation")
-
-    st.write("%.2f" % q36_compensation_pct, "% of people, which are", q36_compensation_count,
-             "person(s), participate in the Compensation Campaign.")
-
-    q37_data_available_count = (filtered_data[
-                                    'Do you think that the data available in the Compensation form enables you to make a fair decision regarding a promotion, a bonus or a raise ? (e.g : compa-ratio, variation between years, historica...'] == 'Yes').sum()
-    q37_data_available_pct = q37_data_available_count / q36_compensation_count * 100
-
-    st.write("Data Available in Compensation Form")
-
-    st.write("Among the people who participate the Compensation Campaign "
-             "%.2f" % q37_data_available_pct, "% of people, which are", q37_data_available_count,
-             "\nperson(s), think that the data available in the Compensation form enables him/her to make \na fair decision regarding a promotion, a bonus or a raise.")
-
-    st.write("Data Missing")
+    ### Qustion31: What data is missing according to you ?
+    st.markdown(
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        What data is missing according to you ?
+        </h2>
+        """,
+        unsafe_allow_html=True
+    )
 
     q38_data_reliable = filtered_data['What data is missing according to you ?'].dropna()
     from wordcloud import WordCloud
@@ -1583,483 +1926,913 @@ if dashboard == 'Section 5: Compensation':
 
     # Display the plot in Streamlit
     st.pyplot(plt)
-
-    # Convert the data to a DataFrame
-    q39_campaign_manage = pd.DataFrame(
-        {'Campaign': filtered_data["Do you manage/launch your compensation campaigns nationally or in another way?\n"]})
-
-    # Drop NaN values
-    q39_campaign_manage.dropna(inplace=True)
-
-    # Count occurrences of each campaign type
-    campaign_manage_counts = q39_campaign_manage['Campaign'].value_counts().reset_index()
-    campaign_manage_counts.columns = ['Campaign', 'Count']
-    campaign_manage_counts['Percentage'] = campaign_manage_counts['Count'] / len(q39_campaign_manage) * 100
-
-    # Sort the DataFrame by count
-    campaign_manage_counts = campaign_manage_counts.sort_values(by='Count', ascending=False)
-
-    # Create the bar chart using Plotly
-    fig33 = px.bar(campaign_manage_counts, x='Campaign', y='Count', text='Percentage',
-                   title="Do you manage/launch your compensation campaigns nationally or in another way?")
-    fig33.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
-
-    # Customize the layout
-    fig33.update_layout(
-        xaxis_title="Campaign",
-        yaxis_title="Count",
-        showlegend=False
+    
+    
+    ### Question32: Do you manage/launch your compensation campaigns nationally or in another way?
+    st.markdown(
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Compensation Campaigns Management/Launch
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
-    # Display the chart in Streamlit
-    st.plotly_chart(fig33)
+    # Create a DataFrame with the compensation format data
+    q32_data = pd.DataFrame({'compensation_manage': filtered_data.iloc[:, 39]})
+    q32_data['compensation_manage'] = q32_data['compensation_manage'].str.rstrip(';')
+    q32_data.dropna(inplace=True)
 
-    # Extract the column
-    q40_compensation_satisfaction = pd.DataFrame({'satisfaction_score': filtered_data.iloc[:, 40]}).dropna()
-
-    # Count the occurrences of each value
-    value_counts = q40_compensation_satisfaction['satisfaction_score'].value_counts().reset_index()
-    value_counts.columns = ['satisfaction_score', 'count']
-
-    # Create a dictionary to map scores to categories
-    score_to_category = {
-        1: 'Very Dissatisfied',
-        2: 'Dissatisfied',
-        3: 'Neutral',
-        4: 'Satisfied',
-        5: 'Very Satisfied'
-    }
-
-    # Create a new column 'category' by mapping the 'column_40' column to the categories
-    value_counts['category'] = value_counts['satisfaction_score'].map(score_to_category)
+    # Count the occurrences of each compensation format
+    compensation_manage_counts = q32_data['compensation_manage'].value_counts().reset_index()
+    compensation_manage_counts.columns = ['compensation_manage', 'count']
 
     # Calculate percentage
-    value_counts['percentage'] = value_counts['count'] / value_counts['count'].sum() * 100
+    compensation_manage_counts['percentage'] = compensation_manage_counts['count'] / compensation_manage_counts['count'].sum() * 100
 
     # Create a horizontal bar chart
-    fig34 = px.bar(value_counts, x='percentage', y='category', text='count', orientation='h', color='category')
-
-    # Add interactivity to the bar chart only
-    fig34.update_traces(texttemplate='%{text:.2s}', textposition='inside', selector=dict(type='bar'))
-    fig34.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-
-    st.plotly_chart(fig34, use_container_width=True)
-
-    # column 43 available count retroactivity on salary payments
-    q43_data_available_count = (filtered_data.iloc[:, 43] == 'Yes').sum()
-    q43_data_available_pct = q43_data_available_count / q36_compensation_count * 100
-
-    st.write("Retroactivity on Salary Payments")
-
-    st.write("Among the people who participate the Compensation Campaign "
-             "%.2f" % q43_data_available_pct, "% of people, which are", q43_data_available_count,
-             "person(s), have retroactivity on salary payments.")
-
-    # column 44 available count participation in the variable pay/bonus campaign
-    q44_data_available_count = (filtered_data.iloc[:, 44] == 'Yes').sum()
-    q44_data_available_pct = q44_data_available_count / q36_compensation_count * 100
-
-    st.write("Variable Pay/Bonus Campaign Participation")
-    st.write("Among the people who participate the Compensation Campaign "
-             "%.2f" % q44_data_available_pct, "% of people, which are", q44_data_available_count,
-             "person(s), participate in the Variable Pay/Bonus Campaign.")
-
-    # Extract satisfaction scores column for variable pay/bonus campaign
-    q45_data = pd.DataFrame({'variable_pay_satisfaction': filtered_data.iloc[:, 45]})
-
-    # Count the occurrences of each score
-    variable_pay_satisfaction_counts = q45_data['variable_pay_satisfaction'].value_counts().reset_index()
-    variable_pay_satisfaction_counts.columns = ['variable_pay_satisfaction', 'count']
-
-    # Create a new column 'category' by mapping the 'variable_pay_satisfaction' column to the categories
-    variable_pay_satisfaction_counts['category'] = variable_pay_satisfaction_counts['variable_pay_satisfaction'].map(
-        score_to_category)
-
-    # Calculate percentage
-    variable_pay_satisfaction_counts['percentage'] = variable_pay_satisfaction_counts['count'] / \
-                                                     variable_pay_satisfaction_counts['count'].sum() * 100
-
-    # Create a horizontal bar chart
-    fig35 = px.bar(variable_pay_satisfaction_counts, x='percentage', y='category', text='count', orientation='h',
-                   color='category')
-
-    # Add interactivity to the bar chart only
-    fig35.update_traces(texttemplate='%{text:.2s}', textposition='inside', selector=dict(type='bar'))
-    fig35.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-
-    st.plotly_chart(fig35, use_container_width=True)
-
-    # Convert the data to a DataFrame
-    q46_campaign_manage = pd.DataFrame({'bonus/variable pay campaign': filtered_data.iloc[:, 46]})
-
-    # Drop NaN values
-    q46_campaign_manage.dropna(inplace=True)
-
-    # Count occurrences of each campaign type
-    campaign_manage_counts = q46_campaign_manage['bonus/variable pay campaign'].value_counts().reset_index()
-    campaign_manage_counts.columns = ['bonus/variable pay campaign', 'Count']
-    campaign_manage_counts['Percentage'] = campaign_manage_counts['Count'] / len(q46_campaign_manage) * 100
-
-    # Sort the DataFrame by count
-    campaign_manage_counts = campaign_manage_counts.sort_values(by='Count', ascending=False)
-
-    # Create the bar chart using Plotly
-    fig36 = px.bar(campaign_manage_counts, x='bonus/variable pay campaign', y='Count', text='Percentage',
-                   title="Do you manage/launch your bonus/variable pay campaigns nationally or in another way?")
-    fig36.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
-
-    # Customize the layout
-    fig36.update_layout(
-        xaxis_title="Campaign",
-        yaxis_title="Count",
-        showlegend=False
-    )
-
-    # Display the chart in Streamlit
-    st.plotly_chart(fig36)
-
-    # the dates of your Variable Pay campaign different from the one for the Compensation Campaign
-    q47_data_available_count = (filtered_data.iloc[:, 47] == 'Yes').sum()
-    q47_data_available_pct = q47_data_available_count / q36_compensation_count * 100
-
-    st.write("Variable Pay Campaign Dates Different from Compensation Campaign Dates")
-
-    st.write("Among the people who participate the Compensation Campaign "
-             "%.2f" % q47_data_available_pct, "% of people, which are", q47_data_available_count,
-             "person(s), have different dates for the Variable Pay Campaign compared to the Compensation Campaign.")
-
-if dashboard == 'Section 6: Payroll':
-    filtered_data = data[
-        (data['Role'].isin(selected_role)) &
-        (data['Function'].isin(selected_function)) &
-        (data['Location'].isin(selected_location))
-        ]
-
-    # Payroll team
-    q48_payroll_count = (filtered_data.iloc[:, 48] == 'Yes').sum()
-    q48_payroll_pct = q48_payroll_count / len(filtered_data) * 100
-
-    st.write("Payroll Team")
-
-    st.write("%.2f" % q48_payroll_pct, "% of people, which are", q48_payroll_count,
-             "person(s), are part of the payroll team.")
-
-    # Extract the satisfaction scores column
-    q49_data = pd.DataFrame({'Payroll_satisfaction': filtered_data.iloc[:, 49]})
-
-    # Count the occurrences of each score
-    payroll_satisfaction_counts = q49_data['Payroll_satisfaction'].value_counts().reset_index()
-    payroll_satisfaction_counts.columns = ['Payroll_satisfaction', 'count']
-
-    # Create a dictionary to map scores to categories
-    score_to_category = {
-        1: 'Very Dissatisfied',
-        2: 'Dissatisfied',
-        3: 'Neutral',
-        4: 'Satisfied',
-        5: 'Very Satisfied'
-    }
-
-    # Create a new column 'Payroll_satisfaction_category' by mapping the 'Payroll_satisfaction' column to the categories
-    payroll_satisfaction_counts['Payroll_satisfaction_category'] = payroll_satisfaction_counts[
-        'Payroll_satisfaction'].map(score_to_category)
-
-    # Calculate percentage
-    payroll_satisfaction_counts['percentage'] = payroll_satisfaction_counts['count'] / payroll_satisfaction_counts[
-        'count'].sum() * 100
-
-    # Sort payroll_satisfaction_counts by 'Payroll_satisfaction' in descending order
-    payroll_satisfaction_counts = payroll_satisfaction_counts.sort_values('Payroll_satisfaction', ascending=False)
-
-    # Create a horizontal bar chart
-    fig37 = px.bar(payroll_satisfaction_counts, x='percentage', y='Payroll_satisfaction_category', text='count',
-                   orientation='h', color='Payroll_satisfaction_category',
-                   color_discrete_map={
-                       'Very Dissatisfied': '#C9190B',
-                       'Dissatisfied': '#EC7A08',
-                       'Neutral': '#F0AB00',
-                       'Satisfied': '#519DE9',
-                       'Very Satisfied': '#004B95'
+    fig32 = px.bar(compensation_manage_counts, x='percentage', y='compensation_manage', text='percentage', 
+                   orientation='h',
+                   color='compensation_manage', color_discrete_map={
+                       'National Campaign': '#440154',  # Dark purple
+                       'International Campaign': '#3b528b',  # Dark blue
+                       'Regional Campaign': '#21918c',  # Cyan
                    })
 
-    # Calculate median score
-    median_score_49 = q49_data['Payroll_satisfaction'].median()
+    # Remove legend and axes titles
+    fig32.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                        height=300, margin=dict(l=20, r=20, t=30, b=20))
 
-    # Determine the color based on the median score
-    if median_score_49 < 2:
-        color = 'red'
-    elif median_score_49 < 3:
-        color = 'orange'
-    elif median_score_49 < 4:
-        color = 'yellow'
-    else:
-        color = 'green'
+    # Format text on bars
+    fig32.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+    fig32.update_xaxes(range=[0, max(compensation_manage_counts['percentage']) * 1.1])
 
-    # Display the median score in a text box
-    st.markdown(f'<p style="color: {color};">Median Payroll Satisfaction Score: {median_score_49:.2f}</p>',
-                unsafe_allow_html=True)
+    # Improve layout aesthetics
+    fig32.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    st.plotly_chart(fig37, use_container_width=True)
+    # Show the chart
+    st.plotly_chart(fig32, use_container_width=False)
 
-    # internally or outsourced
-    q50_data = filtered_data.iloc[:, 50]
+    
+    ### Question33: How would you rate the overall satisfaction regarding the compensation campaign ?
+    satisfaction_ratio = 0.6
+    barcharts_ratio = 1 - satisfaction_ratio
+    satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
 
-    # Count the occurrences of each value
-    q50_counts = q50_data.value_counts().reset_index()
-    q50_counts.columns = ['internally or outsourced', 'count']
+    st.markdown("""
+        <style>
+        .chart-container {
+            padding-top: 20px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+        q33ValuesCount, q33MedianScore = score_distribution(filtered_data, 40)
 
-    # Calculate percentage
-    q50_counts['percentage'] = q50_counts['count'] / q50_counts['count'].sum() * 100
+        ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q33ValuesCount.values})
 
-    # Create a horizontal bar chart
-    fig38 = px.bar(q50_counts, x='percentage', y='internally or outsourced', text='count', orientation='h',
-                   color='internally or outsourced',
-                   title='Do you realize your payroll activities internally or is it outsourced ?')
+        # Display title and median score
+        title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Compensation Campaign</h2>"
+        caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q33MedianScore:.1f}</div>"
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(caption_html, unsafe_allow_html=True)
 
-    # show the chart
-    st.plotly_chart(fig38, use_container_width=True)
+        # Create a horizontal bar chart with Plotly
+        fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage', text='Percentage',
+                     orientation='h',
+                     color='Satisfaction Level', color_discrete_map={
+                'Very Dissatisfied': '#440154',  # Dark purple
+                'Dissatisfied': '#3b528b',  # Dark blue
+                'Neutral': '#21918c',  # Cyan
+                'Satisfied': '#5ec962',  # Light green
+                'Very Satisfied': '#fde725'  # Bright yellow
+            })
 
-    # cover legal updates
-    q51_legal_count = (filtered_data.iloc[:, 51] == 'Yes').sum()
-    q51_legal_pct = q51_legal_count / q48_payroll_count * 100
+        # Remove legend and axes titles
+        fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                          height=300, margin=dict(l=20, r=20, t=30, b=20))
 
-    st.write("Cover Legal Updates")
-    st.write("%.2f" % q51_legal_pct, "% of people, which are", q51_legal_count,
-             "person(s), have the systems cover legal updates.")
+        # Format text on bars
+        fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+        fig.update_xaxes(range=[0, max(ratings_df['Percentage']) * 1.1])
 
-    # autonomous or outsourced
-    q52_data = filtered_data.iloc[:, 52]
+        # Improve layout aesthetics
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    # Count the occurrences of each value
-    q52_counts = q52_data.value_counts().reset_index()
-    q52_counts.columns = ['autonomous or outsourced', 'count']
+        # Use Streamlit to display the Plotly chart
+        st.plotly_chart(fig, use_container_width=True, key="overall_rating_bar_chart")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # Calculate percentage
-    q52_counts['percentage'] = q52_counts['count'] / q52_counts['count'].sum() * 100
+    with barcharts_col:
+        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
+                                'Satisfied', 'Very Satisfied']
+        satisfaction_dropdown1 = st.selectbox('', satisfaction_options,
+                                              key='satisfaction_dropdown1')
 
-    # Create a horizontal bar chart
-    fig39 = px.bar(q52_counts, x='percentage', y='autonomous or outsourced', text='count', orientation='h',
-                   color='autonomous or outsourced',
-                   title='Are you autonomous when it comes to updating simple data, or do you systematically rely on outside firms for updates?')
+        satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown1, 40)
 
-    # show the chart
-    st.plotly_chart(fig39, use_container_width=True)
+        location_summary1, role_summary1, function_summary1 = prepare_summaries(satisfaction_filtered_data1)
+        left_margin = 150
+        total_height = 310
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
 
-    # global platform or not
-    q54_global_count = (filtered_data.iloc[:, 54] == 'Yes').sum()
-    q54_global_pct = q54_global_count / q48_payroll_count * 100
-    st.write("Global Platform")
-    st.write("If the payroll system is used in several countries," "%.2f" % q54_global_pct, "% of people, which are",
-             q54_global_count, "person(s), have a global platform for consolidating all the employees' country data.")
+        fig_role1 = px.bar(role_summary1, y='Role', x='Count', orientation='h')
+        fig_role1.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role1.update_traces(marker_color='#336699', text=role_summary1['Count'], textposition='outside')
+        fig_role1.update_yaxes(showticklabels=True, title='')
+        fig_role1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role1, use_container_width=True, key="roles_bar_chart1")
 
-    # automatically generate KPIs relating to the payroll
-    q55_auto_count_yes = (filtered_data.iloc[:, 55] == 'Yes').sum()
-    q55_auto_pct_yes = q55_auto_count_yes / q54_global_count * 100
-
-    q55_auto_count_no = (filtered_data.iloc[:, 55] == 'No').sum()
-    q55_auto_pct_no = q55_auto_count_no / q54_global_count * 100
-
-    q55_auto_count_not_concerned = (filtered_data.iloc[:, 55] == 'Not concerned').sum()
-    q55_auto_pct_not_concerned = q55_auto_count_not_concerned / q54_global_count * 100
-    st.write("Automatically Generate KPIs")
+        fig_function1 = px.bar(function_summary1, y='Function', x='Count', orientation='h')
+        fig_function1.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function1.update_traces(marker_color='#336699', text=function_summary1['Count'], textposition='outside')
+        fig_function1.update_yaxes(showticklabels=True, title='')
+        fig_function1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
+        
+        
+    ### Question36: Do you have retroactivity on salary payments ? (e.g. New salary announced in March but payed from January)
+    q36_data_available_count = (filtered_data.iloc[:, 43] == 'Yes').sum()
+    q36_data_available_pct = q36_data_available_count / q29_data_available_count * 100
+    
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Retroactivity on Salary Payments
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
     st.write(
-        "Among the people who have a global platform for consolidating all the employees' country data," "%.2f" % q55_auto_pct_yes,
-        "% of people, which are", q55_auto_count_yes,
-        "person(s), automatically generate KPIs relating to the payroll." "\n" "%.2f" % q55_auto_pct_no,
-        "% of people, which are", q55_auto_count_no,
-        "person(s), do not automatically generate KPIs relating to the payroll." "\n" "%.2f" % q55_auto_pct_not_concerned,
-        "% of people, which are", q55_auto_count_not_concerned,
-        "person(s), are not concerned about automatically generating KPIs relating to the payroll.")
+        f"Among the people who participate the Compensation Campaign, {q36_data_available_pct:.2f}% of the respondents, {q36_data_available_count} employee(s), have retroactivity on salary payments.")
+    
+    
+    ### Question37: Do you participate in the variable pay/bonus campaign ?
+    q37_data_available_count = (filtered_data.iloc[:, 44] == 'Yes').sum()
+    q37_data_available_pct = q37_data_available_count / q29_data_available_count * 100
+    
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Participation in Variable Pay/Bonus Campaign 
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
+    st.write(
+        f"Among the people who participate the Compensation Campaign, {q37_data_available_pct:.2f}% of the respondents, {q37_data_available_count} employee(s), participated in variable pay/bonus campaign.")
+    
+    
+    ### Question38: How would you rate the overall satisfaction regarding the Variable Pay/Bonus campaign  ?
+    satisfaction_ratio = 0.6
+    barcharts_ratio = 1 - satisfaction_ratio
+    satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
 
-    # mass entries ability
-    q56_mass_count = (filtered_data.iloc[:, 56] == 'Yes').sum()
-    q56_mass_pct = q56_mass_count / q48_payroll_count * 100
-    st.write("Mass Entries Ability")
-    st.write("%.2f" % q56_mass_pct, "% of people, which are", q56_mass_count,
-             "person(s), have the tool to make mass entries.")
+    st.markdown("""
+        <style>
+        .chart-container {
+            padding-top: 20px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+        q38ValuesCount, q38MedianScore = score_distribution(filtered_data, 45)
 
-    # connectivity with the core HR function
-    q57_connectivity_count_yes = (filtered_data.iloc[:, 57] == 'Yes').sum()
-    q57_connectivity_pct_yes = q57_connectivity_count_yes / q48_payroll_count * 100
+        ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q38ValuesCount.values})
 
-    q57_connectivity_count_no = (filtered_data.iloc[:, 57] == 'No').sum()
-    q57_connectivity_pct_no = q57_connectivity_count_no / q48_payroll_count * 100
+        # Display title and median score
+        title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Variable Pay/Bonus Campaign </h2>"
+        caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q38MedianScore:.1f}</div>"
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(caption_html, unsafe_allow_html=True)
 
-    q57_connectivity_count_not_core = (filtered_data.iloc[:, 57] == 'I do not have this type of system currently').sum()
-    q57_connectivity_pct_not_core = q57_connectivity_count_not_core / q48_payroll_count * 100
+        # Create a horizontal bar chart with Plotly
+        fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage', text='Percentage',
+                     orientation='h',
+                     color='Satisfaction Level', color_discrete_map={
+                'Very Dissatisfied': '#440154',  # Dark purple
+                'Dissatisfied': '#3b528b',  # Dark blue
+                'Neutral': '#21918c',  # Cyan
+                'Satisfied': '#5ec962',  # Light green
+                'Very Satisfied': '#fde725'  # Bright yellow
+            })
 
-    st.write("Connectivity with the Core HR/Administration Function")
-    st.write("In the payroll team," "%.2f" % q57_connectivity_pct_yes, "% of people, which are",
-             q57_connectivity_count_yes,
-             "person(s), have connectivity with the core HR function." "\n" "%.2f" % q57_connectivity_pct_no,
-             "% of people, which are", q57_connectivity_count_no,
-             "person(s), do not have connectivity with the core HR function." "\n" "%.2f" % q57_connectivity_pct_not_core,
-             "% of people, which are", q57_connectivity_count_not_core,
-             "person(s), do not have this type of system currently.")
+        # Remove legend and axes titles
+        fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                          height=300, margin=dict(l=20, r=20, t=30, b=20))
 
-    # connectivity with the core HR function
-    q58_connectivity_count_yes = (filtered_data.iloc[:, 58] == 'Yes').sum()
-    q58_connectivity_pct_yes = q58_connectivity_count_yes / q48_payroll_count * 100
+        # Format text on bars
+        fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+        fig.update_xaxes(range=[0, max(ratings_df['Percentage']) * 1.1])
 
-    q58_connectivity_count_no = (filtered_data.iloc[:, 58] == 'No').sum()
-    q58_connectivity_pct_no = q58_connectivity_count_no / q48_payroll_count * 100
+        # Improve layout aesthetics
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    q58_connectivity_count_not_core = (filtered_data.iloc[:, 58] == 'I do not have this type of system currently').sum()
-    q58_connectivity_pct_not_core = q58_connectivity_count_not_core / q48_payroll_count * 100
+        # Use Streamlit to display the Plotly chart
+        st.plotly_chart(fig, use_container_width=True, key="overall_rating_bar_chart")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.write("Connectivity with the Core HR/Administration Function")
-    st.write("In the payroll team," "%.2f" % q58_connectivity_pct_yes, "% of people, which are",
-             q58_connectivity_count_yes,
-             "person(s), have connectivity with the core HR function." "\n" "%.2f" % q58_connectivity_pct_no,
-             "% of people, which are", q58_connectivity_count_no,
-             "person(s), do not have connectivity with the core HR function." "\n" "%.2f" % q58_connectivity_pct_not_core,
-             "% of people, which are", q58_connectivity_count_not_core,
-             "person(s), do not have this type of system currently.")
+    with barcharts_col:
+        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
+                                'Satisfied', 'Very Satisfied']
+        satisfaction_dropdown38 = st.selectbox('', satisfaction_options,
+                                              key='satisfaction_dropdown38')
 
-if dashboard == 'Section 7: Time Management':
-    filtered_data = data[
-        (data['Role'].isin(selected_role)) &
-        (data['Function'].isin(selected_function)) &
-        (data['Location'].isin(selected_location))
-        ]
+        satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown38, 45)
 
-    # part of time management team
-    q59_time_management_count = (filtered_data.iloc[:, 59] == 'Yes').sum()
-    q59_time_management_pct = q59_time_management_count / len(filtered_data) * 100
+        location_summary1, role_summary1, function_summary1 = prepare_summaries(satisfaction_filtered_data1)
+        left_margin = 150
+        total_height = 310
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
 
-    st.write("Time Management Team")
-    st.write("%.2f" % q59_time_management_pct, "% of people, which are", q59_time_management_count,
-             "person(s), are part of the time management team.")
+        fig_role1 = px.bar(role_summary1, y='Role', x='Count', orientation='h')
+        fig_role1.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role1.update_traces(marker_color='#336699', text=role_summary1['Count'], textposition='outside')
+        fig_role1.update_yaxes(showticklabels=True, title='')
+        fig_role1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role1, use_container_width=True, key="roles_bar_chart1")
 
-    # do you have a time management system
-    q60_data = filtered_data.iloc[:, 60]
-    q60_yes_count = (q60_data == 'Yes').sum()
-    q60_yes_pct = q60_yes_count / q59_time_management_count * 100
+        fig_function1 = px.bar(function_summary1, y='Function', x='Count', orientation='h')
+        fig_function1.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function1.update_traces(marker_color='#336699', text=function_summary1['Count'], textposition='outside')
+        fig_function1.update_yaxes(showticklabels=True, title='')
+        fig_function1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
+        
+        
+    ### Question39: Do you manage/launch your bonus/variable pay campaigns nationally or in another way?
+    st.markdown(
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+       Bonus/Variable Pay Campaigns Management/Launch
+        </h2>
+        """,
+        unsafe_allow_html=True
+    )
 
-    st.write("Time Management System")
-    st.write("%.2f" % q60_yes_pct, "% of people, which are", q60_yes_count, "person(s), have a time management system.")
+    # Create a DataFrame with the compensation format data
+    q39_data = pd.DataFrame({'bonus_manage': filtered_data.iloc[:, 46]})
+    q39_data['bonus_manage'] = q39_data['bonus_manage'].str.rstrip(';')
+    q39_data.dropna(inplace=True)
 
-    # time management satisfaction
-    q61_data = pd.DataFrame({'time_management_satisfaction': filtered_data.iloc[:, 61]})
-    q61_data.dropna(inplace=True)
-
-    # Count the occurrences of each score
-    time_management_satisfaction_counts = q61_data['time_management_satisfaction'].value_counts().reset_index()
-    time_management_satisfaction_counts.columns = ['time_management_satisfaction', 'count']
-
-    # Create a dictionary to map scores to categories
-    score_to_category = {
-        1: 'Very Dissatisfied',
-        2: 'Dissatisfied',
-        3: 'Neutral',
-        4: 'Satisfied',
-        5: 'Very Satisfied'
-    }
-
-    # Create a new column 'category' by mapping the 'time_management_satisfaction' column to the categories
-    time_management_satisfaction_counts['category'] = time_management_satisfaction_counts[
-        'time_management_satisfaction'].map(score_to_category)
+    # Count the occurrences of each compensation format
+    bonus_manage_counts = q39_data['bonus_manage'].value_counts().reset_index()
+    bonus_manage_counts.columns = ['bonus_manage', 'count']
 
     # Calculate percentage
-    time_management_satisfaction_counts['percentage'] = time_management_satisfaction_counts['count'] / \
-                                                        time_management_satisfaction_counts['count'].sum() * 100
-
-    # Sort time management by 'time_management_satisfaction' in descending order
-    time_management_satisfaction_counts = time_management_satisfaction_counts.sort_values(
-        'time_management_satisfaction', ascending=False)
+    bonus_manage_counts['percentage'] = bonus_manage_counts['count'] / bonus_manage_counts['count'].sum() * 100
 
     # Create a horizontal bar chart
-    fig40 = px.bar(time_management_satisfaction_counts, x='percentage', y='time_management_satisfaction', text='count',
-                   orientation='h', color='category',
-                   color_discrete_map={
-                       'Very Dissatisfied': '#C9190B',
-                       'Dissatisfied': '#EC7A08',
-                       'Neutral': '#F0AB00',
-                       'Satisfied': '#519DE9',
-                       'Very Satisfied': '#004B95'
+    fig39 = px.bar(bonus_manage_counts, x='percentage', y='bonus_manage', text='percentage', 
+                   orientation='h',
+                   color='bonus_manage', color_discrete_map={
+                       'National Campaign': '#440154',  # Dark purple
+                       'International Campaign': '#3b528b',  # Dark blue
+                       'Regional Campaign': '#21918c',  # Cyan
                    })
 
-    # Calculate median score
-    median_score_61 = q61_data['time_management_satisfaction'].median()
+    # Remove legend and axes titles
+    fig39.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                        height=300, margin=dict(l=20, r=20, t=30, b=20))
 
-    # Determine the color based on the median score
-    if median_score_61 < 2:
-        color = 'red'
-    elif median_score_61 < 3:
-        color = 'orange'
-    elif median_score_61 < 4:
-        color = 'yellow'
-    else:
-        color = 'green'
+    # Format text on bars
+    fig39.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+    fig39.update_xaxes(range=[0, max(bonus_manage_counts['percentage']) * 1.1])
 
-    # Display the median score in a text box
-    st.markdown(f'<p style="color: {color};">Median Time Management Satisfaction Score: {median_score_61:.2f}</p>',
-                unsafe_allow_html=True)
+    # Improve layout aesthetics
+    fig39.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    st.plotly_chart(fig40, use_container_width=True)
+    # Show the chart
+    st.plotly_chart(fig39, use_container_width=False)
+    
+    
+    ### Question40: Are the dates of your Variable Pay campaign different from the one for the Compensation Campaign ?
+    q40_data_available_count = (filtered_data.iloc[:, 47] == 'Yes').sum()
+    q40_data_available_pct = q40_data_available_count / q29_data_available_count * 100
+    
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Variable Pay Campaign Dates Different from Compensation Campaign Dates
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
+    st.write(
+        f"Among the people who participate the Compensation Campaign, {q40_data_available_pct:.2f}% of the respondents, {q40_data_available_count} employee(s), have different dates for the Variable Pay Campaign compared to the Compensation Campaign.")
 
-    # self-service
-    q62_yes = (filtered_data.iloc[:, 62] == 'Yes').sum()
-    q62_yes_pct = q62_yes / q59_time_management_count * 100
+    
+############ SECTION 5 ENDS ############
 
-    st.write("Self-Service")
-    st.write("%.2f" % q62_yes_pct, "% of people, which are", q62_yes,
-             "person(s), have a self-service for the employees.")
 
-    # vacation counters
-    q63_yes = (filtered_data.iloc[:, 63] == 'Yes').sum()
-    q63_yes_pct = q63_yes / q59_time_management_count * 100
+############ SECTION 6 STARTS ############
+if dashboard == 'Section 6: Payroll':
+    filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
+                                  st.session_state['selected_location'])
+    
+    
+    # A text container for filtering instructions
+    st.markdown(
+        f"""
+        <div class="text-container" style="font-style: italic;">
+        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
+        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    
+    ### Question41: Are you part of the payroll team ?
+    q41_data_available_count = (filtered_data.iloc[:, 48] == 'Yes').sum()
+    q41_data_available_pct = q41_data_available_count / len(filtered_data) * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Payroll Team
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
 
-    st.write("Vacation Counters")
-    st.write("%.2f" % q63_yes_pct, "% of people, which are", q63_yes,
-             "person(s), have the system allow employees to view their vacation counters (entitlement / taken / balance).")
+    st.write(
+        f"{q41_data_available_pct:.2f}% of the respondents, {q41_data_available_count} employee(s), are part of the payroll team.")
+    
+    
+    ### Question42: How satisfied are you with your current payroll system ?
+    satisfaction_ratio = 0.6
+    barcharts_ratio = 1 - satisfaction_ratio
+    satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
 
-    # cover shift scheduling shifts
-    q64_yes = (filtered_data.iloc[:, 64] == 'Yes').sum()
-    q64_yes_pct = q64_yes / q59_time_management_count * 100
+    st.markdown("""
+        <style>
+        .chart-container {
+            padding-top: 20px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+        q42ValuesCount, q42MedianScore = score_distribution(filtered_data, 49)
 
-    st.write("Cover Shift Scheduling Shifts")
-    st.write("%.2f" % q64_yes_pct, "% of people, which are", q64_yes,
-             "person(s), have the system cover all the shift scheduling functions needed.")
+        ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q42ValuesCount.values})
 
-    # capability to run all the report needed
-    q65_yes = (filtered_data.iloc[:, 65] == 'Yes').sum()
-    q65_yes_pct = q65_yes / q59_time_management_count * 100
+        # Display title and median score
+        title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Current Payroll System</h2>"
+        caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q42MedianScore:.1f}</div>"
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(caption_html, unsafe_allow_html=True)
 
-    st.write("Capability to Run All the Reports Needed")
-    st.write("%.2f" % q65_yes_pct, "% of people, which are", q65_yes,
-             "person(s), have the capability to run all the report needed.")
+        # Create a horizontal bar chart with Plotly
+        fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage', text='Percentage',
+                     orientation='h',
+                     color='Satisfaction Level', color_discrete_map={
+                'Very Dissatisfied': '#440154',  # Dark purple
+                'Dissatisfied': '#3b528b',  # Dark blue
+                'Neutral': '#21918c',  # Cyan
+                'Satisfied': '#5ec962',  # Light green
+                'Very Satisfied': '#fde725'  # Bright yellow
+            })
 
-    # allow employees to take their own leave
-    q67_yes = (filtered_data.iloc[:, 67] == 'Yes').sum()
-    q67_yes_pct = q67_yes / q59_time_management_count * 100
+        # Remove legend and axes titles
+        fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                          height=300, margin=dict(l=20, r=20, t=30, b=20))
 
-    st.write("Allow Employees to Take Their Own Leave")
-    st.write("%.2f" % q67_yes_pct, "% of people, which are", q67_yes,
-             "person(s), have the system allow employees to take their own leave, with workflow validation by their manager or HR.")
+        # Format text on bars
+        fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+        fig.update_xaxes(range=[0, max(ratings_df['Percentage']) * 1.1])
 
-    # automatically take retroactive items into account
-    q68_yes = (filtered_data.iloc[:, 68] == 'Yes').sum()
-    q68_yes_pct = q68_yes / q59_time_management_count * 100
+        # Improve layout aesthetics
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    st.write("Automatically Take Retroactive Items into Account")
-    st.write("%.2f" % q68_yes_pct, "% of people, which are", q68_yes,
-             "person(s), have the system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1).")
+        # Use Streamlit to display the Plotly chart
+        st.plotly_chart(fig, use_container_width=True, key="overall_rating_bar_chart")
+        st.markdown('</div>', unsafe_allow_html=True)
 
+    with barcharts_col:
+        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
+                                'Satisfied', 'Very Satisfied']
+        satisfaction_dropdown38 = st.selectbox('', satisfaction_options,
+                                              key='satisfaction_dropdown38')
+
+        satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown38, 49)
+
+        location_summary1, role_summary1, function_summary1 = prepare_summaries(satisfaction_filtered_data1)
+        left_margin = 150
+        total_height = 310
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
+
+        fig_role1 = px.bar(role_summary1, y='Role', x='Count', orientation='h')
+        fig_role1.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role1.update_traces(marker_color='#336699', text=role_summary1['Count'], textposition='outside')
+        fig_role1.update_yaxes(showticklabels=True, title='')
+        fig_role1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role1, use_container_width=True, key="roles_bar_chart1")
+
+        fig_function1 = px.bar(function_summary1, y='Function', x='Count', orientation='h')
+        fig_function1.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function1.update_traces(marker_color='#336699', text=function_summary1['Count'], textposition='outside')
+        fig_function1.update_yaxes(showticklabels=True, title='')
+        fig_function1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
+        
+        
+    ### Question43: Do you realize your payroll activities internally or is it outsourced ?
+    q43_data_available_count = (filtered_data.iloc[:, 50] == 'Internal').sum()
+    q43_data_available_pct = q43_data_available_count / q41_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Payroll Activities
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the payroll team, {q43_data_available_pct:.2f}% of the respondents, {q43_data_available_count} employee(s), realize their payroll activities internally and others realize that it is outsourced.")
+    
+    
+    ### Question44: Does your system cover legal updates ?
+    q44_data_available_count = (filtered_data.iloc[:, 51] == 'Yes').sum()
+    q44_data_available_pct = q44_data_available_count / q41_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Legal Updates
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the payroll team, {q44_data_available_pct:.2f}% of the respondents, {q44_data_available_count} employee(s), answer that their system covers legal updates.")
+    
+    
+    ### Question45: Are you autonomous when it comes to updating simple data, or do you systematically rely on outside firms for updates?
+    q45_data_available_count = (filtered_data.iloc[:, 52] == 'Autonomous').sum()
+    q45_data_available_pct = q45_data_available_count / q41_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Are you autonomous when it comes to updating simple data?
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the payroll team, {q45_data_available_pct:.2f}% of the respondents, {q45_data_available_count} employee(s), answer that they are autonomous and others rely on outside firms for updates.")
+    
+    
+    ### Question46: Can you share any specific features of your current system that you like/that made you choose it?
+    st.markdown(
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Can you share any specific features of your current system that you like/that made you choose it?
+        </h2>
+        """,
+        unsafe_allow_html=True
+    )
+    ### Missing wordcloud
+    
+    
+    ### Question47: If your payroll system is used in several countries, do you have a global platform for consolidating all your employees' country data?
+    q47_data_available_count = (filtered_data.iloc[:, 54] == 'Yes').sum()
+    q47_data_available_pct = q47_data_available_count / q41_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Global Platform for Multiple Countries
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the payroll team, {q47_data_available_pct:.2f}% of the respondents, {q47_data_available_count} employee(s), answer that they have a global platform for consolidating all employees' country data.")
+    
+    
+    ### Question48: If so, does this platform automatically generate KPIs relating to your payroll (M/F headcount, salaries paid, contributions paid, etc.)?
+    q48_data_available_count = (filtered_data.iloc[:, 55] == 'Yes').sum()
+    q48_data_available_pct = q48_data_available_count / q47_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Global Platform Function: Automatically Generate KPIs
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who have a global platform, {q48_data_available_pct:.2f}% of the respondents, {q48_data_available_count} employee(s), answer that this platform automatically generate KPIs relating to the payroll (M/F headcount, salaries paid, contributions paid, etc.).")
+    
+    
+    ### Question49: Can mass entries be made in the tool?
+    q49_data_available_count = (filtered_data.iloc[:, 56] == 'Yes').sum()
+    q49_data_available_pct = q49_data_available_count / q41_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Mass Entries
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the payroll team, {q49_data_available_pct:.2f}% of the respondents, {q49_data_available_count} employee(s), answer that they have a global platform for consolidating all employees' country data.")
+    
+    
+    
+    ### Question50: Is your payroll connected with your time management system ?
+    q50_data_available_count = (filtered_data.iloc[:, 57] == 'Yes').sum()
+    q50_data_available_pct = q50_data_available_count / q41_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Payroll Connected with Time Management System
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the payroll team, {q50_data_available_pct:.2f}% of the respondents, {q50_data_available_count} employee(s), answer that the payroll system is connected with time management system.")
+    
+    
+    ### Question51: Is your payroll connected with a CORE HR/Administrative solution ?
+    q51_data_available_count = (filtered_data.iloc[:, 58] == 'Yes').sum()
+    q51_data_available_pct = q51_data_available_count / q41_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Payroll Connected with a CORE HR/Administrative Solution
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the payroll team, {q51_data_available_pct:.2f}% of the respondents, {q51_data_available_count} employee(s), answer that the payroll system is connected with a CORE HR/Administrative solution.")
+    
+############ SECTION 6 ENDS ############
+
+
+############ SECTION 7 STARTS ############    
+if dashboard == 'Section 7: Time Management':
+    filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
+                                  st.session_state['selected_location'])
+    
+    
+    # A text container for filtering instructions
+    st.markdown(
+        f"""
+        <div class="text-container" style="font-style: italic;">
+        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
+        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    
+    ### Question52: Are you part of the Time Management Team ?
+    q52_data_available_count = (filtered_data.iloc[:, 59] == 'Yes').sum()
+    q52_data_available_pct = q52_data_available_count / len(filtered_data) * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Time Management Team
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"{q52_data_available_pct:.2f}% of the respondents, {q52_data_available_count} employee(s), are part of the time management team.")
+    
+    
+    ### Question53: Do you currently have a time management system ?
+    q53_data_available_count = (filtered_data.iloc[:, 60] == 'Yes').sum()
+    q53_data_available_pct = q53_data_available_count / q52_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Time Management System
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the time management team, {q53_data_available_pct:.2f}% of the respondents,  {q53_data_available_count} employee(s),  answer that they currently have a time management system.")
+    
+    
+    ### Question54: How satisfied are you with your current time management system ?
+    satisfaction_ratio = 0.6
+    barcharts_ratio = 1 - satisfaction_ratio
+    satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
+
+    st.markdown("""
+        <style>
+        .chart-container {
+            padding-top: 20px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    
+    with satisfaction_col:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+        q54ValuesCount, q54MedianScore = score_distribution(filtered_data, 61)
+
+        ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q54ValuesCount.values})
+
+        # Display title and median score
+        title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Current Time Management System</h2>"
+        caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q54MedianScore:.1f}</div>"
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(caption_html, unsafe_allow_html=True)
+
+        # Create a horizontal bar chart with Plotly
+        fig = px.bar(ratings_df, y='Satisfaction Level', x='Percentage', text='Percentage',
+                     orientation='h',
+                     color='Satisfaction Level', color_discrete_map={
+                'Very Dissatisfied': '#440154',  # Dark purple
+                'Dissatisfied': '#3b528b',  # Dark blue
+                'Neutral': '#21918c',  # Cyan
+                'Satisfied': '#5ec962',  # Light green
+                'Very Satisfied': '#fde725'  # Bright yellow
+            })
+
+        # Remove legend and axes titles
+        fig.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
+                          height=300, margin=dict(l=20, r=20, t=30, b=20))
+
+        # Format text on bars
+        fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+        fig.update_xaxes(range=[0, max(ratings_df['Percentage']) * 1.1])
+
+        # Improve layout aesthetics
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+
+        # Use Streamlit to display the Plotly chart
+        st.plotly_chart(fig, use_container_width=True, key="overall_rating_bar_chart")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with barcharts_col:
+        satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
+                                'Satisfied', 'Very Satisfied']
+        satisfaction_dropdown38 = st.selectbox('', satisfaction_options,
+                                              key='satisfaction_dropdown38')
+
+        satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown38, 61)
+
+        location_summary1, role_summary1, function_summary1 = prepare_summaries(satisfaction_filtered_data1)
+        left_margin = 150
+        total_height = 310
+        role_chart_height = total_height * 0.45
+        function_chart_height = total_height * 0.55
+
+        fig_role1 = px.bar(role_summary1, y='Role', x='Count', orientation='h')
+        fig_role1.update_layout(title="by Role", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                height=role_chart_height, showlegend=False)
+        fig_role1.update_traces(marker_color='#336699', text=role_summary1['Count'], textposition='outside')
+        fig_role1.update_yaxes(showticklabels=True, title='')
+        fig_role1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_role1, use_container_width=True, key="roles_bar_chart1")
+
+        fig_function1 = px.bar(function_summary1, y='Function', x='Count', orientation='h')
+        fig_function1.update_layout(title="by Function", margin=dict(l=left_margin, r=0, t=50, b=0),
+                                    height=function_chart_height, showlegend=False)
+        fig_function1.update_traces(marker_color='#336699', text=function_summary1['Count'], textposition='outside')
+        fig_function1.update_yaxes(showticklabels=True, title='')
+        fig_function1.update_xaxes(showticklabels=False, title='')
+        st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
+    
+    
+    
+    ### Question55: Do you have a self-service for your employees ?
+    q55_data_available_count = (filtered_data.iloc[:, 62] == 'Yes').sum()
+    q55_data_available_pct = q55_data_available_count / q52_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Self-service for the Employees
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the time management team, {q55_data_available_pct:.2f}% of the respondents,  {q55_data_available_count} employee(s),  answer that they have a self-service for their employees.")
+    
+    
+    ### Question56: Does the system allow employees to view their vacation counters (entitlement / taken / balance)
+    q56_data_available_count = (filtered_data.iloc[:, 63] == 'Yes').sum()
+    q56_data_available_pct = q56_data_available_count / q52_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    System Function: View Vacation Counters
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the time management team, {q56_data_available_pct:.2f}% of the respondents,  {q56_data_available_count} employee(s),  answer that the system allow employess to view their vacation counters (entitlement / taken / balance).")
+    
+    
+    ### Question57: Does your system cover all the shift scheduling functions you need?
+    q57_data_available_count = (filtered_data.iloc[:, 64] == 'Yes').sum()
+    q57_data_available_pct = q57_data_available_count / q52_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    System Function: Cover the Shift Scheduling
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the time management team, {q57_data_available_pct:.2f}% of the respondents,  {q57_data_available_count} employee(s),  answer that the system cover all the shift scheduling functions needed.")
+    
+    
+    
+    ### Question58: Do you have the capability to run all the report needed ?
+    q58_data_available_count = (filtered_data.iloc[:, 65] == 'Yes').sum()
+    q58_data_available_pct = q58_data_available_count / q52_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Capability: Run all the reports
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the time management team, {q58_data_available_pct:.2f}% of the respondents,  {q58_data_available_count} employee(s),  answer that they have the capability to run all the reports needed.")
+    
+    
+    ### Question59: According to you, what functionalities are missing from your current system ?
+    st.markdown(
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        According to you, what functionalities are missing from your current system ?
+        </h2>
+        """,
+        unsafe_allow_html=True
+    )
+    ### Missing wordcloud
+    
+    
+    ### Question60: Does the system allow employees to take their own leave, with workflow validation by their manager or HR?
+    q60_data_available_count = (filtered_data.iloc[:, 67] == 'Yes').sum()
+    q60_data_available_pct = q60_data_available_count / q52_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    System Function: Allow Employess to Take Their Own Leave
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the time management team, {q60_data_available_pct:.2f}% of the respondents,  {q60_data_available_count} employee(s),  answer that the system allows employees to take their own leave, with workflow validation by their manager or HR.")
+    
+    
+    ### Question61: Does your system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1)?
+    q61_data_available_count = (filtered_data.iloc[:, 68] == 'Yes').sum()
+    q61_data_available_pct = q61_data_available_count / q52_data_available_count * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    System Function: Automatically Take Retroactive Items Into Account
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.write(
+        f"Among the people who are part of the time management team, {q61_data_available_pct:.2f}% of the respondents,  {q61_data_available_count} employee(s),  answer that the system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1).")
+    
+############ SECTION 7 ENDS ############
+
+
+############ SECTION 8 STARTS ############ 
 if dashboard == 'Section 8: User Experience':
-    filtered_data = data[
-        (data['Role'].isin(selected_role)) &
-        (data['Function'].isin(selected_function)) &
-        (data['Location'].isin(selected_location))
-        ]
+    filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
+                                  st.session_state['selected_location'])
+    
+    
+    # A text container for filtering instructions
+    st.markdown(
+        f"""
+        <div class="text-container" style="font-style: italic;">
+        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
+        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    
+    ### Question62: In the context of your job, what are the most valuable activities your current HRIS enable you to do?
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    In the context of your job, what are the most valuable activities your current HRIS enable you to do?
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    ### Missing wordcloud,emotion analysis
+    
+    
+    ### Question63: In the context of your job, what do your current HRIS fail to address?
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    In the context of your job, what do your current HRIS fail to address?
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    ### Missing wordcloud,emotion analysis
+    
+    
+    ### Question64: Do you consider the time you spend on your HRIS to be time well spent?
+    q64_data_available_count = (filtered_data.iloc[:, 71] == 'Yes').sum()
+    q64_data_available_pct = q64_data_available_count / len(filtered_data) * 100
+   
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Time Spend on HRIS
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
 
-    # time well spent
-    q71_yes = (filtered_data.iloc[:, 71] == 'Yes').sum()
-    q71_yes_pct = q71_yes / len(filtered_data) * 100
-
-    st.write("Time Well Spent")
-    st.write("%.2f" % q71_yes_pct, "% of people, which are", q71_yes,
-             "person(s), think that the time spent on the system is well spent.")
+    st.write(
+        f"{q64_data_available_pct:.2f}% of the respondents, {q64_data_available_count} employee(s), consider the time you spend on your HRIS to be time well spent.")
+    
+    
+    ### Question65: In 3 words, how would you describe your current user-experience with the HRIS ?
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    In 3 words, how would you describe your current user-experience with the HRIS ?
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    ### Missing wordcloud,emotion analysis
+    
+    
 
     import pandas as pd
     from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForSeq2SeqLM
@@ -2136,3 +2909,6 @@ if dashboard == 'Section 8: User Experience':
 
     # Display the DataFrame with predicted emotions
     df_with_emotions.head()
+
+    
+############ SECTION 8 ENDS ############
