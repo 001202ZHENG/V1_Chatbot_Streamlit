@@ -132,11 +132,9 @@ roles = get_unique_values('What is your role at the company ?')
 functions = get_unique_values('What function are you part of ?')
 locations = get_unique_values('Where are you located ?')
 
-st.sidebar.multiselect('Select Role', options=roles, default=st.session_state['selected_role'], key='selected_role')
-st.sidebar.multiselect('Select Function', options=functions, default=st.session_state['selected_function'],
-                       key='selected_function')
-st.sidebar.multiselect('Select Location', options=locations, default=st.session_state['selected_location'],
-                       key='selected_location')
+st.session_state['selected_role'] = st.sidebar.multiselect('Select Role', options=roles, default=None)
+st.session_state['selected_function'] = st.sidebar.multiselect('Select Function', options=functions, default=None)
+st.session_state['selected_location'] = st.sidebar.multiselect('Select Location', options=locations, default=None)
 
 
 def apply_filters(data, roles, functions, locations):
@@ -193,13 +191,12 @@ def prepare_summaries(data):
     function_summary.columns = ['Function', 'Count']
     return location_summary, role_summary, function_summary
 
-
-filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
-                              st.session_state['selected_location'])
-
-
 ############ GENERAL DASHBOARD STARTS ############
 if dashboard == "General Survey Results":
+
+    filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
+                                  st.session_state['selected_location'])
+
     st.markdown(
         """
         <style>
@@ -352,8 +349,7 @@ if dashboard == "General Survey Results":
 
 ############ GENERAL DASHBOARD ENDS ############
 
-##### THIS SECTION FOR SATISFACTION SCORES START ####
-# MARIAS SCORE DISTRIBUTION FUNCTION
+##### SECTION FOR DEFINING FUNCTIONS ####
 def score_distribution(data, column_index):
     # Extract the data series based on the column index
     data_series = data.iloc[:, column_index]
@@ -374,67 +370,6 @@ def score_distribution(data, column_index):
     return value_counts, median_score
 
 
-#### Function to plot satisfaction proportions -- OLD
-def plot_satisfaction_proportions(data_series, title):
-    # Calculate satisfaction proportions
-    score_counts = data_series.value_counts().sort_index().astype(int)
-    total_satisfied = score_counts.get(4, 0) + score_counts.get(5, 0)
-    total_dissatisfied = score_counts.get(1, 0) + score_counts.get(2, 0) + score_counts.get(3, 0)
-
-    # Calculate proportions
-    dissatisfied_proportions = [score_counts.get(i, 0) / total_dissatisfied if total_dissatisfied > 0 else 0 for i in
-                                range(1, 4)]
-    satisfied_proportions = [score_counts.get(i, 0) / total_satisfied if total_satisfied > 0 else 0 for i in
-                             range(4, 6)]
-
-    # Create the plotly figure for stacked bar chart
-    fig = go.Figure()
-
-    # Add 'Dissatisfied' segments
-    cumulative_size = 0
-    colors_dissatisfied = sns.color_palette("Blues_d", n_colors=3)
-    for i, prop in enumerate(dissatisfied_proportions):
-        fig.add_trace(go.Bar(
-            x=[prop],
-            y=['Dissatisfied'],
-            orientation='h',
-            name=f'{i + 1}',
-            marker=dict(
-                color=f'rgb({colors_dissatisfied[i][0] * 255},{colors_dissatisfied[i][1] * 255},{colors_dissatisfied[i][2] * 255})'),
-            base=cumulative_size
-        ))
-        cumulative_size += prop
-
-    # Add 'Satisfied' segments
-    cumulative_size = 0
-    colors_satisfied = sns.color_palette("Greens_d", n_colors=2)
-    for i, prop in enumerate(satisfied_proportions):
-        fig.add_trace(go.Bar(
-            x=[prop],
-            y=['Satisfied'],
-            orientation='h',
-            name=f'{i + 4}',
-            marker=dict(
-                color=f'rgb({colors_satisfied[i][0] * 255},{colors_satisfied[i][1] * 255},{colors_satisfied[i][2] * 255})'),
-            base=cumulative_size
-        ))
-        cumulative_size += prop
-
-    # Update layout and display in Streamlit
-    fig.update_layout(
-        title=title,
-        barmode='stack',
-        annotations=[
-            dict(x=1.05, y=0, text=f'Total: {total_dissatisfied}', showarrow=False),
-            dict(x=1.05, y=1, text=f'Total: {total_satisfied}', showarrow=False)
-        ]
-    )
-    fig.update_xaxes(title_text="", visible=True, showticklabels=False)
-    fig.update_yaxes(title_text="")
-
-    st.plotly_chart(fig)  # Display the plot in Streamlit
-
-
 def filter_by_satisfaction(data, satisfaction_level, column_index):
     if satisfaction_level != 'Select a satisfaction level':
         data = data[data.iloc[:, column_index] == satisfaction_options.index(satisfaction_level)]
@@ -445,15 +380,6 @@ def filter_by_comfort(data, comfort_level, column_index):
         data = data[data.iloc[:, column_index] == comfort_options.index(comfort_level)]
     return data
 
-##### THIS SECTION FOR SATISFACTION SCORES ENDS ####
-
-
-##### THIS SECTION FOR SIDEBAR AND SENTIMENT ANALYSIS CHARTS START START START START ####
-# Function to create Streamlit sentiment dashboard
-# Initialize VADER sentiment analyzer
-# Make sure the VADER lexicon is downloaded
-# nltk.download('vader_lexicon')
-# sentiment_analyzer = SentimentIntensityAnalyzer()
 
 ############ SENTIMENT ANALYSIS FUNCTION STARTS ############
 def generate_wordclouds(df, score_col_idx, reasons_col_idx, custom_stopwords):
@@ -564,16 +490,191 @@ def sentiment_dashboard(data_series, title):
     st.plotly_chart(fig)  # Display the stacked bar chart
 
 
-##### THIS SECTION FOR SIDEBAR AND SENTIMENT ANALYSIS CHARTS END END END END ####
+########## DEFINING FUNCTIONS ENDS ########
 
 ############ SECTION 1 STARTS ############
 if dashboard == "Section 1: Employee Experience":
 
+    q6ValuesCount, q6MedianScore = score_distribution(data, 11)
+    q11ValuesCount, q11MedianScore = score_distribution(data, 13)
+
+    # Question 4: What HR processes do you interact with the most in your day-to-day work ?
+    q4_data = pd.DataFrame({
+        'ID': data['ID'],
+        'HR_Process': data['What HR processes do you interact with the most in your day-to-day work ?']
+    })
+    # Remove the last semicolon from each HR_Process value
+    q4_data['HR_Process'] = q4_data['HR_Process'].str.rstrip(';')
+    # Splitting the HR_Process values into separate lists of processes
+    q4_data['HR_Process'] = q4_data['HR_Process'].str.split(';')
+    # Explode the lists into separate rows while maintaining the corresponding ID
+    q4_processed = q4_data.explode('HR_Process')
+    # Reset index to maintain the original ID
+    q4_processed.reset_index(drop=True, inplace=True)
+    q4_count = q4_processed.groupby('HR_Process').size().reset_index(name='Count')
+
+    # Question 5: In what areas do you think HR could improve its capabilities to enhance how they deliver services and support you ?
+    q5_data = pd.DataFrame({
+        'ID': data['ID'],
+        'Improve_Area': data[
+            'In what areas do you think HR could improve its capabilities to enhance how they deliver services and support you ?']
+    })
+    # Remove the last semicolon from each value
+    q5_data['Improve_Area'] = q5_data['Improve_Area'].str.rstrip(';')
+    # Splitting the values into separate lists of processes
+    q5_data['Improve_Area'] = q5_data['Improve_Area'].str.split(';')
+    # Explode the lists into separate rows while maintaining the corresponding ID
+    q5_processed = q5_data.explode('Improve_Area')
+    # Reset index to maintain the original ID
+    q5_processed.reset_index(drop=True, inplace=True)
+    q5_count = q5_processed.groupby('Improve_Area').size().reset_index(name='Count')
+
+    # Question 4 and 5 combined
+    # Merge the two dataset on function
+    # Merge datasets by matching HR_Process and Improve_Area
+    q4_q5_count = pd.merge(q4_count, q5_count, left_on='HR_Process', right_on='Improve_Area', how='outer')
+    # Drop unnecessary columns
+    q4_q5_count.drop(['Improve_Area'], axis=1, inplace=True)
+    q4_q5_count.rename(
+        columns={'HR_Process': 'HR Function', 'Count_x': 'HR_Process_Interacted', 'Count_y': 'Improvement_Areas'},
+        inplace=True)
+    q4_q5_count.sort_values('HR_Process_Interacted', ascending=False, inplace=True)
+    # Separate 'None' row from the DataFrame
+    none_row = q4_q5_count[q4_q5_count['HR Function'] == 'None']
+    q4_q5_count = q4_q5_count[q4_q5_count['HR Function'] != 'None']
+
+    # Sort 'HR_Process_Interacted' in descending order
+    q4_q5_count.sort_values(by='HR_Process_Interacted', ascending=True, inplace=True)
+
+    # Append 'None' row at the end
+    q4_q5_count = pd.concat([none_row, q4_q5_count])
+    # Reshape data into tidy format
+    df_tidy = q4_q5_count.melt(id_vars='HR Function', var_name='Type', value_name='Count')
+
+    # Question 7: How do you access HR Information ?
+    q7_data = pd.DataFrame({'device': data["How do you access HR Information ?"]})
+    q7_data['device'] = q7_data['device'].str.rstrip(';').str.split(';')
+    q7_data = q7_data.explode('device')
+    q7_data.dropna(inplace=True)
+    # Count the occurrences of each device
+    device_counts = q7_data['device'].value_counts().reset_index()
+    device_counts.columns = ['device', 'count']
+    # Calculate percentage
+    device_counts['percentage'] = device_counts['count'] / device_counts['count'].sum() * 100
+
+    st.markdown(
+        """
+        <style>
+        .top-bar {
+            background-color: #f0f2f6;  /* Light grey background */
+            text-align: left;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            height: auto;
+        }
+        </style>
+        """, unsafe_allow_html=True
+    )
+
+    # Question 10: Do you find the HR department responsive to your inquiries and concerns?
+    q10_responsiveness_count = (data.iloc[:, 15] == 'Yes').sum()
+    q10_responsiveness_pct = q10_responsiveness_count / len(data) * 100
+
+    highest_hr_process_interacted = q4_q5_count.loc[q4_q5_count[q4_q5_count['HR Function'] != 'None']['HR_Process_Interacted'].idxmax(), "HR Function"]
+    highest_improvement_areas = q4_q5_count.loc[q4_q5_count[q4_q5_count['HR Function'] != 'None']['Improvement_Areas'].idxmax(), "HR Function"]
+    most_used_device = device_counts.iloc[0]['device']
+
+    # Summary of all outputs in the bar container
+    st.markdown(
+        f"""
+            <style>
+            .top-bar {{
+                font-weight: normal;
+                font-size: 17px;
+                padding: 10px 20px;
+                color: #333333;
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+            }}
+            .top-bar ul, .top-bar li {{
+            font-size: 17px;
+            padding-left: 20px;
+            margin: 0;
+            }}
+            </style>
+            <div class="top-bar">
+            This survey section is answered by all the <strong>{len(data)}</strong> survey participants:
+            <ul>
+                <li>{q10_responsiveness_pct:.0f}% of the respondents, {q10_responsiveness_count} employee(s), find the HR department responsive to their inquiries and concerns.</li>
+                <li>The median satisfaction rating on overall HR services and support is {q6MedianScore}.</li>
+                <li>The median satisfaction rating on the HR communication channels is {q11MedianScore}.</li>
+                <li> Highest Process interacted with {highest_hr_process_interacted}</li>
+                <li> Highest Improvement Area: {highest_improvement_areas}</li>
+                <li> Most Device used: {most_used_device}</li>
+            </ul>
+            </div>
+            """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <style>
+        .text-container {
+            font-size: 15px;
+            padding: 10px 0px;
+            color: #333333;
+        }
+        </style>
+        """, unsafe_allow_html=True
+    )
+
+
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
 
-    q6ValuesCount, q6MedianScore = score_distribution(data, 11)
-    q11ValuesCount, q11MedianScore = score_distribution(data, 13)
+    # A text container for filtering instructions
+    st.markdown(
+        f"""
+        <div class="text-container" style="font-style: italic;">
+        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
+        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Question 10: Do you find the HR department responsive to your inquiries and concerns?
+    q10_responsiveness_count = (filtered_data.iloc[:, 15] == 'Yes').sum()
+    q10_responsiveness_pct = q10_responsiveness_count / len(filtered_data) * 100
+
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                {q10_responsiveness_pct:.0f}% of the respondents, {q10_responsiveness_count} employee(s), find the HR department responsive to their inquiries and concerns.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
+
 
     # Question 4: What HR processes do you interact with the most in your day-to-day work ?
     q4_data = pd.DataFrame({
@@ -638,86 +739,6 @@ if dashboard == "Section 1: Employee Experience":
     device_counts.columns = ['device', 'count']
     # Calculate percentage
     device_counts['percentage'] = device_counts['count'] / device_counts['count'].sum() * 100
-
-    st.markdown(
-        """
-        <style>
-        .top-bar {
-            background-color: #f0f2f6;  /* Light grey background */
-            text-align: left;
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            height: auto;
-        }
-        </style>
-        """, unsafe_allow_html=True
-    )
-
-    # Question 10: Do you find the HR department responsive to your inquiries and concerns?
-    q10_responsiveness_count = (data.iloc[:, 15] == 'Yes').sum()
-    q10_responsiveness_pct = q10_responsiveness_count / len(data) * 100
-
-    highest_hr_process_interacted = q4_q5_count[q4_q5_count['HR Function'] != 'None']['HR_Process_Interacted'].max()
-    highest_improvement_areas = q4_q5_count[q4_q5_count['HR Function'] != 'None']['Improvement_Areas'].max()
-    most_used_device = device_counts.iloc[0]['device']
-
-    # Summary of all outputs in the bar container
-    st.markdown(
-        f"""
-            <style>
-            .top-bar {{
-                font-weight: normal;
-                font-size: 17px;
-                padding: 10px 20px;
-                color: #333333;
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
-            }}
-            .top-bar ul, .top-bar li {{
-            font-size: 17px;
-            padding-left: 20px;
-            margin: 0;
-            }}
-            </style>
-            <div class="top-bar">
-            This survey section is answered by all the <strong>{len(data)}</strong> survey participants:
-            <ul>
-                <li>{q10_responsiveness_pct:.0f}% of the respondents, {q10_responsiveness_count} employee(s), find the HR department responsive to their inquiries and concerns.</li>
-                <li>The median satisfaction rating on overall HR services and support is {q6MedianScore}.</li>
-                <li>The median satisfaction rating on the HR communication channels is {q11MedianScore}.</li>
-                <li> Highest Process interacted with {highest_hr_process_interacted}</li>
-                <li> Highest Improvement Area: {highest_improvement_areas}</li>
-                <li> Most Device used: {most_used_device}</li>
-            </ul>
-            </div>
-            """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <style>
-        .text-container {
-            font-size: 15px;
-            padding: 10px 0px;
-            color: #333333;
-        }
-        </style>
-        """, unsafe_allow_html=True
-    )
-
-    # A text container for filtering instructions
-    st.markdown(
-        f"""
-        <div class="text-container" style="font-style: italic;">
-        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
-        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
 
     satisfaction_ratio = 0.6
     barcharts_ratio = 1 - satisfaction_ratio
@@ -959,11 +980,11 @@ if dashboard == "Section 1: Employee Experience":
 
     def main():
         st.title("Summarization with Transformers")
-        
+
         # Display a message or spinner while the model is loading
         with st.spinner("Loading summarization model..."):
             summarizer = load_model()
-        
+
         if summarizer:
             st.write("Successfully loaded the summarizer model.")
             # Add your Streamlit app content here
