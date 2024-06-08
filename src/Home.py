@@ -497,7 +497,7 @@ def generate_wordclouds(df, score_col_idx, reasons_col_idx, custom_stopwords):
 
 # Function for sentiment analysis dashboard
 
-def sentiment_dashboard(data_series, title):
+def sentiment_dashboard(data_series):
     # Sidebar for control
     st.sidebar.markdown("### Filter Options")
     show_wordcloud = st.sidebar.checkbox("Show Word Cloud", value=True)
