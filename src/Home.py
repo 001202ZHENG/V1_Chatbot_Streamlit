@@ -1750,7 +1750,7 @@ if dashboard == 'Section 3: Performance & Talent':
     ### Question23: Are you able to identify and tag your skills within your HRIS?
     q23_data_available_count = (filtered_data.iloc[:, 30] == 'Yes').sum()
     q23_data_available_pct = q23_data_available_count / len(filtered_data) * 100
-
+    
     st.markdown(
         """
         <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
@@ -1759,9 +1759,32 @@ if dashboard == 'Section 3: Performance & Talent':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                {q23_data_available_pct:.2f}% of the respondents, {q23_data_available_count} employee(s), are able to identify and tag their skills within the HRIS.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"{q23_data_available_pct:.2f}% of the respondents, {q23_data_available_count} employee(s), are able to identify and tag their skills within the HRIS.")
 
 ############ SECTION 3 ENDS ############
 
@@ -1773,6 +1796,7 @@ if dashboard == 'Section 4: Learning':
 
     q24_data_available_count = (data.iloc[:, 31])
     q24_data_available_pct = q24_data_available_count.sum() / len(data) * 100
+    q24ValuesCount, q24MedianScore = score_distribution(data, 31)
 
     q25_data = pd.DataFrame({'format': data.iloc[:, 32]})
     q25_data['format'] = q25_data['format'].str.rstrip(';').str.split(';')
@@ -1815,6 +1839,7 @@ if dashboard == 'Section 4: Learning':
             </style>
             <div class="top-bar">
                     This survey section is answered by all <b>{len(q24_data_available_count)}</b> survey participants<ul>
+                    <li>The median satisfaction rating on the current learning management system is {q24MedianScore}.</li>
                 <li> The most preferred learning format is through {most_chosen_format}.</li>
                 <li>{q26_data_available_pct:.2f}% of the respondents, {q26_data_available_count} employee(s), participated in training or development programs provided by HR.</li>
                 <li>{q27_data_available_pct:.2f}% of the respondents, {q27_data_available_count} employee(s), received recommendations on training.</li>
@@ -1938,7 +1963,7 @@ if dashboard == 'Section 4: Learning':
 
     # Calculate percentage
     learning_format_counts['percentage'] = learning_format_counts['count'] / learning_format_counts['count'].sum() * 100
-
+    
     # Define the preferred order of learning formats
     preferred_order = ['E-Learning', 'On site', 'Micro-Learning', 'Coaching']
 
@@ -1986,9 +2011,33 @@ if dashboard == 'Section 4: Learning':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                {q26_data_available_pct:.2f}% of the respondents, {q26_data_available_count} employee(s), participated in training or development programs provided by HR.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"{q26_data_available_pct:.2f}% of the respondents, {q26_data_available_count} employee(s), participated in training or development programs provided by HR.")
+
 
     ### Question27: Have you received any recommendations on training (either by the HR team or directly on your Learning    System) ?
     q27_data_available_count = (filtered_data.iloc[:, 34] == 'Yes').sum()
@@ -2002,9 +2051,33 @@ if dashboard == 'Section 4: Learning':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                {q27_data_available_pct:.2f}% of the respondents, {q27_data_available_count} employee(s), received recommendations on training.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"{q27_data_available_pct:.2f}% of the respondents, {q27_data_available_count} employee(s), received recommendations on         training.")
+
 
     ### Question28: What could be improved or what kind of format is missing today ?
     st.markdown(
@@ -2024,8 +2097,88 @@ if dashboard == 'Section 4: Learning':
 if dashboard == 'Section 5: Compensation':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
+    
+    q29_data_available_count = (data.iloc[:, 36] == 'Yes').sum()
+    
+    q30_data_available_count = (data.iloc[:, 37] == 'Yes').sum()
+    q30_data_available_pct = q30_data_available_count / q29_data_available_count * 100
+    
+    q32_data = pd.DataFrame({'compensation_manage': data.iloc[:, 39]})
+    q32_data['compensation_manage'] = q32_data['compensation_manage'].str.rstrip(';')
+    q32_data.dropna(inplace=True)
 
-    # A text container for filtering instructions
+    compensation_manage_counts = q32_data['compensation_manage'].value_counts().reset_index()
+    compensation_manage_counts.columns = ['compensation_manage', 'count']
+    most_compensation_manage = compensation_manage_counts.iloc[0]['compensation_manage']
+    
+    q33ValuesCount, q33MedianScore = score_distribution(data, 40)
+    
+    q36_data_available_count = (data.iloc[:, 43] == 'Yes').sum()
+    q36_data_available_pct = q36_data_available_count / q29_data_available_count * 100
+    
+    q37_data_available_count = (data.iloc[:, 44] == 'Yes').sum()
+    q37_data_available_pct = q37_data_available_count / q29_data_available_count * 100
+
+    q38ValuesCount, q38MedianScore = score_distribution(data, 45)
+    
+    q39_data = pd.DataFrame({'bonus_manage': data.iloc[:, 46]})
+    q39_data['bonus_manage'] = q39_data['bonus_manage'].str.rstrip(';')
+    q39_data.dropna(inplace=True)
+
+    # Count the occurrences of each compensation format
+    bonus_manage_counts = q39_data['bonus_manage'].value_counts().reset_index()
+    bonus_manage_counts.columns = ['bonus_manage', 'count']
+    most_bonus_manage = bonus_manage_counts.iloc[0]['bonus_manage']
+    
+    q40_data_available_count = (data.iloc[:, 47] == 'Yes').sum()
+    q40_data_available_pct = q40_data_available_count / q29_data_available_count * 10
+
+
+    # Summary of all outputs in the bar container
+    st.markdown(
+    f"""
+    <style>
+    .top-bar {{
+        background-color: #f0f2f6;  /* Light grey background */
+        text-align: left;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        height: auto;
+        font-weight: normal;
+        font-size: 17px;
+        padding: 10px 20px;
+        color: #333333;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }}
+    .top-bar ul, .top-bar li {{
+        font-size: 17px;
+        padding-left: 20px;
+        margin: 0;
+    }}
+    </style>
+    <div class="top-bar">
+            This survey section is answered by <b>{q29_data_available_count}</b> employee(s), who participated in the   compensation campaign:
+        <ul>
+        <li>{q30_data_available_pct:.2f}% of the respondents, {q30_data_available_count} employee(s), think that the data available in the compensation form enables him/her to make a fair decision regarding a promotion, a bonus or a raise.</li>
+        <li>The most common way to manage/launch the compensation campaigns is: {most_compensation_manage}.</li>
+        <li>The median satisfaction rating on the compensation campaign is: {q33MedianScore}.</li>
+        <li>{q36_data_available_pct:.2f}% of the respondents, {q36_data_available_count} employee(s), have retroactivity on salary payments.</li>
+        <li>{q37_data_available_pct:.2f}% of the respondents, {q37_data_available_count} employee(s), participated in variable pay/bonus campaign.</li>
+        <li>The median satisfaction rating on the variable pay/bonus campaign is: {q38MedianScore}.</li>
+        <li>The most common way to manage/launch bonus/variable pay campaigns is: {most_bonus_manage}.</li>
+        <li>{q40_data_available_pct:.2f}% of the respondents, {q40_data_available_count} employee(s), have different dates for the variable pay campaign compared to the compensation campaign.</li>
+        </ul>
+        </div>
+                """,
+        unsafe_allow_html=True
+    )
+    
+    
+    
+      # A text container for filtering instructions
     st.markdown(
         f"""
         <div class="text-container" style="font-style: italic;">
@@ -2035,11 +2188,11 @@ if dashboard == 'Section 5: Compensation':
         """,
         unsafe_allow_html=True
     )
-
+    
     ### Qustion29: Do you participate in the Compensation Campaign ?
     q29_data_available_count = (filtered_data.iloc[:, 36] == 'Yes').sum()
     q29_data_available_pct = q29_data_available_count / len(filtered_data) * 100
-
+    
     st.markdown(
         """
         <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
@@ -2048,10 +2201,34 @@ if dashboard == 'Section 5: Compensation':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                {q29_data_available_pct:.2f}% of the respondents, {q29_data_available_count} employee(s), participated in the   compensation campaign.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"{q29_data_available_pct:.2f}% of the respondents, {q29_data_available_count} employee(s), participated in the   compensation campaign.")
 
+ 
     ### Qustion30: Do you think that the data available in the Compensation form enables you to make a fair decision regarding a promotion, a bonus or a raise ? (e.g : compa-ratio, variation between years, historical data on salary and bonus, …) 
     q30_data_available_count = (filtered_data.iloc[:, 37] == 'Yes').sum()
     q30_data_available_pct = q30_data_available_count / q29_data_available_count * 100
@@ -2064,9 +2241,33 @@ if dashboard == 'Section 5: Compensation':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who participate the Compensation Campaign, {q30_data_available_pct:.2f}% of the respondents, {q30_data_available_count} employee(s), think that the data available in the Compensation form enables him/her to make a fair decision regarding a promotion, a bonus or a raise.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
+    
 
-    st.write(
-        f"Among the people who participate the Compensation Campaign, {q30_data_available_pct:.2f}% of the respondents, {q30_data_available_count} employee(s), think that the data available in the Compensation form enables him/her to make a fair decision regarding a promotion, a bonus or a raise.")
 
     ### Qustion31: What data is missing according to you ?
     st.markdown(
@@ -2236,8 +2437,32 @@ if dashboard == 'Section 5: Compensation':
         unsafe_allow_html=True
     )
 
-    st.write(
-        f"Among the people who participate the Compensation Campaign, {q36_data_available_pct:.2f}% of the respondents, {q36_data_available_count} employee(s), have retroactivity on salary payments.")
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who participate the Compensation Campaign, {q36_data_available_pct:.2f}% of the respondents, {q36_data_available_count} employee(s), have retroactivity on salary payments.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
+    
+
 
     ### Question37: Do you participate in the variable pay/bonus campaign ?
     q37_data_available_count = (filtered_data.iloc[:, 44] == 'Yes').sum()
@@ -2251,9 +2476,33 @@ if dashboard == 'Section 5: Compensation':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who participate the Compensation Campaign, {q37_data_available_pct:.2f}% of the respondents, {q37_data_available_count} employee(s), participated in variable pay/bonus campaign.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
+    
 
-    st.write(
-        f"Among the people who participate the Compensation Campaign, {q37_data_available_pct:.2f}% of the respondents, {q37_data_available_count} employee(s), participated in variable pay/bonus campaign.")
 
     ### Question38: How would you rate the overall satisfaction regarding the Variable Pay/Bonus campaign  ?
     satisfaction_ratio = 0.6
@@ -2394,9 +2643,32 @@ if dashboard == 'Section 5: Compensation':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who participate the Compensation Campaign, {q40_data_available_pct:.2f}% of the respondents, {q40_data_available_count} employee(s), have different dates for the Variable Pay Campaign compared to the Compensation Campaign.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"Among the people who participate the Compensation Campaign, {q40_data_available_pct:.2f}% of the respondents, {q40_data_available_count} employee(s), have different dates for the Variable Pay Campaign compared to the Compensation Campaign.")
 
 ############ SECTION 5 ENDS ############
 
@@ -2405,6 +2677,78 @@ if dashboard == 'Section 5: Compensation':
 if dashboard == 'Section 6: Payroll':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
+    
+    q41_data_available_count = (data.iloc[:, 48] == 'Yes').sum()
+    
+    q42ValuesCount, q42MedianScore = score_distribution(data, 49)
+    
+    q43_data_available_count = (data.iloc[:, 50] == 'Internal').sum()
+    q43_data_available_pct = q43_data_available_count / q41_data_available_count * 100
+
+    q44_data_available_count = (data.iloc[:, 51] == 'Yes').sum()
+    q44_data_available_pct = q44_data_available_count / q41_data_available_count * 100
+
+    q45_data_available_count = (data.iloc[:, 52] == 'Autonomous').sum()
+    q45_data_available_pct = q45_data_available_count / q41_data_available_count * 100
+    
+    q47_data_available_count = (data.iloc[:, 54] == 'Yes').sum()
+    q47_data_available_pct = q47_data_available_count / q41_data_available_count * 100
+
+    q48_data_available_count = (data.iloc[:, 55] == 'Yes').sum()
+    q48_data_available_pct = q48_data_available_count / q47_data_available_count * 100
+
+    q49_data_available_count = (data.iloc[:, 56] == 'Yes').sum()
+    q49_data_available_pct = q49_data_available_count / q41_data_available_count * 100
+    
+    q50_data_available_count = (data.iloc[:, 57] == 'Yes').sum()
+    q50_data_available_pct = q50_data_available_count / q41_data_available_count * 100
+
+    q51_data_available_count = (data.iloc[:, 58] == 'Yes').sum()
+    q51_data_available_pct = q51_data_available_count / q41_data_available_count * 100
+
+
+    # Summary of all outputs in the bar container
+    st.markdown(
+    f"""
+    <style>
+    .top-bar {{
+        background-color: #f0f2f6;  /* Light grey background */
+        text-align: left;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        height: auto;
+        font-weight: normal;
+        font-size: 17px;
+        padding: 10px 20px;
+        color: #333333;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }}
+    .top-bar ul, .top-bar li {{
+        font-size: 17px;
+        padding-left: 20px;
+        margin: 0;
+    }}
+    </style>
+    <div class="top-bar">
+            This survey section is answered by <b>{q41_data_available_count}</b> employee(s), who are part of the payroll team:
+        <ul>
+        <li>The median satisfaction rating on current payroll system is: {q42MedianScore}.</li>
+        <li>{q43_data_available_pct:.2f}% of the respondents, {q43_data_available_count} employee(s), realize their payroll activities internally and others realize that it is outsourced.</li>
+        <li>{q44_data_available_pct:.2f}% of the respondents, {q44_data_available_count} employee(s), answer that their system covers legal updates.</li>
+        <li>{q45_data_available_pct:.2f}% of the respondents, {q45_data_available_count} employee(s), answer that they are autonomous and others rely on outside firms for updates.</li>
+        <li>{q47_data_available_pct:.2f}% of the respondents, {q47_data_available_count} employee(s), answer that they have a global platform for consolidating all employees' country data.</li>
+        <li>{q48_data_available_pct:.2f}% of the respondents, {q48_data_available_count} employee(s), answer that this platform automatically generate KPIs relating to the payroll (M/F headcount, salaries paid, contributions paid, etc.).</li>
+        <li>{q49_data_available_pct:.2f}% of the respondents, {q49_data_available_count} employee(s), answer that mass entries be made in the tool.</li>
+        <li>{q50_data_available_pct:.2f}% of the respondents, {q50_data_available_count} employee(s), answer that the payroll system is connected with time management system.</li>
+        <li>{q51_data_available_pct:.2f}% of the respondents, {q51_data_available_count} employee(s), answer that the payroll system is connected with a CORE HR/Administrative solution.</li>
+        </ul>
+        </div>
+                """,
+        unsafe_allow_html=True
+    )
 
     # A text container for filtering instructions
     st.markdown(
@@ -2429,9 +2773,33 @@ if dashboard == 'Section 6: Payroll':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                {q41_data_available_pct:.2f}% of the respondents, {q41_data_available_count} employee(s), are part of the payroll team.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"{q41_data_available_pct:.2f}% of the respondents, {q41_data_available_count} employee(s), are part of the payroll team.")
+
 
     ### Question42: How satisfied are you with your current payroll system ?
     satisfaction_ratio = 0.6
@@ -2527,9 +2895,32 @@ if dashboard == 'Section 6: Payroll':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the payroll team, {q43_data_available_pct:.2f}% of the respondents, {q43_data_available_count} employee(s), realize their payroll activities internally and others realize that it is outsourced.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"Among the people who are part of the payroll team, {q43_data_available_pct:.2f}% of the respondents, {q43_data_available_count} employee(s), realize their payroll activities internally and others realize that it is outsourced.")
 
     ### Question44: Does your system cover legal updates ?
     q44_data_available_count = (filtered_data.iloc[:, 51] == 'Yes').sum()
@@ -2543,9 +2934,31 @@ if dashboard == 'Section 6: Payroll':
         """,
         unsafe_allow_html=True
     )
-
-    st.write(
-        f"Among the people who are part of the payroll team, {q44_data_available_pct:.2f}% of the respondents, {q44_data_available_count} employee(s), answer that their system covers legal updates.")
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the payroll team, {q44_data_available_pct:.2f}% of the respondents, {q44_data_available_count} employee(s), answer that their system covers legal updates.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
     ### Question45: Are you autonomous when it comes to updating simple data, or do you systematically rely on outside firms for updates?
     q45_data_available_count = (filtered_data.iloc[:, 52] == 'Autonomous').sum()
@@ -2559,9 +2972,31 @@ if dashboard == 'Section 6: Payroll':
         """,
         unsafe_allow_html=True
     )
-
-    st.write(
-        f"Among the people who are part of the payroll team, {q45_data_available_pct:.2f}% of the respondents, {q45_data_available_count} employee(s), answer that they are autonomous and others rely on outside firms for updates.")
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the payroll team, {q45_data_available_pct:.2f}% of the respondents, {q45_data_available_count} employee(s), answer that they are autonomous and others rely on outside firms for updates.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
     ### Question46: Can you share any specific features of your current system that you like/that made you choose it?
     st.markdown(
@@ -2586,9 +3021,32 @@ if dashboard == 'Section 6: Payroll':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the payroll team, {q47_data_available_pct:.2f}% of the respondents, {q47_data_available_count} employee(s), answer that they have a global platform for consolidating all employees' country data.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"Among the people who are part of the payroll team, {q47_data_available_pct:.2f}% of the respondents, {q47_data_available_count} employee(s), answer that they have a global platform for consolidating all employees' country data.")
 
     ### Question48: If so, does this platform automatically generate KPIs relating to your payroll (M/F headcount, salaries paid, contributions paid, etc.)?
     q48_data_available_count = (filtered_data.iloc[:, 55] == 'Yes').sum()
@@ -2602,9 +3060,31 @@ if dashboard == 'Section 6: Payroll':
         """,
         unsafe_allow_html=True
     )
-
-    st.write(
-        f"Among the people who have a global platform, {q48_data_available_pct:.2f}% of the respondents, {q48_data_available_count} employee(s), answer that this platform automatically generate KPIs relating to the payroll (M/F headcount, salaries paid, contributions paid, etc.).")
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who have a global platform, {q48_data_available_pct:.2f}% of the respondents, {q48_data_available_count} employee(s), answer that this platform automatically generate KPIs relating to the payroll (M/F headcount, salaries paid, contributions paid, etc.).</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
     ### Question49: Can mass entries be made in the tool?
     q49_data_available_count = (filtered_data.iloc[:, 56] == 'Yes').sum()
@@ -2618,9 +3098,32 @@ if dashboard == 'Section 6: Payroll':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the payroll team, {q49_data_available_pct:.2f}% of the respondents, {q49_data_available_count} employee(s), answer that that mass entries be made in the tool.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"Among the people who are part of the payroll team, {q49_data_available_pct:.2f}% of the respondents, {q49_data_available_count} employee(s), answer that they have a global platform for consolidating all employees' country data.")
 
     ### Question50: Is your payroll connected with your time management system ?
     q50_data_available_count = (filtered_data.iloc[:, 57] == 'Yes').sum()
@@ -2634,9 +3137,33 @@ if dashboard == 'Section 6: Payroll':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the payroll team, {q50_data_available_pct:.2f}% of the respondents, {q50_data_available_count} employee(s), answer that the payroll system is connected with time management system.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"Among the people who are part of the payroll team, {q50_data_available_pct:.2f}% of the respondents, {q50_data_available_count} employee(s), answer that the payroll system is connected with time management system.")
+
 
     ### Question51: Is your payroll connected with a CORE HR/Administrative solution ?
     q51_data_available_count = (filtered_data.iloc[:, 58] == 'Yes').sum()
@@ -2651,9 +3178,31 @@ if dashboard == 'Section 6: Payroll':
         unsafe_allow_html=True
     )
 
-    st.write(
-        f"Among the people who are part of the payroll team, {q51_data_available_pct:.2f}% of the respondents, {q51_data_available_count} employee(s), answer that the payroll system is connected with a CORE HR/Administrative solution.")
-
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the payroll team, {q51_data_available_pct:.2f}% of the respondents, {q51_data_available_count} employee(s), answer that the payroll system is connected with a CORE HR/Administrative solution.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 ############ SECTION 6 ENDS ############
 
 
@@ -2661,6 +3210,75 @@ if dashboard == 'Section 6: Payroll':
 if dashboard == 'Section 7: Time Management':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
+    
+    q52_data_available_count = (data.iloc[:, 59] == 'Yes').sum()
+    
+    q53_data_available_count = (data.iloc[:, 60] == 'Yes').sum()
+    q53_data_available_pct = q53_data_available_count / q52_data_available_count * 100
+    
+    q54ValuesCount, q54MedianScore = score_distribution(data, 61)
+
+    q55_data_available_count = (data.iloc[:, 62] == 'Yes').sum()
+    q55_data_available_pct = q55_data_available_count / q52_data_available_count * 100
+    
+    q56_data_available_count = (data.iloc[:, 63] == 'Yes').sum()
+    q56_data_available_pct = q56_data_available_count / q52_data_available_count * 100
+    
+    q57_data_available_count = (data.iloc[:, 64] == 'Yes').sum()
+    q57_data_available_pct = q57_data_available_count / q52_data_available_count * 100
+    
+    q58_data_available_count = (data.iloc[:, 65] == 'Yes').sum()
+    q58_data_available_pct = q58_data_available_count / q52_data_available_count * 100
+
+
+    q60_data_available_count = (data.iloc[:, 67] == 'Yes').sum()
+    q60_data_available_pct = q60_data_available_count / q52_data_available_count * 100
+
+    q61_data_available_count = (data.iloc[:, 68] == 'Yes').sum()
+    q61_data_available_pct = q61_data_available_count / q52_data_available_count * 100
+
+
+    # Summary of all outputs in the bar container
+    st.markdown(
+    f"""
+    <style>
+    .top-bar {{
+        background-color: #f0f2f6;  /* Light grey background */
+        text-align: left;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        height: auto;
+        font-weight: normal;
+        font-size: 17px;
+        padding: 10px 20px;
+        color: #333333;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }}
+    .top-bar ul, .top-bar li {{
+        font-size: 17px;
+        padding-left: 20px;
+        margin: 0;
+    }}
+    </style>
+    <div class="top-bar">
+            This survey section is answered by <b>{q52_data_available_count}</b> employee(s), who are part of the time management team:
+        <ul>
+        <li>{q53_data_available_pct:.2f}% of the respondents,  {q53_data_available_count} employee(s),  answer that they currently have a time management system.</li>
+        <li>The median satisfaction rating on time management system is: {q54MedianScore}.</li>
+        <li>{q55_data_available_pct:.2f}% of the respondents,  {q55_data_available_count} employee(s),  answer that they have a self-service for their employees.</li>
+        <li>{q56_data_available_pct:.2f}% of the respondents,  {q56_data_available_count} employee(s),  answer that the system allow employess to view their vacation counters (entitlement / taken / balance).</li>
+        <li>{q57_data_available_pct:.2f}% of the respondents,  {q57_data_available_count} employee(s),  answer that the system cover all the shift scheduling functions needed.</li>
+        <li>{q58_data_available_pct:.2f}% of the respondents,  {q58_data_available_count} employee(s),  answer that they have the capability to run all the reports needed.</li>
+        <li>{q60_data_available_pct:.2f}% of the respondents,  {q60_data_available_count} employee(s),  answer that the system allows employees to take their own leave, with workflow validation by their manager or HR.</li>
+        <li>{q61_data_available_pct:.2f}% of the respondents,  {q61_data_available_count} employee(s),  answer that the system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1).</li>
+        </ul>
+        </div>
+                """,
+        unsafe_allow_html=True
+    )
 
     # A text container for filtering instructions
     st.markdown(
@@ -2686,8 +3304,30 @@ if dashboard == 'Section 7: Time Management':
         unsafe_allow_html=True
     )
 
-    st.write(
-        f"{q52_data_available_pct:.2f}% of the respondents, {q52_data_available_count} employee(s), are part of the time management team.")
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                {q52_data_available_pct:.2f}% of the respondents, {q52_data_available_count} employee(s), are part of the time management team.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
     ### Question53: Do you currently have a time management system ?
     q53_data_available_count = (filtered_data.iloc[:, 60] == 'Yes').sum()
@@ -2701,9 +3341,31 @@ if dashboard == 'Section 7: Time Management':
         """,
         unsafe_allow_html=True
     )
-
-    st.write(
-        f"Among the people who are part of the time management team, {q53_data_available_pct:.2f}% of the respondents,  {q53_data_available_count} employee(s),  answer that they currently have a time management system.")
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the time management team, {q53_data_available_pct:.2f}% of the respondents,  {q53_data_available_count} employee(s),  answer that they currently have a time management system.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
     ### Question54: How satisfied are you with your current time management system ?
     satisfaction_ratio = 0.6
@@ -2799,9 +3461,32 @@ if dashboard == 'Section 7: Time Management':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the time management team, {q55_data_available_pct:.2f}% of the respondents,  {q55_data_available_count} employee(s),  answer that they have a self-service for their employees.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"Among the people who are part of the time management team, {q55_data_available_pct:.2f}% of the respondents,  {q55_data_available_count} employee(s),  answer that they have a self-service for their employees.")
 
     ### Question56: Does the system allow employees to view their vacation counters (entitlement / taken / balance)
     q56_data_available_count = (filtered_data.iloc[:, 63] == 'Yes').sum()
@@ -2815,9 +3500,32 @@ if dashboard == 'Section 7: Time Management':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the time management team, {q56_data_available_pct:.2f}% of the respondents,  {q56_data_available_count} employee(s),  answer that the system allow employess to view their vacation counters (entitlement / taken / balance).</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"Among the people who are part of the time management team, {q56_data_available_pct:.2f}% of the respondents,  {q56_data_available_count} employee(s),  answer that the system allow employess to view their vacation counters (entitlement / taken / balance).")
 
     ### Question57: Does your system cover all the shift scheduling functions you need?
     q57_data_available_count = (filtered_data.iloc[:, 64] == 'Yes').sum()
@@ -2831,9 +3539,31 @@ if dashboard == 'Section 7: Time Management':
         """,
         unsafe_allow_html=True
     )
-
-    st.write(
-        f"Among the people who are part of the time management team, {q57_data_available_pct:.2f}% of the respondents,  {q57_data_available_count} employee(s),  answer that the system cover all the shift scheduling functions needed.")
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the time management team, {q57_data_available_pct:.2f}% of the respondents,  {q57_data_available_count} employee(s),  answer that the system cover all the shift scheduling functions needed.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
     ### Question58: Do you have the capability to run all the report needed ?
     q58_data_available_count = (filtered_data.iloc[:, 65] == 'Yes').sum()
@@ -2847,9 +3577,31 @@ if dashboard == 'Section 7: Time Management':
         """,
         unsafe_allow_html=True
     )
-
-    st.write(
-        f"Among the people who are part of the time management team, {q58_data_available_pct:.2f}% of the respondents,  {q58_data_available_count} employee(s),  answer that they have the capability to run all the reports needed.")
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the time management team, {q58_data_available_pct:.2f}% of the respondents,  {q58_data_available_count} employee(s),  answer that they have the capability to run all the reports needed.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
     ### Question59: According to you, what functionalities are missing from your current system ?
     st.markdown(
@@ -2874,9 +3626,32 @@ if dashboard == 'Section 7: Time Management':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the time management team, {q60_data_available_pct:.2f}% of the respondents,  {q60_data_available_count} employee(s),  answer that the system allows employees to take their own leave, with workflow validation by their manager or HR.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"Among the people who are part of the time management team, {q60_data_available_pct:.2f}% of the respondents,  {q60_data_available_count} employee(s),  answer that the system allows employees to take their own leave, with workflow validation by their manager or HR.")
 
     ### Question61: Does your system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1)?
     q61_data_available_count = (filtered_data.iloc[:, 68] == 'Yes').sum()
@@ -2890,9 +3665,32 @@ if dashboard == 'Section 7: Time Management':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                Among the people who are part of the time management team, {q61_data_available_pct:.2f}% of the respondents,  {q61_data_available_count} employee(s),  answer that the system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1).</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"Among the people who are part of the time management team, {q61_data_available_pct:.2f}% of the respondents,  {q61_data_available_count} employee(s),  answer that the system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1).")
 
 ############ SECTION 7 ENDS ############
 
@@ -2901,6 +3699,45 @@ if dashboard == 'Section 7: Time Management':
 if dashboard == 'Section 8: User Experience':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
+    
+    q64_data_available_count = (data.iloc[:, 71] == 'Yes').sum()
+    q64_data_available_pct = q64_data_available_count / len(data) * 100
+
+
+    st.markdown(
+    f"""
+    <style>
+    .top-bar {{
+        background-color: #f0f2f6;  /* Light grey background */
+        text-align: left;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        height: auto;
+        font-weight: normal;
+        font-size: 17px;
+        padding: 10px 20px;
+        color: #333333;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }}
+    .top-bar ul, .top-bar li {{
+        font-size: 17px;
+        padding-left: 20px;
+        margin: 0;
+    }}
+    </style>
+    <div class="top-bar">
+        This survey section is answered by all the <strong>{len(data)}</strong> survey participants:
+        <ul>
+            <li>{q64_data_available_pct:.2f}% of the respondents, {q64_data_available_count} employee(s), consider the time you spend on your HRIS to be time well spent.</li>
+        </ul>
+    </div>
+    """,
+    unsafe_allow_html=True
+    )
+    
 
     # A text container for filtering instructions
     st.markdown(
@@ -2947,9 +3784,32 @@ if dashboard == 'Section 8: User Experience':
         """,
         unsafe_allow_html=True
     )
+    
+    st.markdown(
+        f"""
+                <style>
+                .top-bar {{
+                    font-weight: normal;
+                    font-size: 17px;
+                    padding: 10px 20px;
+                    color: #333333;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+                }}
+                </style>
+                <div class="top-bar">
+                {q64_data_available_pct:.2f}% of the respondents, {q64_data_available_count} employee(s), consider the time you spend on your HRIS to be time well spent.</li>
+                </div>
+                """,
+        unsafe_allow_html=True
+    )
 
-    st.write(
-        f"{q64_data_available_pct:.2f}% of the respondents, {q64_data_available_count} employee(s), consider the time you spend on your HRIS to be time well spent.")
 
     ### Question65: In 3 words, how would you describe your current user-experience with the HRIS ?
     st.markdown(
