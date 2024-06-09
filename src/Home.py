@@ -1089,11 +1089,6 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     aspect_onboarding_counts = q18_data['onboarding_process_to_improve'].value_counts().reset_index()
     aspect_onboarding_counts.columns = ['onboarding_process_to_improve', 'count']
     to_be_improved = aspect_onboarding_counts.iloc[0]['onboarding_process_to_improve']
-
-    ### Question11: How long have you been part of the company ?
-    q11_data_available_count = (filtered_data.iloc[:, 16] == 'Less than a year').sum()
-    q11_data_available_pct = q11_data_available_count / len(filtered_data) * 100
-
     
     # Summary of all outputs in the bar container
     st.markdown(
@@ -1121,7 +1116,7 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     }}
     </style>
     <div class="top-bar">
-            This survey section is answered by {q11_data_available_count} employee(s), who have been with the company for less than a year:
+            This survey section is answered by <b>{q11_data_available_count}</b> employee(s), who have been with the company for less than a year:
         <ul>
         <li>The median satisfaction rating on the recruitment process is {q12MedianScore}.</li>
         <li>The most common reason for their dissatisfaction with the recruitment process is: {most_common_reason_for_dissatisfaction}.</li>
@@ -1529,6 +1524,60 @@ if dashboard == 'Section 3: Performance & Talent':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
 
+    q19_data_available_count = (data.iloc[:, 26])
+    q19_data_available_pct = q19_data_available_count.sum() / len(data) * 100
+
+    q19ValuesCount, q19MedianScore = score_distribution(data, 26)
+    q21ValuesCount, q21MedianScore = score_distribution(data, 28)
+    q22_data = pd.DataFrame({'reasons': data.iloc[:, 29]})
+    q22_data['reasons'] = q22_data['reasons'].str.rstrip(';').str.split(';')
+    q22_data = q22_data.explode('reasons')
+    q22_data.dropna(inplace=True)
+
+    reasons = q22_data['reasons'].value_counts().reset_index()
+    reasons.columns = ['Reason', 'Count']
+    most_chosen_reason = reasons.iloc[0]['Reason']
+
+    q23_data_available_count = (data.iloc[:, 30] == 'Yes').sum()
+    q23_data_available_pct = q23_data_available_count / len(data) * 100
+
+    # Summary of all outputs in the bar container
+    st.markdown(
+        f"""
+        <style>
+        .top-bar {{
+            background-color: #f0f2f6;  /* Light grey background */
+            text-align: left;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            height: auto;
+            font-weight: normal;
+            font-size: 17px;
+            padding: 10px 20px;
+            color: #333333;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }}
+        .top-bar ul, .top-bar li {{
+            font-size: 17px;
+            padding-left: 20px;
+            margin: 0;
+        }}
+        </style>
+        <div class="top-bar">
+                This survey section is answered by all <b>{len(q19_data_available_count)}</b> survey participants<ul>
+            <li>The median satisfaction rating on the company's performance evaluation and feedback process is {q19MedianScore}.</li>
+            <li>The median score on how comfortable employees feel discussing career goals and development with managers is: {q21MedianScore}.</li>
+            <li>The most chosen reason behind the comfort score is: {most_chosen_reason}.</li>
+            <li>{q23_data_available_pct:.2f}% of the respondents, {q23_data_available_count} employee(s), are able to identify and tag their skills within the HRIS.</li>
+            </ul>
+            </div>
+                    """,
+        unsafe_allow_html=True
+    )
+
     # A text container for filtering instructions
     st.markdown(
         f"""
@@ -1698,7 +1747,7 @@ if dashboard == 'Section 3: Performance & Talent':
     ### Question22: Which reason(s) drive that score ?
     ### Missing wordcloud
 
-    ### Question23: Are you able to identify and tag your skills within your HRIS ?
+    ### Question23: Are you able to identify and tag your skills within your HRIS?
     q23_data_available_count = (filtered_data.iloc[:, 30] == 'Yes').sum()
     q23_data_available_pct = q23_data_available_count / len(filtered_data) * 100
 
@@ -1712,7 +1761,7 @@ if dashboard == 'Section 3: Performance & Talent':
     )
 
     st.write(
-        f"{q23_data_available_pct:.2f}% of the respondents, {q23_data_available_count} employee(s), are able to identify and tag         their skills within the HRIS.")
+        f"{q23_data_available_pct:.2f}% of the respondents, {q23_data_available_count} employee(s), are able to identify and tag their skills within the HRIS.")
 
 ############ SECTION 3 ENDS ############
 
@@ -1721,6 +1770,59 @@ if dashboard == 'Section 3: Performance & Talent':
 if dashboard == 'Section 4: Learning':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
+
+    q24_data_available_count = (data.iloc[:, 31])
+    q24_data_available_pct = q24_data_available_count.sum() / len(data) * 100
+
+    q25_data = pd.DataFrame({'format': data.iloc[:, 32]})
+    q25_data['format'] = q25_data['format'].str.rstrip(';').str.split(';')
+    q25_data = q25_data.explode('format')
+    q25_data.dropna(inplace=True)
+
+    formats = q25_data['format'].value_counts().reset_index()
+    formats.columns = ['Format', 'Count']
+    most_chosen_format = formats.iloc[0]['Format']
+
+    q26_data_available_count = (data.iloc[:, 33] == 'Yes').sum()
+    q26_data_available_pct = q26_data_available_count / len(data) * 100
+
+    q27_data_available_count = (data.iloc[:, 34] == 'Yes').sum()
+    q27_data_available_pct = q27_data_available_count / len(data) * 100
+
+    st.markdown(
+        f"""
+            <style>
+            .top-bar {{
+                background-color: #f0f2f6;  /* Light grey background */
+                text-align: left;
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                height: auto;
+                font-weight: normal;
+                font-size: 17px;
+                padding: 10px 20px;
+                color: #333333;
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+            }}
+            .top-bar ul, .top-bar li {{
+                font-size: 17px;
+                padding-left: 20px;
+                margin: 0;
+            }}
+            </style>
+            <div class="top-bar">
+                    This survey section is answered by all <b>{len(q24_data_available_count)}</b> survey participants<ul>
+                <li> The most preferred learning format is through {most_chosen_format}.</li>
+                <li>{q26_data_available_pct:.2f}% of the respondents, {q26_data_available_count} employee(s), participated in training or development programs provided by HR.</li>
+                <li>{q27_data_available_pct:.2f}% of the respondents, {q27_data_available_count} employee(s), received recommendations on training.</li>
+                </ul>
+                </div>
+                        """,
+        unsafe_allow_html=True
+    )
 
     # A text container for filtering instructions
     st.markdown(
@@ -1886,7 +1988,7 @@ if dashboard == 'Section 4: Learning':
     )
 
     st.write(
-        f"{q26_data_available_pct:.2f}% of the respondents, {q26_data_available_count} employee(s), participated in training or        development programs provided by HR.")
+        f"{q26_data_available_pct:.2f}% of the respondents, {q26_data_available_count} employee(s), participated in training or development programs provided by HR.")
 
     ### Question27: Have you received any recommendations on training (either by the HR team or directly on your Learning    System) ?
     q27_data_available_count = (filtered_data.iloc[:, 34] == 'Yes').sum()
