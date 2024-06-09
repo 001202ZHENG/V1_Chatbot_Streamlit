@@ -9,9 +9,8 @@ from wordcloud import WordCloud, STOPWORDS
 import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
-from transformers import pipeline
-from transformers import BertTokenizer, BertForSequenceClassification, AutoTokenizer, AutoModelForSequenceClassification
-import torch
+
+nltk.download('punkt')
 
 score_to_category = {
     1: 'Very Dissatisfied',
@@ -973,7 +972,7 @@ if dashboard == "Section 1: Employee Experience":
         generate_wordclouds(filtered_data, 13, 14, communication_stopwords)
 
     st.write('For detailed reason analysis/sentiment dashboard, please check out the [link](https://gucciouy5ardhonqumm6p4.streamlit.app)')
-    
+
 
 
 
