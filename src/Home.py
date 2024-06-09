@@ -245,8 +245,10 @@ if dashboard == "General Survey Results":
 
         role_summary = pd.DataFrame(data['What is your role at the company ?'].value_counts()).reset_index()
         role_summary.columns = ['Role', 'Count']
+        role_summary = role_summary.sort_values('Count', ascending=True)
         function_summary = pd.DataFrame(data['What function are you part of ?'].value_counts()).reset_index()
         function_summary.columns = ['Function', 'Count']
+        function_summary = function_summary.sort_values('Count', ascending=True)
         return location_summary, role_summary, function_summary
 
 
@@ -416,6 +418,15 @@ def generate_wordclouds(df, score_col_idx, reasons_col_idx, custom_stopwords):
 
     with col1:
         st.markdown(
+            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud for Low Scores</h3>",
+            unsafe_allow_html=True)
+        fig_low_scores, ax_low_scores = plt.subplots(figsize=(10, 5))
+        ax_low_scores.imshow(wordcloud_low_scores, interpolation='bilinear')
+        ax_low_scores.axis('off')
+        st.pyplot(fig_low_scores)
+
+    with col2:
+        st.markdown(
             "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud for High Scores</h3>",
             unsafe_allow_html=True)
         fig_high_scores, ax_high_scores = plt.subplots(figsize=(10, 5))
@@ -423,14 +434,7 @@ def generate_wordclouds(df, score_col_idx, reasons_col_idx, custom_stopwords):
         ax_high_scores.axis('off')
         st.pyplot(fig_high_scores)
 
-    with col2:
-        st.markdown(
-            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud for Low Scores</h3>",
-            unsafe_allow_html=True)
-        fig_low_scores, ax_low_scores = plt.subplots(figsize=(10, 5))
-        ax_low_scores.imshow(wordcloud_low_scores, interpolation='bilinear')
-        ax_low_scores.axis('off')
-        st.pyplot(fig_low_scores)
+    
 
 
 ############ SENTIMENT ANALYSIS FUNCTION ENDS ############
@@ -973,11 +977,6 @@ if dashboard == "Section 1: Employee Experience":
 
     st.write('For detailed reason analysis/sentiment dashboard, please check out the [link](https://gucciouy5ardhonqumm6p4.streamlit.app)')
 
-
-
-
-    
-
 ############ SECTION 1 ENDS ############
 
 
@@ -1446,33 +1445,8 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     # Setup columns for the two bar charts
     col5, col6 = st.columns(2)
 
-    # Question 17: What part of the Onboarding process was particulary helpful ?
-    with col5:
-        q17_data = pd.DataFrame({'helpful_onboarding_process': filtered_data.iloc[:, 24]})
-        q17_data['helpful_onboarding_process'] = q17_data['helpful_onboarding_process'].str.rstrip(';').str.split(';')
-        q17_data = q17_data.explode('helpful_onboarding_process')
-        q17_data.dropna(inplace=True)
-        helpful_onboarding_counts = q17_data['helpful_onboarding_process'].value_counts().reset_index()
-        helpful_onboarding_counts.columns = ['helpful_onboarding_process', 'count']
-        helpful_onboarding_counts['percentage'] = helpful_onboarding_counts['count'] / len(filtered_data) * 100
-  
-        fig17 = px.bar(helpful_onboarding_counts, y='helpful_onboarding_process', x='percentage', text='percentage', orientation='h', title='Helpful Aspects of the Onboarding Process', color_discrete_sequence=['#336699'])
-        fig17.update_layout(
-            xaxis={'visible': False},
-            yaxis_title=None,
-            showlegend=False,
-            yaxis={'showgrid': False}
-        )
-        fig17.update_traces(
-            marker_color='#336699',
-            texttemplate='%{text:.1f}%',
-            textposition='outside'
-        )
-        st.plotly_chart(fig17, use_container_width=True)
-        
-
     # Question 18: What part of the Onboarding process could be improved ?
-    with col6:
+    with col5:
         q18_data = pd.DataFrame({'onboarding_process_to_improve': filtered_data.iloc[:, 25]})
         q18_data['onboarding_process_to_improve'] = q18_data['onboarding_process_to_improve'].str.rstrip(';').str.split(';')
         q18_data = q18_data.explode('onboarding_process_to_improve')
@@ -1495,6 +1469,30 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
         )
         st.plotly_chart(fig18, use_container_width=True)
 
+    # Question 17: What part of the Onboarding process was particulary helpful ?
+    with col6:
+        q17_data = pd.DataFrame({'helpful_onboarding_process': filtered_data.iloc[:, 24]})
+        q17_data['helpful_onboarding_process'] = q17_data['helpful_onboarding_process'].str.rstrip(';').str.split(';')
+        q17_data = q17_data.explode('helpful_onboarding_process')
+        q17_data.dropna(inplace=True)
+        helpful_onboarding_counts = q17_data['helpful_onboarding_process'].value_counts().reset_index()
+        helpful_onboarding_counts.columns = ['helpful_onboarding_process', 'count']
+        helpful_onboarding_counts['percentage'] = helpful_onboarding_counts['count'] / len(filtered_data) * 100
+  
+        fig17 = px.bar(helpful_onboarding_counts, y='helpful_onboarding_process', x='percentage', text='percentage', orientation='h', title='Helpful Aspects of the Onboarding Process', color_discrete_sequence=['#336699'])
+        fig17.update_layout(
+            xaxis={'visible': False},
+            yaxis_title=None,
+            showlegend=False,
+            yaxis={'showgrid': False}
+        )
+        fig17.update_traces(
+            marker_color='#5ec962',
+            texttemplate='%{text:.1f}%',
+            textposition='outside'
+        )
+        st.plotly_chart(fig17, use_container_width=True)
+        
 ############ SECTION 2 ENDS ############
 
 
@@ -1651,7 +1649,20 @@ if dashboard == 'Section 3: Performance & Talent':
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
 
     ### Question20: Which reason(s) drive that score ?
-    ### Missing worcloud
+
+    # Display the reasons for performance evaluation and feedback process satisfaction
+    st.markdown('<h1 style="font-size:17px;font-family:Arial;color:#333333;">The Reasons for Ratings on Performance Evaluation and Feedback Process</h1>', unsafe_allow_html=True)
+
+    # Define custom stopwords for the word clouds
+    performance_stopwords = ["performance", "evaluation", "feedback", "process", "talent", "employees", "company", "help", "need", "everyone", "makes"]
+
+    # Run this code in a Streamlit app
+    if __name__ == "__main__":
+        st.markdown("<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Word Cloud Visualization</h1>", unsafe_allow_html=True)
+        generate_wordclouds(filtered_data, 26, 27, performance_stopwords)
+
+    st.write('For detailed reason analysis/sentiment dashboard, please check out the [link](https://gucciouy5ardhonqumm6p4.streamlit.app)')
+
 
     ### Question21: From 1 to 5, how comfortable do you feel discussing your career goals and development with your manager? 
     with satisfaction_col:
@@ -1724,7 +1735,41 @@ if dashboard == 'Section 3: Performance & Talent':
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
 
     ### Question22: Which reason(s) drive that score ?
-    ### Missing wordcloud
+    st.markdown(
+    """
+    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+    Reasons that drive scores: 1 - Very Uncomfortable / 2 - Uncomfortable / 3 - Hesitant 
+    </h2>
+    """,
+    unsafe_allow_html=True
+    )
+    
+    q29_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 29]})
+    q29_data = q29_data.explode('negative_reasons')
+    q29_data.dropna(inplace=True)
+
+    # Count the occurrences of each negative reason
+    negative_reason_recruiting_counts = q29_data['negative_reasons'].value_counts().reset_index()
+    negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
+
+    # Calculate percentage
+    negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(
+        filtered_data) * 100
+
+    fig1 = px.bar(negative_reason_recruiting_counts, y='negative_reasons', x='percentage', text='count',
+                  color='negative_reasons', color_discrete_sequence=['#3b528b'], orientation='h')
+
+    fig1.update_traces(hovertemplate='<b>Reason:</b> %{y}<br><b>Count:</b> %{text}')
+
+    # Set the y-axis title
+    fig1.update_yaxes(title_text='Reasons for Discomfort')
+
+    # Remove the legend
+    fig1.update_layout(showlegend=False)
+
+    # Show the chart
+    st.plotly_chart(fig1, use_container_width=False)
+
 
     ### Question23: Are you able to identify and tag your skills within your HRIS?
     q23_data_available_count = (filtered_data.iloc[:, 30] == 'Yes').sum()
@@ -2067,7 +2112,26 @@ if dashboard == 'Section 4: Learning':
         """,
         unsafe_allow_html=True
     )
-    ### Missing wordcloud
+    
+    #Extract key phrases from the text
+    learning_stopwords = ["this","about", "of", "to", "a", "what", "on", "could", "do", "we", "their", "the", "learning", "management", "system", "employees", "company", "help", "need", "everyone", "makes", "improved", "improvement", "missing", "format", "today", "no", "and","should","more", "training"]
+
+    improvement_and_missing = filtered_data.iloc[:, 35]
+    improvement_and_missing = improvement_and_missing.dropna()
+
+    #generate text for simple word cloud
+    improvement_and_missing_text = ' '.join(improvement_and_missing.astype(str))
+
+    #generate word cloud
+    improvement_and_missing_cloud = WordCloud(width=800, height=400, background_color='white', stopwords=learning_stopwords).generate(improvement_and_missing_text)
+
+    # Display the word cloud using Streamlit
+    st.markdown(
+            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud</h3>",
+            unsafe_allow_html=True)
+    st.image(improvement_and_missing_cloud.to_array(), use_column_width=True)
+
+    st.write('For detailed reason analysis/sentiment dashboard, please check out the [link](https://gucciouy5ardhonqumm6p4.streamlit.app)')
 
 ############ SECTION 4 ENDS ############
 
