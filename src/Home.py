@@ -132,36 +132,35 @@ def get_unique_values(column):
     return data[column].unique()
 
 @st.cache_resource(show_spinner=False)
-    def load_model():
-        try:
-            model = pipeline("summarization", model="csebuetnlp/mT5_multilingual_XLSum")
-            return model
-        except Exception as e:
-            st.error(f"Error loading the summarizer model: {e}")
-            return None
+def load_model():
+    try:
+        model = pipeline("summarization", model="csebuetnlp/mT5_multilingual_XLSum")
+        return model
+    except Exception as e:
+        st.error(f"Error loading the summarizer model: {e}")
+        return None
 
+def main():
+    st.title("Summarization with Transformers")
 
-    def main():
-        st.title("Summarization with Transformers")
+    # Display a message or spinner while the model is loading
+    with st.spinner("Loading summarization model..."):
+        summarizer = load_model()
 
-        # Display a message or spinner while the model is loading
-        with st.spinner("Loading summarization model..."):
-            summarizer = load_model()
-
-        if summarizer:
-            st.write("Successfully loaded the summarizer model.")
-            # Add your Streamlit app content here
-            user_input = st.text_area("Enter text for summarization")
-            if st.button("Summarize"):
-                with st.spinner("Summarizing..."):
-                    summary = summarizer(user_input, max_length=100, min_length=25, do_sample=False)
-                    st.write(summary[0]['summary_text'])
+    if summarizer:
+        st.write("Successfully loaded the summarizer model.")
+        # Add your Streamlit app content here
+        user_input = st.text_area("Enter text for summarization")
+        if st.button("Summarize"):
+            with st.spinner("Summarizing..."):
+                summary = summarizer(user_input, max_length=100, min_length=25, do_sample=False)
+                st.write(summary[0]['summary_text'])
         else:
             st.error("Model could not be loaded. Please check the logs for more details.")
 
 
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()
 
 
 roles = get_unique_values('What is your role at the company ?')
