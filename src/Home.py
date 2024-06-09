@@ -227,6 +227,30 @@ if dashboard == "General Survey Results":
     )
 
     # Prepare the summaries for the filtered data
+    def prepare_summaries(data):
+        continent_to_country_code = {
+            'Asia': 'KAZ',
+            'Oceania': 'AUS',
+            'North America': 'CAN',
+            'South America': 'BRA',
+            'Europe': 'DEU',
+            'Africa': 'TCD'
+        }
+        country_code_to_continent = {v: k for k, v in continent_to_country_code.items()}
+        location_summary = pd.DataFrame(data['Where are you located ?'].value_counts()).reset_index()
+        location_summary.columns = ['Continent', 'Count']
+        location_summary['Country_Code'] = location_summary['Continent'].map(continent_to_country_code)
+        location_summary['Label'] = location_summary['Continent'].apply(
+            lambda x: f"{x}: {location_summary.loc[location_summary['Continent'] == x, 'Count'].iloc[0]}")
+
+        role_summary = pd.DataFrame(data['What is your role at the company ?'].value_counts()).reset_index()
+        role_summary.columns = ['Role', 'Count']
+        role_summary = role_summary.sort_values('Count', ascending=True)
+        function_summary = pd.DataFrame(data['What function are you part of ?'].value_counts()).reset_index()
+        function_summary.columns = ['Function', 'Count']
+        function_summary = function_summary.sort_values('Count', ascending=True)
+        return location_summary, role_summary, function_summary
+
     location_summary, role_summary, function_summary = prepare_summaries(filtered_data)
 
     st.markdown(
@@ -414,73 +438,73 @@ def generate_wordclouds(df, score_col_idx, reasons_col_idx, custom_stopwords):
 
 ############ SENTIMENT ANALYSIS FUNCTION ENDS ############
 
-# Function for sentiment analysis dashboard
+# Give up this following Function for sentiment analysis dashboard because of low accuracy of NLTK in sentiment analyzer polarity scores
 
-def sentiment_dashboard(data_series, title):
+#def sentiment_dashboard(data_series, title):
     # Sidebar for control
-    st.sidebar.markdown("### Filter Options")
-    show_wordcloud = st.sidebar.checkbox("Show Word Cloud", value=True)
-    filter_negative = st.sidebar.checkbox("Show Negative Comments", value=False)
-    filter_positive = st.sidebar.checkbox("Show Positive Comments", value=False)
+    #st.sidebar.markdown("### Filter Options")
+    #show_wordcloud = st.sidebar.checkbox("Show Word Cloud", value=True)
+    # filter_negative = st.sidebar.checkbox("Show Negative Comments", value=False)
+    # filter_positive = st.sidebar.checkbox("Show Positive Comments", value=False)
 
     # Initialize sentiment results and comment lists
-    sentiment_results = {'Positive': 0, 'Negative': 0, 'Neutral': 0}
-    negative_comments = []
-    positive_comments = []
+    # sentiment_results = {'Positive': 0, 'Negative': 0, 'Neutral': 0}
+    # negative_comments = []
+    # positive_comments = []
 
     # Analyze sentiment and collect results
-    for sentence in data_series.dropna():
-        sentiment_scores = sentiment_analyzer.polarity_scores(sentence)
-        compound_score = sentiment_scores['compound']
+    # for sentence in data_series.dropna():
+    #     sentiment_scores = sentiment_analyzer.polarity_scores(sentence)
+    #     compound_score = sentiment_scores['compound']
 
-        if compound_score <= -0.05:
-            sentiment_results['Negative'] += 1
-            negative_comments.append((sentence, compound_score))
-        elif compound_score >= 0.05:
-            sentiment_results['Positive'] += 1
-            positive_comments.append((sentence, compound_score))
-        else:
-            sentiment_results['Neutral'] += 1
+    #     if compound_score <= -0.05:
+    #         sentiment_results['Negative'] += 1
+    #         negative_comments.append((sentence, compound_score))
+    #     elif compound_score >= 0.05:
+    #         sentiment_results['Positive'] += 1
+    #         positive_comments.append((sentence, compound_score))
+    #     else:
+    #         sentiment_results['Neutral'] += 1
 
     # Display word cloud
-    if show_wordcloud:
-        wordcloud = WordCloud(width=400, height=200, background_color='white').generate(' '.join(data_series.dropna()))
-        plt.imshow(wordcloud, interpolation='bilinear')
-        plt.axis("off")
-        st.pyplot(plt)  # Display word cloud in Streamlit
+    # if show_wordcloud:
+    #     wordcloud = WordCloud(width=400, height=200, background_color='white').generate(' '.join(data_series.dropna()))
+    #     plt.imshow(wordcloud, interpolation='bilinear')
+    #     plt.axis("off")
+    #     st.pyplot(plt)  # Display word cloud in Streamlit
 
     # Display top negative and positive comments
-    if filter_negative:
-        st.markdown("### Top 5 Negative Comments")
-        for comment, score in sorted(negative_comments, key=lambda x: x[1], reverse=True)[:5]:
-            st.write(f"{comment} (Score: {score:.4f})")
+    # if filter_negative:
+    #     st.markdown("### Top 5 Negative Comments")
+    #     for comment, score in sorted(negative_comments, key=lambda x: x[1], reverse=True)[:5]:
+    #         st.write(f"{comment} (Score: {score:.4f})")
 
-    if filter_positive:
-        st.markdown("### Top 5 Positive Comments")
-        for comment, score in sorted(positive_comments, key=lambda x: x[1], reverse=True)[:5]:
-            st.write(f"{comment} (Score: {score:.4f})")
+    # if filter_positive:
+    #     st.markdown("### Top 5 Positive Comments")
+    #     for comment, score in sorted(positive_comments, key=lambda x: x[1], reverse=True)[:5]:
+    #         st.write(f"{comment} (Score: {score:.4f})")
 
     # Create stacked bar chart for sentiment distribution
-    total = sum(sentiment_results.values())
-    proportions = {k: v / total for k, v in sentiment_results.items()}
+    # total = sum(sentiment_results.values())
+    # proportions = {k: v / total for k, v in sentiment_results.items()}
 
-    fig = go.Figure()
-    cumulative_size = 0
-    for sentiment, proportion in proportions.items():
-        color = 'lightgreen' if sentiment == 'Positive' else 'lightcoral' if sentiment == 'Negative' else 'lightgrey'
-        fig.add_trace(go.Bar(x=[proportion], y=['Sentiment'], orientation='h', name=sentiment, base=cumulative_size,
-                             marker=dict(color=color)))
-        cumulative_size += proportion
+    # fig = go.Figure()
+    # cumulative_size = 0
+    # for sentiment, proportion in proportions.items():
+    #     color = 'lightgreen' if sentiment == 'Positive' else 'lightcoral' if sentiment == 'Negative' else 'lightgrey'
+    #     fig.add_trace(go.Bar(x=[proportion], y=['Sentiment'], orientation='h', name=sentiment, base=cumulative_size,
+    #                          marker=dict(color=color)))
+    #     cumulative_size += proportion
 
     # Update layout and display chart in Streamlit
-    fig.update_layout(
-        title="Sentiment Distribution",
-        barmode='stack',
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False),
-    )
+    # fig.update_layout(
+    #     title="Sentiment Distribution",
+    #     barmode='stack',
+    #     xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+    #     yaxis=dict(showgrid=False, zeroline=False),
+    # )
 
-    st.plotly_chart(fig)  # Display the stacked bar chart
+    # st.plotly_chart(fig)  # Display the stacked bar chart
 
 
 ########## DEFINING FUNCTIONS ENDS ########
@@ -733,6 +757,15 @@ if dashboard == "Section 1: Employee Experience":
         q6ValuesCount, q6MedianScore = score_distribution(filtered_data, 11)
 
         ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q6ValuesCount.values})
+
+        # Define the order of the categories
+        satisfaction_order = ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very Dissatisfied']
+
+        # Convert 'Satisfaction Level' to a categorical variable with the specified order
+        ratings_df['Satisfaction Level'] = pd.Categorical(ratings_df['Satisfaction Level'], categories=satisfaction_order, ordered=True)
+
+        # Sort the DataFrame by 'Satisfaction Level'
+        ratings_df.sort_values('Satisfaction Level', inplace=True)
 
         # Display title and median score
         title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Overall Rating on HR Services and Support</h2>"
