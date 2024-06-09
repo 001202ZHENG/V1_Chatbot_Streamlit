@@ -10,7 +10,6 @@ import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
 
-
 score_to_category = {
     1: 'Very Dissatisfied',
     2: 'Dissatisfied',
@@ -191,9 +190,9 @@ def prepare_summaries(data):
     function_summary.columns = ['Function', 'Count']
     return location_summary, role_summary, function_summary
 
+
 ############ GENERAL DASHBOARD STARTS ############
 if dashboard == "General Survey Results":
-
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
 
@@ -260,13 +259,14 @@ if dashboard == "General Survey Results":
 
     # A text container for filtering instructions
     st.markdown(
-        f"""
-        <div class="text-container" style="font-style: italic;">
-        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the distribution of the&nbsp;
-        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
-        </div>
-        """,
-        unsafe_allow_html=True
+    f"""
+    <div class="text-container" style="font-style: italic;">
+    <br>
+    Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
+    <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+    </div>
+    """,
+    unsafe_allow_html=True
     )
 
     map_ratio = 0.5
@@ -324,7 +324,7 @@ if dashboard == "General Survey Results":
         fig_role = px.bar(role_summary, y='Role', x='Count', orientation='h')
         fig_role.update_layout(
             title="by Role",
-            margin=dict(l=left_margin, r=0, t=50, b=0),  # Set the left margin
+            margin=dict(l=left_margin, r=0, t=50, b=0),
             height=role_chart_height,
             showlegend=False
         )
@@ -337,7 +337,7 @@ if dashboard == "General Survey Results":
         fig_function = px.bar(function_summary, y='Function', x='Count', orientation='h')
         fig_function.update_layout(
             title="by Function",
-            margin=dict(l=left_margin, r=0, t=50, b=0),  # Set the left margin, the same as for fig_role
+            margin=dict(l=left_margin, r=0, t=50, b=0),
             height=function_chart_height,
             showlegend=False
         )
@@ -375,6 +375,7 @@ def filter_by_satisfaction(data, satisfaction_level, column_index):
         data = data[data.iloc[:, column_index] == satisfaction_options.index(satisfaction_level)]
     return data
 
+
 def filter_by_comfort(data, comfort_level, column_index):
     if comfort_level != 'Select a comfort level':
         data = data[data.iloc[:, column_index] == comfort_options.index(comfort_level)]
@@ -398,21 +399,27 @@ def generate_wordclouds(df, score_col_idx, reasons_col_idx, custom_stopwords):
     text_low_scores = ' '.join(df_low_scores.iloc[:, reasons_col_idx].astype(str))
 
     # Generate the word clouds
-    wordcloud_high_scores = WordCloud(width=800, height=400, background_color='white', stopwords=stopwords_set, collocations=False).generate(text_high_scores)
-    wordcloud_low_scores = WordCloud(width=800, height=400, background_color='white', stopwords=stopwords_set, collocations=False).generate(text_low_scores)
+    wordcloud_high_scores = WordCloud(width=800, height=400, background_color='white', stopwords=stopwords_set,
+                                      collocations=False).generate(text_high_scores)
+    wordcloud_low_scores = WordCloud(width=800, height=400, background_color='white', stopwords=stopwords_set,
+                                     collocations=False).generate(text_low_scores)
 
     # Create columns for displaying the word clouds side by side
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud for High Scores</h3>", unsafe_allow_html=True)
+        st.markdown(
+            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud for High Scores</h3>",
+            unsafe_allow_html=True)
         fig_high_scores, ax_high_scores = plt.subplots(figsize=(10, 5))
         ax_high_scores.imshow(wordcloud_high_scores, interpolation='bilinear')
         ax_high_scores.axis('off')
         st.pyplot(fig_high_scores)
 
     with col2:
-        st.markdown("<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud for Low Scores</h3>", unsafe_allow_html=True)
+        st.markdown(
+            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud for Low Scores</h3>",
+            unsafe_allow_html=True)
         fig_low_scores, ax_low_scores = plt.subplots(figsize=(10, 5))
         ax_low_scores.imshow(wordcloud_low_scores, interpolation='bilinear')
         ax_low_scores.axis('off')
@@ -562,73 +569,55 @@ if dashboard == "Section 1: Employee Experience":
     # Calculate percentage
     device_counts['percentage'] = device_counts['count'] / device_counts['count'].sum() * 100
 
-    st.markdown(
-        """
-        <style>
-        .top-bar {
-            background-color: #f0f2f6;  /* Light grey background */
-            text-align: left;
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            height: auto;
-        }
-        </style>
-        """, unsafe_allow_html=True
-    )
 
     # Question 10: Do you find the HR department responsive to your inquiries and concerns?
     q10_responsiveness_count = (data.iloc[:, 15] == 'Yes').sum()
     q10_responsiveness_pct = q10_responsiveness_count / len(data) * 100
 
-    highest_hr_process_interacted = q4_q5_count.loc[q4_q5_count[q4_q5_count['HR Function'] != 'None']['HR_Process_Interacted'].idxmax(), "HR Function"]
-    highest_improvement_areas = q4_q5_count.loc[q4_q5_count[q4_q5_count['HR Function'] != 'None']['Improvement_Areas'].idxmax(), "HR Function"]
+    highest_hr_process_interacted = q4_q5_count.loc[
+        q4_q5_count[q4_q5_count['HR Function'] != 'None']['HR_Process_Interacted'].idxmax(), "HR Function"]
+    highest_improvement_areas = q4_q5_count.loc[
+        q4_q5_count[q4_q5_count['HR Function'] != 'None']['Improvement_Areas'].idxmax(), "HR Function"]
     most_used_device = device_counts.iloc[0]['device']
 
     # Summary of all outputs in the bar container
     st.markdown(
-        f"""
-            <style>
-            .top-bar {{
-                font-weight: normal;
-                font-size: 17px;
-                padding: 10px 20px;
-                color: #333333;
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
-            }}
-            .top-bar ul, .top-bar li {{
-            font-size: 17px;
-            padding-left: 20px;
-            margin: 0;
-            }}
-            </style>
-            <div class="top-bar">
-            This survey section is answered by all the <strong>{len(data)}</strong> survey participants:
-            <ul>
-                <li>{q10_responsiveness_pct:.0f}% of the respondents, {q10_responsiveness_count} employee(s), find the HR department responsive to their inquiries and concerns.</li>
-                <li>The median satisfaction rating on overall HR services and support is {q6MedianScore}.</li>
-                <li>The median satisfaction rating on the HR communication channels is {q11MedianScore}.</li>
-                <li> Highest Process interacted with {highest_hr_process_interacted}</li>
-                <li> Highest Improvement Area: {highest_improvement_areas}</li>
-                <li> Most Device used: {most_used_device}</li>
-            </ul>
-            </div>
-            """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <style>
-        .text-container {
-            font-size: 15px;
-            padding: 10px 0px;
-            color: #333333;
-        }
-        </style>
-        """, unsafe_allow_html=True
+    f"""
+    <style>
+    .top-bar {{
+        background-color: #f0f2f6;  /* Light grey background */
+        text-align: left;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        height: auto;
+        font-weight: normal;
+        font-size: 17px;
+        padding: 10px 20px;
+        color: #333333;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }}
+    .top-bar ul, .top-bar li {{
+        font-size: 17px;
+        padding-left: 20px;
+        margin: 0;
+    }}
+    </style>
+    <div class="top-bar">
+        This survey section is answered by all the <strong>{len(data)}</strong> survey participants:
+        <ul>
+            <li>{q10_responsiveness_pct:.0f}% of the respondents, {q10_responsiveness_count} employee(s), find the HR department responsive to their inquiries and concerns.</li>
+            <li>The median satisfaction rating on overall HR services and support is {q6MedianScore}.</li>
+            <li>The median satisfaction rating on the HR communication channels is {q11MedianScore}.</li>
+            <li>The HR process that employees interact with the most is: {highest_hr_process_interacted}</li>
+            <li>The HR process most commonly identified as needing improvement is: {highest_improvement_areas}</li>
+            <li>The most common device used to access HR Information is: {most_used_device}</li>
+        </ul>
+    </div>
+    """,
+    unsafe_allow_html=True
     )
 
 
@@ -637,13 +626,14 @@ if dashboard == "Section 1: Employee Experience":
 
     # A text container for filtering instructions
     st.markdown(
-        f"""
-        <div class="text-container" style="font-style: italic;">
-        Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
-        <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
-        </div>
-        """,
-        unsafe_allow_html=True
+    f"""
+    <div class="text-container" style="font-style: italic;">
+    <br>
+    Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
+    <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
+    </div>
+    """,
+    unsafe_allow_html=True
     )
 
     # Question 10: Do you find the HR department responsive to your inquiries and concerns?
@@ -674,7 +664,6 @@ if dashboard == "Section 1: Employee Experience":
                 """,
         unsafe_allow_html=True
     )
-
 
     # Question 4: What HR processes do you interact with the most in your day-to-day work ?
     q4_data = pd.DataFrame({
@@ -888,7 +877,6 @@ if dashboard == "Section 1: Employee Experience":
         fig_function2.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function2, use_container_width=True, key="functions_bar_chart2")
 
-
     # Define colors for each device
     colors = {'Computer': '#440154', 'Mobile': '#5ec962', 'Tablet': '#3b528b'}
 
@@ -901,18 +889,22 @@ if dashboard == "Section 1: Employee Experience":
         # Plot for HR Processes in the first column
         fig_q4 = go.Figure(data=[
             go.Bar(
-            name='Improvement Areas',
-            y=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['HR Function'],#make it horizontal bar chart to show texts completely
-            x=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['Count'], #make it horizontal bar chart to show texts completely
-            marker_color='#3b528b',
-            orientation='h' #make it horizontal bar chart to show texts completely
+                name='Improvement Areas',
+                y=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['HR Function'],
+                # make it horizontal bar chart to show texts completely
+                x=df_tidy[df_tidy['Type'] == 'Improvement_Areas']['Count'],
+                # make it horizontal bar chart to show texts completely
+                marker_color='#3b528b',
+                orientation='h'  # make it horizontal bar chart to show texts completely
             ),
             go.Bar(
-            name='Employee Interaction',
-            y=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['HR Function'],#make it horizontal bar chart to show texts completely
-            x=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['Count'], #make it horizontal bar chart to show texts completely
-            marker_color='#5ec962',
-            orientation='h' #make it horizontal bar chart to show texts completely
+                name='Employee Interaction',
+                y=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['HR Function'],
+                # make it horizontal bar chart to show texts completely
+                x=df_tidy[df_tidy['Type'] == 'HR_Process_Interacted']['Count'],
+                # make it horizontal bar chart to show texts completely
+                marker_color='#5ec962',
+                orientation='h'  # make it horizontal bar chart to show texts completely
             )
         ])
         fig_q4.update_layout(
@@ -953,21 +945,27 @@ if dashboard == "Section 1: Employee Experience":
         )
         fig_q7.update_traces(texttemplate='%{text:.0f}%', textposition='outside')
         st.plotly_chart(fig_q7, use_container_width=True)
-    
+
     # Question 9: Which reason(s) drive that score ?
     # Display the reasons for communication channel satisfaction
-    st.markdown('<h1 style="font-size:17px;font-family:Arial;color:#333333;">The Reasons for Ratings on Communication Channels</h1>', unsafe_allow_html=True)
+    st.markdown(
+        '<h1 style="font-size:17px;font-family:Arial;color:#333333;">The Reasons for Ratings on Communication Channels</h1>',
+        unsafe_allow_html=True)
 
     # Example usage
-    communication_stopwords = ["communication", "channels", "HR", "information", "important", "informed", "stay", "communicated", "employees", "company", "help", "communicates", "need", "everyone", "makes"]
+    communication_stopwords = ["communication", "channels", "HR", "information", "important", "informed", "stay",
+                               "communicated", "employees", "company", "help", "communicates", "need", "everyone",
+                               "makes"]
 
     # Run this code in a Streamlit app
     if __name__ == "__main__":
-        st.markdown("<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Word Cloud Visualization</h1>", unsafe_allow_html=True)
+        st.markdown(
+            "<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Word Cloud Visualization</h1>",
+            unsafe_allow_html=True)
         generate_wordclouds(filtered_data, 13, 14, communication_stopwords)
 
-    
     from transformers import pipeline
+
 
     @st.cache_resource(show_spinner=False)
     def load_model():
@@ -977,6 +975,7 @@ if dashboard == "Section 1: Employee Experience":
         except Exception as e:
             st.error(f"Error loading the summarizer model: {e}")
             return None
+
 
     def main():
         st.title("Summarization with Transformers")
@@ -996,13 +995,9 @@ if dashboard == "Section 1: Employee Experience":
         else:
             st.error("Model could not be loaded. Please check the logs for more details.")
 
+
     if __name__ == "__main__":
         main()
-
-    
-
-
-    
 
 ############ SECTION 1 ENDS ############
 
@@ -1011,11 +1006,142 @@ if dashboard == "Section 1: Employee Experience":
 if dashboard == 'Section 2: Recruiting & Onboarding':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
+
+    ### Question11: How long have you been part of the company ?
+    q11_data_available_count = (data.iloc[:, 16] == 'Less than a year').sum()
+    q11_data_available_pct = q11_data_available_count / len(data) * 100
+
+    q12ValuesCount, q12MedianScore = score_distribution(data, 17)
+
+    q13a_data = pd.DataFrame({'negative_reasons': data.iloc[:, 18]})
+    q13a_data['negative_reasons'] = q13a_data['negative_reasons'].str.rstrip(';').str.split(';')
+    q13a_data = q13a_data.explode('negative_reasons')
+    q13a_data.dropna(inplace=True)
+
+    # Count the occurrences of each negative reason
+    negative_reason_counts = q13a_data['negative_reasons'].value_counts().reset_index()
+    negative_reason_counts.columns = ['Reason', 'Count']
+    # Find the most common reason for dissatisfaction
+    most_common_reason_for_dissatisfaction = negative_reason_counts.iloc[0]['Reason']
+
+    q13b_data = pd.DataFrame({'positive_reasons': data.iloc[:, 19]})
+    q13b_data['positive_reasons'] = q13b_data['positive_reasons'].str.rstrip(';').str.split(';')
+    q13b_data = q13b_data.explode('positive_reasons')
+    q13b_data.dropna(inplace=True)
+
+    # Count the occurrences of each positive reason
+    positive_reason_recruiting_counts = q13b_data['positive_reasons'].value_counts().reset_index()
+    positive_reason_recruiting_counts.columns = ['positive_reasons', 'count']
+    # Find the most common reason for dissatisfaction
+    most_common_reason_for_satisfaction = positive_reason_recruiting_counts.iloc[0]['positive_reasons']
+
+    q14_data = pd.DataFrame({'recruting process that required improvement': data.iloc[:, 20]})
+
+    q14_data['recruting process that required improvement'] = q14_data[
+        'recruting process that required improvement'].str.rstrip(';').str.split(';')
+    q14_data = q14_data.explode('recruting process that required improvement')
+    q14_data.dropna(inplace=True)
+
+    # Count the occurrences of each aspect that required improvement
+    aspect_recruiting_counts = q14_data['recruting process that required improvement'].value_counts().reset_index()
+    aspect_recruiting_counts.columns = ['recruting process that required improvement', 'count']
+    most_chosen_aspect = aspect_recruiting_counts.iloc[0]['recruting process that required improvement']
+
+    q15ValuesCount, q15MedianScore = score_distribution(data, 21)
+
+    q16a_data = pd.DataFrame({'negative_reasons': data.iloc[:, 22]})
+    q16a_data['negative_reasons'] = q16a_data['negative_reasons'].str.rstrip(';').str.split(';')
+    q16a_data = q16a_data.explode('negative_reasons')
+    q16a_data.dropna(inplace=True)
+
+    # Count the occurrences of each negative reason
+    negative_reason_recruiting_counts = q16a_data['negative_reasons'].value_counts().reset_index()
+    negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
+    most_common_reason_for_dissatisfaction2 = negative_reason_recruiting_counts.iloc[0]['negative_reasons']
+
+    q16b_data = pd.DataFrame({'positive_reasons': data.iloc[:, 23]})
+    q16b_data['positive_reasons'] = q16b_data['positive_reasons'].str.rstrip(';').str.split(';')
+    q16b_data = q16b_data.explode('positive_reasons')
+    q16b_data.dropna(inplace=True)
+
+    # Count the occurrences of each positive reason
+    positive_reason_recruiting_counts = q16b_data['positive_reasons'].value_counts().reset_index()
+    positive_reason_recruiting_counts.columns = ['positive_reasons', 'count']
+    most_common_reason_for_satisfaction2 = positive_reason_recruiting_counts.iloc[0]['positive_reasons']
+
+    q17_data = pd.DataFrame({'helpful_onboarding_process': data.iloc[:, 24]})
+    q17_data['helpful_onboarding_process'] = q17_data['helpful_onboarding_process'].str.rstrip(';').str.split(';')
+    q17_data = q17_data.explode('helpful_onboarding_process')
+    q17_data.dropna(inplace=True)
+
+    # Count the occurrences of each aspect that required improvement
+    helpful_onboarding_counts = q17_data['helpful_onboarding_process'].value_counts().reset_index()
+    helpful_onboarding_counts.columns = ['helpful_onboarding_process', 'count']
+    most_helpful = helpful_onboarding_counts.iloc[0]['helpful_onboarding_process']
+
+    # onboarding process to improve
+    q18_data = pd.DataFrame({'onboarding_process_to_improve': data.iloc[:, 25]})
+    q18_data['onboarding_process_to_improve'] = q18_data['onboarding_process_to_improve'].str.rstrip(';').str.split(';')
+    q18_data = q18_data.explode('onboarding_process_to_improve')
+    q18_data.dropna(inplace=True)
+
+    # Count the occurrences of each aspect that required improvement
+    aspect_onboarding_counts = q18_data['onboarding_process_to_improve'].value_counts().reset_index()
+    aspect_onboarding_counts.columns = ['onboarding_process_to_improve', 'count']
+    to_be_improved = aspect_onboarding_counts.iloc[0]['onboarding_process_to_improve']
+
+    ### Question11: How long have you been part of the company ?
+    q11_data_available_count = (filtered_data.iloc[:, 16] == 'Less than a year').sum()
+    q11_data_available_pct = q11_data_available_count / len(filtered_data) * 100
+
     
-    
+    # Summary of all outputs in the bar container
+    st.markdown(
+    f"""
+    <style>
+    .top-bar {{
+        background-color: #f0f2f6;  /* Light grey background */
+        text-align: left;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        height: auto;
+        font-weight: normal;
+        font-size: 17px;
+        padding: 10px 20px;
+        color: #333333;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }}
+    .top-bar ul, .top-bar li {{
+        font-size: 17px;
+        padding-left: 20px;
+        margin: 0;
+    }}
+    </style>
+    <div class="top-bar">
+            This survey section is answered by {q11_data_available_count} employee(s), who have been with the company for less than a year:
+        <ul>
+        <li>The median satisfaction rating on the recruitment process is {q12MedianScore}.</li>
+        <li>The most common reason for their dissatisfaction with the recruitment process is: {most_common_reason_for_dissatisfaction}.</li>
+        <li>The most common reason for their satisfaction with the recruitment process is: {most_common_reason_for_satisfaction}.</li>
+        <li>The most chosen aspect of the recruiting process that requires improvement is: {most_chosen_aspect}</li>
+        <li>The median satisfaction rating on the onboarding process is: {q15MedianScore}.</li>
+        <li>The most common reason for their dissatisfaction with the onboarding process is: {most_common_reason_for_dissatisfaction2}.</li>
+        <li>the most common reason for their satisfaction with the onboarding process is: {most_common_reason_for_satisfaction2}.</li>
+        <li>The part of the onboarding process considered most helpful is: {most_helpful}</li>
+        <li>The part of the onboarding process most frequently requested for improvement is: {to_be_improved}</li>
+        </ul>
+        </div>
+                """,
+        unsafe_allow_html=True
+    )
+
     # A text container for filtering instructions
     st.markdown(
         f"""
+        <br>
         <div class="text-container" style="font-style: italic;">
         Filter the data by selecting tags from the sidebar. The charts below will be updated to reflect the&nbsp;
         <strong>{len(filtered_data)}</strong>&nbsp;filtered respondents.
@@ -1023,24 +1149,8 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
         """,
         unsafe_allow_html=True
     )
-    
-    ### Question11: How long have you been part of the company ?
-    q11_data_available_count = (filtered_data.iloc[:, 16] == 'Less than a year').sum()
-    q11_data_available_pct = q11_data_available_count / len(filtered_data) * 100
-   
-    st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    How long have you been part of the company?
-    </h2>
-    """,
-    unsafe_allow_html=True
-    )
 
-    st.write(
-        f"{q11_data_available_pct:.2f}% of the respondents, {q11_data_available_count} employee(s), have been part of the company LESS THAN a year.")
-    
-    
+
     ### Question12: How would rate the recruiting process ?
     satisfaction_ratio = 0.6
     barcharts_ratio = 1 - satisfaction_ratio
@@ -1122,121 +1232,99 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
         fig_function1.update_yaxes(showticklabels=True, title='')
         fig_function1.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
-        
-        
+
     ### Question13: What reason(s) drive that score ?
-    ### Part I: negative reasons for recruiting process
-    st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Reasons that drive scores: 1 - Very Dissatisfied / 2 - Dissatisfied / 3 - Neutral 
-    </h2>
-    """,
-    unsafe_allow_html=True
-    )
-    
-    q13a_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 18]})
-    q13a_data['negative_reasons'] = q13a_data['negative_reasons'].str.rstrip(';').str.split(';')
-    q13a_data = q13a_data.explode('negative_reasons')
-    q13a_data.dropna(inplace=True)
+    col1, col2 = st.columns(2)
 
-    # Count the occurrences of each negative reason
-    negative_reason_recruiting_counts = q13a_data['negative_reasons'].value_counts().reset_index()
-    negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
+    # Display the reasons for negative ratings
+    with col1:
+        # Generate data for negative reasons
+        q13a_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 18]})
+        q13a_data['negative_reasons'] = q13a_data['negative_reasons'].str.rstrip(';').str.split(';')
+        q13a_data = q13a_data.explode('negative_reasons')
+        q13a_data.dropna(inplace=True)
+        negative_reason_recruiting_counts = q13a_data['negative_reasons'].value_counts().reset_index()
+        negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
+        negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(filtered_data) * 100
 
-    # Calculate percentage
-    negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(
-        filtered_data) * 100
+        # Create and display the treemap for negative reasons
+        custom_color_scale = ['#2a4170', '#3b528b', '#4c669a', '#5d7ca6', '#6e92b8']
+        fig10 = px.treemap(
+            negative_reason_recruiting_counts,
+            path=['negative_reasons'],
+            values='count',
+            color='count',
+            color_continuous_scale=custom_color_scale,
+            title='Reasons behind the Negative Ratings on the Recruiting Process'
+        )
+        fig10.update_layout(
+            margin=dict(t=50, l=25, r=25, b=25),  # Adjust margin to allow more space
+            showlegend=False,
+            coloraxis_showscale=False
+        )
+        st.plotly_chart(fig10, use_container_width=True)
 
-    # Create a vertical bar chart
-    fig6 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count',
-                  color='negative_reasons', color_discrete_sequence=['#FFA500'])
+    # Display the title for positive reasons
+    with col2:
+        # Generate data for positive reasons
+        q13b_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 19]})
+        q13b_data['positive_reasons'] = q13b_data['positive_reasons'].str.rstrip(';').str.split(';')
+        q13b_data = q13b_data.explode('positive_reasons')
+        q13b_data.dropna(inplace=True)
+        positive_reason_recruiting_counts = q13b_data['positive_reasons'].value_counts().reset_index()
+        positive_reason_recruiting_counts.columns = ['positive_reasons', 'count']
+        positive_reason_recruiting_counts['percentage'] = positive_reason_recruiting_counts['count'] / len(filtered_data) * 100
 
-    # make a tree map on the negative reasons
-    fig10 = px.treemap(negative_reason_recruiting_counts, path=['negative_reasons'], values='count', color='count',
-                       color_continuous_scale='RdBu')
+        # Create and display the treemap for positive reasons
+        custom_color_scale = ['#429c62', '#5ec962', '#7cd982', '#9de9a2', '#bef9c2']
+        fig9 = px.treemap(
+            positive_reason_recruiting_counts,
+            path=['positive_reasons'],
+            values='count',
+            color='count',
+            color_continuous_scale=custom_color_scale,
+            title='Reasons behind the Positive Ratings on the Recruiting Process'
+        )
+        fig9.update_layout(
+            margin=dict(t=50, l=25, r=25, b=25),
+            showlegend=False,
+            coloraxis_showscale=False
+        )
+        st.plotly_chart(fig9, use_container_width=True)
+        
 
-    # Show the chart
-    st.plotly_chart(fig6, use_container_width=False)
-    st.plotly_chart(fig10, use_container_width=False)
-
-    ### Part II:  positive reasons for recruiting process
-    st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Reasons that drive scores: 4 - Satisfied / 5 - Very Satisfied
-    </h2>
-    """,
-    unsafe_allow_html=True
-    )
-    
-    
-    q13b_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 19]})
-    q13b_data['positive_reasons'] = q13b_data['positive_reasons'].str.rstrip(';').str.split(';')
-    q13b_data = q13b_data.explode('positive_reasons')
-    q13b_data.dropna(inplace=True)
-
-    # Count the occurrences of each positive reason
-    positive_reason_recruiting_counts = q13b_data['positive_reasons'].value_counts().reset_index()
-    positive_reason_recruiting_counts.columns = ['positive_reasons', 'count']
-
-    # Calculate percentage
-    positive_reason_recruiting_counts['percentage'] = positive_reason_recruiting_counts['count'] / len(
-        filtered_data) * 100
-
-    # Create a vertical bar chart
-    fig7 = px.bar(positive_reason_recruiting_counts, x='positive_reasons', y='percentage', text='count',
-                  color='positive_reasons', color_discrete_sequence=['#519DE9'])
-
-    # make a tree map on the positive reasons
-    fig9 = px.treemap(positive_reason_recruiting_counts, path=['positive_reasons'], values='count', color='count',
-                      color_continuous_scale='RdBu')
-
-    # Show the chart
-    st.plotly_chart(fig7, use_container_width=False)
-    st.plotly_chart(fig9, use_container_width=False)
-    
-    
-    
     ### Question14: What aspect of the recruiting process took the most time and requires improvements ?
-    st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Aspects of the Recruiting Process that Require Improvements
-    </h2>
-    """,
-    unsafe_allow_html=True
-    )
-    
-   
-    q14_data = pd.DataFrame({'recruting process that required improvement': filtered_data.iloc[:, 20]})
-
-    q14_data['recruting process that required improvement'] = q14_data[
-        'recruting process that required improvement'].str.rstrip(';').str.split(';')
-    q14_data = q14_data.explode('recruting process that required improvement')
+    q14_data = pd.DataFrame({'recruiting process that required improvement': filtered_data.iloc[:, 20]})
+    q14_data['recruiting process that required improvement'] = q14_data['recruiting process that required improvement'].str.rstrip(';').str.split(';')
+    q14_data = q14_data.explode('recruiting process that required improvement')
     q14_data.dropna(inplace=True)
-
-    # Count the occurrences of each aspect that required improvement
-    aspect_recruiting_counts = q14_data['recruting process that required improvement'].value_counts().reset_index()
-    aspect_recruiting_counts.columns = ['recruting process that required improvement', 'count']
-
-    # Calculate percentage
+    aspect_recruiting_counts = q14_data['recruiting process that required improvement'].value_counts().reset_index()
+    aspect_recruiting_counts.columns = ['recruiting process that required improvement', 'count']
     aspect_recruiting_counts['percentage'] = aspect_recruiting_counts['count'] / len(filtered_data) * 100
 
-    # Create a vertical bar chart
-    fig8 = px.bar(aspect_recruiting_counts, x='recruting process that required improvement', y='percentage',
-                  text='count', color='recruting process that required improvement',
-                  color_discrete_sequence=['#FF7F7F'])
+    # Create a horizontal bar chart
+    fig8 = px.bar(
+        aspect_recruiting_counts,
+        y='recruiting process that required improvement',
+        x='percentage',
+        text='percentage',
+        orientation='h',
+        title='Aspects of the Recruiting Process that Require Improvements'
+    )
+    fig8.update_layout(
+        xaxis={'visible': False},
+        yaxis_title=None,
+        showlegend=False,
+        yaxis={'showgrid': False}
+    )
+    fig8.update_traces(
+        marker_color='#336699',
+        texttemplate='%{text:.1f}%',
+        textposition='outside'
+    )
+    st.plotly_chart(fig8, use_container_width=True)
 
-    # make a tree map on the aspect that required improvement
-    fig11 = px.treemap(aspect_recruiting_counts, path=['recruting process that required improvement'], values='count',
-                       color='count', color_continuous_scale='RdBu')
 
-    # Show the chart
-    st.plotly_chart(fig8, use_container_width=False)
-    st.plotly_chart(fig11, use_container_width=False)
-    
-    
     ### Question15: From 1 to 5, how would you rate the onboarding process ?
     satisfaction_ratio = 0.6
     barcharts_ratio = 1 - satisfaction_ratio
@@ -1293,7 +1381,7 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
         satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
                                 'Satisfied', 'Very Satisfied']
         satisfaction_dropdown15 = st.selectbox('', satisfaction_options,
-                                              key='satisfaction_dropdown15')
+                                               key='satisfaction_dropdown15')
 
         satisfaction_filtered_data15 = filter_by_satisfaction(filtered_data, satisfaction_dropdown15, 21)
 
@@ -1318,152 +1406,121 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
         fig_function1.update_yaxes(showticklabels=True, title='')
         fig_function1.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
+
     
     
     ### Question16: What reason(s) drive that score ?
-    ### Part I: negative reasons for onboarding process
-    st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Reasons that drive scores: 1 - Very Dissatisfied / 2 - Dissatisfied / 3 - Neutral 
-    </h2>
-    """,
-    unsafe_allow_html=True
-    )
-    
-    
-    q16a_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 22]})
-    q16a_data['negative_reasons'] = q16a_data['negative_reasons'].str.rstrip(';').str.split(';')
-    q16a_data = q16a_data.explode('negative_reasons')
-    q16a_data.dropna(inplace=True)
-
-    # Count the occurrences of each negative reason
-    negative_reason_recruiting_counts = q16a_data['negative_reasons'].value_counts().reset_index()
-    negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
-
-    # Calculate percentage
-    negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(
+    col3, col4 = st.columns(2)
+    # Display the reasons for negative ratings
+    with col3:
+        # Generate data for negative reasons
+        q16a_data = pd.DataFrame({'negative_reasons': filtered_data.iloc[:, 22]})
+        q16a_data['negative_reasons'] = q16a_data['negative_reasons'].str.rstrip(';').str.split(';')
+        q16a_data = q16a_data.explode('negative_reasons')
+        q16a_data.dropna(inplace=True)
+        negative_reason_recruiting_counts = q16a_data['negative_reasons'].value_counts().reset_index()
+        negative_reason_recruiting_counts.columns = ['negative_reasons', 'count']
+        negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(
         filtered_data) * 100
-
-    # Create a vertical bar chart
-    fig13 = px.bar(negative_reason_recruiting_counts, x='negative_reasons', y='percentage', text='count',
-                   color='negative_reasons', color_discrete_sequence=['#FFA500'])
-
-    # make a tree map on the negative reasons
-    fig14 = px.treemap(negative_reason_recruiting_counts, path=['negative_reasons'], values='count', color='count',
-                       color_continuous_scale='RdBu')
-
-    # Show the chart
-    st.plotly_chart(fig13, use_container_width=False)
-    st.plotly_chart(fig14, use_container_width=False)
+        
+        # Create and display the treemap for negative reasons
+        custom_color_scale = ['#2a4170', '#3b528b', '#4c669a', '#5d7ca6', '#6e92b8']
+        fig13 = px.treemap(
+            negative_reason_recruiting_counts,
+            path=['negative_reasons'],
+            values='count',
+            color='count',
+            color_continuous_scale=custom_color_scale,
+            title='Reasons behind the Negative Ratings on the Onboarding Process'
+        )
+        fig13.update_layout(
+            margin=dict(t=50, l=25, r=25, b=25),  # Adjust margin to allow more space
+            showlegend=False,
+            coloraxis_showscale=False
+        )
+        st.plotly_chart(fig13, use_container_width=True)
     
-    
-    ### Part II:  positive reasons for onboarding process
-    st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Reasons that drive scores: 4 - Satisfied / 5 - Very Satisfied
-    </h2>
-    """,
-    unsafe_allow_html=True
-    )
-    
-    q16b_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 23]})
-    q16b_data['positive_reasons'] = q16b_data['positive_reasons'].str.rstrip(';').str.split(';')
-    q16b_data = q16b_data.explode('positive_reasons')
-    q16b_data.dropna(inplace=True)
-
-    # Count the occurrences of each positive reason
-    positive_reason_recruiting_counts = q16b_data['positive_reasons'].value_counts().reset_index()
-    positive_reason_recruiting_counts.columns = ['positive_reasons', 'count']
-
-    # Calculate percentage
-    positive_reason_recruiting_counts['percentage'] = positive_reason_recruiting_counts['count'] / len(
+    with col4:
+        # Generate data for positive reasons
+        q16b_data = pd.DataFrame({'positive_reasons': filtered_data.iloc[:, 23]})
+        q16b_data['positive_reasons'] = q16b_data['positive_reasons'].str.rstrip(';').str.split(';')
+        q16b_data = q16b_data.explode('positive_reasons')
+        q16b_data.dropna(inplace=True)
+        positive_reason_recruiting_counts = q16b_data['positive_reasons'].value_counts().reset_index()
+        positive_reason_recruiting_counts.columns = ['positive_reasons', 'count']
+        positive_reason_recruiting_counts['percentage'] = positive_reason_recruiting_counts['count'] / len(
         filtered_data) * 100
+ 
+        # Create and display the treemap for positive reasons
+        custom_color_scale = ['#429c62', '#5ec962', '#7cd982', '#9de9a2', '#bef9c2']
+        fig16 = px.treemap(
+            positive_reason_recruiting_counts,
+            path=['positive_reasons'],
+            values='count',
+            color='count',
+            color_continuous_scale=custom_color_scale,
+            title='Reasons behind the Positive Ratings on the Recruiting Process'
+        )
+        fig16.update_layout(
+            margin=dict(t=50, l=25, r=25, b=25),
+            showlegend=False,
+            coloraxis_showscale=False
+        )
+        st.plotly_chart(fig16, use_container_width=True)
 
-    # Create a vertical bar chart
-    fig15 = px.bar(positive_reason_recruiting_counts, x='positive_reasons', y='percentage', text='count',
-                   color='positive_reasons', color_discrete_sequence=['#519DE9'])
 
-    # make a tree map on the positive reasons
-    fig16 = px.treemap(positive_reason_recruiting_counts, path=['positive_reasons'], values='count', color='count',
-                       color_continuous_scale='RdBu')
+    # Setup columns for the two bar charts
+    col5, col6 = st.columns(2)
 
-    # Show the chart
-    st.plotly_chart(fig15, use_container_width=False)
-    st.plotly_chart(fig16, use_container_width=False)
-    
-    
-    ### Question17: What part of the Onboarding process was particulary helpful ?
-    st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Part of the Onboarding process that is Helpful
-    </h2>
-    """,
-    unsafe_allow_html=True
-    )
-    
-    q17_data = pd.DataFrame({'helpful_onboarding_process': filtered_data.iloc[:, 24]})
-    q17_data['helpful_onboarding_process'] = q17_data['helpful_onboarding_process'].str.rstrip(';').str.split(';')
-    q17_data = q17_data.explode('helpful_onboarding_process')
-    q17_data.dropna(inplace=True)
+    # Question 17: What part of the Onboarding process was particulary helpful ?
+    with col5:
+        q17_data = pd.DataFrame({'helpful_onboarding_process': filtered_data.iloc[:, 24]})
+        q17_data['helpful_onboarding_process'] = q17_data['helpful_onboarding_process'].str.rstrip(';').str.split(';')
+        q17_data = q17_data.explode('helpful_onboarding_process')
+        q17_data.dropna(inplace=True)
+        helpful_onboarding_counts = q17_data['helpful_onboarding_process'].value_counts().reset_index()
+        helpful_onboarding_counts.columns = ['helpful_onboarding_process', 'count']
+        helpful_onboarding_counts['percentage'] = helpful_onboarding_counts['count'] / len(filtered_data) * 100
+  
+        fig17 = px.bar(helpful_onboarding_counts, y='helpful_onboarding_process', x='percentage', text='percentage', orientation='h', title='Helpful Aspects of the Onboarding Process', color_discrete_sequence=['#336699'])
+        fig17.update_layout(
+            xaxis={'visible': False},
+            yaxis_title=None,
+            showlegend=False,
+            yaxis={'showgrid': False}
+        )
+        fig17.update_traces(
+            marker_color='#336699',
+            texttemplate='%{text:.1f}%',
+            textposition='outside'
+        )
+        st.plotly_chart(fig17, use_container_width=True)
+        
 
-    # Count the occurrences of each aspect that required improvement
-    helpful_onboarding_counts = q17_data['helpful_onboarding_process'].value_counts().reset_index()
-    helpful_onboarding_counts.columns = ['helpful_onboarding_process', 'count']
+    # Question 18: What part of the Onboarding process could be improved ?
+    with col6:
+        q18_data = pd.DataFrame({'onboarding_process_to_improve': filtered_data.iloc[:, 25]})
+        q18_data['onboarding_process_to_improve'] = q18_data['onboarding_process_to_improve'].str.rstrip(';').str.split(';')
+        q18_data = q18_data.explode('onboarding_process_to_improve')
+        q18_data.dropna(inplace=True)
+        aspect_onboarding_counts = q18_data['onboarding_process_to_improve'].value_counts().reset_index()
+        aspect_onboarding_counts.columns = ['onboarding_process_to_improve', 'count']
+        aspect_onboarding_counts['percentage'] = aspect_onboarding_counts['count'] / len(filtered_data) * 100
+        
+        fig18 = px.bar(helpful_onboarding_counts, y='helpful_onboarding_process', x='percentage', text='percentage', orientation='h', title='Aspects of the Onboarding Process that Require Improvements', color_discrete_sequence=['#336699'])
+        fig18.update_layout(
+            xaxis={'visible': False},
+            yaxis_title=None,
+            showlegend=False,
+            yaxis={'showgrid': False}
+        )
+        fig18.update_traces(
+            marker_color='#336699',
+            texttemplate='%{text:.1f}%',
+            textposition='outside'
+        )
+        st.plotly_chart(fig18, use_container_width=True)
 
-    # Calculate percentage
-    helpful_onboarding_counts['percentage'] = helpful_onboarding_counts['count'] / len(filtered_data) * 100
-
-    # Create a vertical bar chart
-    fig17 = px.bar(helpful_onboarding_counts, x='helpful_onboarding_process', y='percentage', text='count',
-                   color='helpful_onboarding_process', color_discrete_sequence=['#519DE9'])
-
-    # make a tree map on the aspect that required improvement
-    fig18 = px.treemap(helpful_onboarding_counts, path=['helpful_onboarding_process'], values='count', color='count',
-                       color_continuous_scale='RdBu')
-
-    # Show the chart
-    st.plotly_chart(fig17, use_container_width=False)
-    st.plotly_chart(fig18, use_container_width=False)
-    
-    
-    ### Question 18: What part of the Onboarding process could be improved
-    st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Part of the Onboarding Process Could Be Improved
-    </h2>
-    """,
-    unsafe_allow_html=True
-    )
-
-    # onboarding process to improve
-    q18_data = pd.DataFrame({'onboarding_process_to_improve': filtered_data.iloc[:, 25]})
-    q18_data['onboarding_process_to_improve'] = q18_data['onboarding_process_to_improve'].str.rstrip(';').str.split(';')
-    q18_data = q18_data.explode('onboarding_process_to_improve')
-    q18_data.dropna(inplace=True)
-
-    # Count the occurrences of each aspect that required improvement
-    aspect_onboarding_counts = q18_data['onboarding_process_to_improve'].value_counts().reset_index()
-    aspect_onboarding_counts.columns = ['onboarding_process_to_improve', 'count']
-
-    # Calculate percentage
-    aspect_onboarding_counts['percentage'] = aspect_onboarding_counts['count'] / len(filtered_data) * 100
-
-    # Create a vertical bar chart
-    fig19 = px.bar(aspect_onboarding_counts, x='onboarding_process_to_improve', y='percentage', text='count',
-                   color='onboarding_process_to_improve', color_discrete_sequence=['#FF7F7F'])
-
-    # make a tree map on the aspect that required improvement
-    fig20 = px.treemap(aspect_onboarding_counts, path=['onboarding_process_to_improve'], values='count', color='count',
-                       color_continuous_scale='RdBu')
-
-    # Show the chart
-    st.plotly_chart(fig19, use_container_width=False)
-    st.plotly_chart(fig20, use_container_width=False)
-    
 ############ SECTION 2 ENDS ############
 
 
@@ -1471,8 +1528,7 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
 if dashboard == 'Section 3: Performance & Talent':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
-    
-    
+
     # A text container for filtering instructions
     st.markdown(
         f"""
@@ -1483,7 +1539,7 @@ if dashboard == 'Section 3: Performance & Talent':
         """,
         unsafe_allow_html=True
     )
-    
+
     ### Question19: From 1 to 5, how satisfied are you with the company's performance evaluation and feedback process ?
     satisfaction_ratio = 0.6
     barcharts_ratio = 1 - satisfaction_ratio
@@ -1565,12 +1621,10 @@ if dashboard == 'Section 3: Performance & Talent':
         fig_function1.update_yaxes(showticklabels=True, title='')
         fig_function1.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
-    
-    
+
     ### Question20: Which reason(s) drive that score ?
     ### Missing worcloud
-    
-    
+
     ### Question21: From 1 to 5, how comfortable do you feel discussing your career goals and development with your manager? 
     with satisfaction_col:
         st.markdown('<div class="chart-container">', unsafe_allow_html=True)
@@ -1610,12 +1664,12 @@ if dashboard == 'Section 3: Performance & Talent':
         # Use Streamlit to display the Plotly chart
         st.plotly_chart(fig, use_container_width=True, key="overall_rating_bar_chart")
         st.markdown('</div>', unsafe_allow_html=True)
-        
+
     with barcharts_col:
         comfort_options = ['Select a comfort level', 'Very Uncomfortable', 'Uncomfortable', 'Hesitant',
-                                'Comfortable', 'Very Comfortable']
+                           'Comfortable', 'Very Comfortable']
         comfort_dropdown1 = st.selectbox('', comfort_options,
-                                              key='comfort_dropdown1')
+                                         key='comfort_dropdown1')
 
         comfort_filtered_data1 = filter_by_comfort(filtered_data, comfort_dropdown1, 28)
 
@@ -1640,28 +1694,26 @@ if dashboard == 'Section 3: Performance & Talent':
         fig_function1.update_yaxes(showticklabels=True, title='')
         fig_function1.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
-    
-    
+
     ### Question22: Which reason(s) drive that score ?
     ### Missing wordcloud
-    
-    
+
     ### Question23: Are you able to identify and tag your skills within your HRIS ?
     q23_data_available_count = (filtered_data.iloc[:, 30] == 'Yes').sum()
     q23_data_available_pct = q23_data_available_count / len(filtered_data) * 100
 
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Identify and tag your skills within the HRIS
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Identify and tag your skills within the HRIS
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"{q23_data_available_pct:.2f}% of the respondents, {q23_data_available_count} employee(s), are able to identify and tag         their skills within the HRIS.")
-       
+
 ############ SECTION 3 ENDS ############
 
 
@@ -1669,7 +1721,7 @@ if dashboard == 'Section 3: Performance & Talent':
 if dashboard == 'Section 4: Learning':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
-        
+
     # A text container for filtering instructions
     st.markdown(
         f"""
@@ -1680,8 +1732,7 @@ if dashboard == 'Section 4: Learning':
         """,
         unsafe_allow_html=True
     )
-    
-    
+
     satisfaction_ratio = 0.6
     barcharts_ratio = 1 - satisfaction_ratio
     satisfaction_col, barcharts_col = st.columns([satisfaction_ratio, barcharts_ratio])
@@ -1693,8 +1744,7 @@ if dashboard == 'Section 4: Learning':
         }
         </style>
         """, unsafe_allow_html=True)
-    
-    
+
     ### Question24: From 1 to 5, how satisfied are you with your current learning management system ?
     with satisfaction_col:
         st.markdown('<div class="chart-container">', unsafe_allow_html=True)
@@ -1764,16 +1814,15 @@ if dashboard == 'Section 4: Learning':
         fig_function1.update_yaxes(showticklabels=True, title='')
         fig_function1.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
-        
-    
+
     ### Question25: What are the learning format that you prefer ?
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Preferred Learning Format
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Preferred Learning Format
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     # Create a DataFrame with the learning format data
@@ -1800,14 +1849,14 @@ if dashboard == 'Section 4: Learning':
     learning_format_counts.sort_values('learning_format', inplace=True)
 
     # Create a horizontal bar chart
-    fig25 = px.bar(learning_format_counts, x='percentage', y='learning_format', text='percentage', 
+    fig25 = px.bar(learning_format_counts, x='percentage', y='learning_format', text='percentage',
                    orientation='h',
                    color='learning_format', color_discrete_map={
-                       'E-Learning': '#440154',  # Dark purple
-                       'On site': '#3b528b',  # Dark blue
-                       'Micro-Learning': '#21918c',  # Cyan
-                       'Coaching': '#5ec962',  # Light green
-                   })
+            'E-Learning': '#440154',  # Dark purple
+            'On site': '#3b528b',  # Dark blue
+            'Micro-Learning': '#21918c',  # Cyan
+            'Coaching': '#5ec962',  # Light green
+        })
 
     # Remove legend and axes titles
     fig25.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
@@ -1823,52 +1872,48 @@ if dashboard == 'Section 4: Learning':
     # Show the chart
     st.plotly_chart(fig25, use_container_width=False)
 
-    
     ### Question26: Have you participated in any training or development programs provided by HR?
     q26_data_available_count = (filtered_data.iloc[:, 33] == 'Yes').sum()
     q26_data_available_pct = q26_data_available_count / len(filtered_data) * 100
 
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Participation in any Training or Development Programs Provided by HR
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Participation in any Training or Development Programs Provided by HR
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"{q26_data_available_pct:.2f}% of the respondents, {q26_data_available_count} employee(s), participated in training or        development programs provided by HR.")
-    
-    
+
     ### Question27: Have you received any recommendations on training (either by the HR team or directly on your Learning    System) ?
     q27_data_available_count = (filtered_data.iloc[:, 34] == 'Yes').sum()
     q27_data_available_pct = q27_data_available_count / len(filtered_data) * 100
 
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Recommendations on Training (either by the HR team or directly on Learning System)
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Recommendations on Training (either by the HR team or directly on Learning System)
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"{q27_data_available_pct:.2f}% of the respondents, {q27_data_available_count} employee(s), received recommendations on         training.")
-    
-    
+
     ### Question28: What could be improved or what kind of format is missing today ?
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    What could be improved or what kind of format is missing today ?
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        What could be improved or what kind of format is missing today ?
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
     ### Missing wordcloud
-
 
 ############ SECTION 4 ENDS ############
 
@@ -1877,7 +1922,7 @@ if dashboard == 'Section 4: Learning':
 if dashboard == 'Section 5: Compensation':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
-    
+
     # A text container for filtering instructions
     st.markdown(
         f"""
@@ -1888,36 +1933,36 @@ if dashboard == 'Section 5: Compensation':
         """,
         unsafe_allow_html=True
     )
-    
+
     ### Qustion29: Do you participate in the Compensation Campaign ?
     q29_data_available_count = (filtered_data.iloc[:, 36] == 'Yes').sum()
     q29_data_available_pct = q29_data_available_count / len(filtered_data) * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Compensation Campaign Participation
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Compensation Campaign Participation
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"{q29_data_available_pct:.2f}% of the respondents, {q29_data_available_count} employee(s), participated in the   compensation campaign.")
-    
+
     ### Qustion30: Do you think that the data available in the Compensation form enables you to make a fair decision regarding a promotion, a bonus or a raise ? (e.g : compa-ratio, variation between years, historical data on salary and bonus, …) 
     q30_data_available_count = (filtered_data.iloc[:, 37] == 'Yes').sum()
     q30_data_available_pct = q30_data_available_count / q29_data_available_count * 100
-    
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Data availability in the Compensation Form
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Data availability in the Compensation Form
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
-    
+
     st.write(
         f"Among the people who participate the Compensation Campaign, {q30_data_available_pct:.2f}% of the respondents, {q30_data_available_count} employee(s), think that the data available in the Compensation form enables him/her to make a fair decision regarding a promotion, a bonus or a raise.")
 
@@ -1947,8 +1992,7 @@ if dashboard == 'Section 5: Compensation':
 
     # Display the plot in Streamlit
     st.pyplot(plt)
-    
-    
+
     ### Question32: Do you manage/launch your compensation campaigns nationally or in another way?
     st.markdown(
         """
@@ -1969,16 +2013,17 @@ if dashboard == 'Section 5: Compensation':
     compensation_manage_counts.columns = ['compensation_manage', 'count']
 
     # Calculate percentage
-    compensation_manage_counts['percentage'] = compensation_manage_counts['count'] / compensation_manage_counts['count'].sum() * 100
+    compensation_manage_counts['percentage'] = compensation_manage_counts['count'] / compensation_manage_counts[
+        'count'].sum() * 100
 
     # Create a horizontal bar chart
-    fig32 = px.bar(compensation_manage_counts, x='percentage', y='compensation_manage', text='percentage', 
+    fig32 = px.bar(compensation_manage_counts, x='percentage', y='compensation_manage', text='percentage',
                    orientation='h',
                    color='compensation_manage', color_discrete_map={
-                       'National Campaign': '#440154',  # Dark purple
-                       'International Campaign': '#3b528b',  # Dark blue
-                       'Regional Campaign': '#21918c',  # Cyan
-                   })
+            'National Campaign': '#440154',  # Dark purple
+            'International Campaign': '#3b528b',  # Dark blue
+            'Regional Campaign': '#21918c',  # Cyan
+        })
 
     # Remove legend and axes titles
     fig32.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
@@ -1994,7 +2039,6 @@ if dashboard == 'Section 5: Compensation':
     # Show the chart
     st.plotly_chart(fig32, use_container_width=False)
 
-    
     ### Question33: How would you rate the overall satisfaction regarding the compensation campaign ?
     satisfaction_ratio = 0.6
     barcharts_ratio = 1 - satisfaction_ratio
@@ -2007,7 +2051,7 @@ if dashboard == 'Section 5: Compensation':
         }
         </style>
         """, unsafe_allow_html=True)
-    
+
     with satisfaction_col:
         st.markdown('<div class="chart-container">', unsafe_allow_html=True)
         categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
@@ -2076,42 +2120,39 @@ if dashboard == 'Section 5: Compensation':
         fig_function1.update_yaxes(showticklabels=True, title='')
         fig_function1.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
-        
-        
+
     ### Question36: Do you have retroactivity on salary payments ? (e.g. New salary announced in March but payed from January)
     q36_data_available_count = (filtered_data.iloc[:, 43] == 'Yes').sum()
     q36_data_available_pct = q36_data_available_count / q29_data_available_count * 100
-    
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Retroactivity on Salary Payments
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Retroactivity on Salary Payments
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
-    
+
     st.write(
         f"Among the people who participate the Compensation Campaign, {q36_data_available_pct:.2f}% of the respondents, {q36_data_available_count} employee(s), have retroactivity on salary payments.")
-    
-    
+
     ### Question37: Do you participate in the variable pay/bonus campaign ?
     q37_data_available_count = (filtered_data.iloc[:, 44] == 'Yes').sum()
     q37_data_available_pct = q37_data_available_count / q29_data_available_count * 100
-    
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Participation in Variable Pay/Bonus Campaign 
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Participation in Variable Pay/Bonus Campaign 
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
-    
+
     st.write(
         f"Among the people who participate the Compensation Campaign, {q37_data_available_pct:.2f}% of the respondents, {q37_data_available_count} employee(s), participated in variable pay/bonus campaign.")
-    
-    
+
     ### Question38: How would you rate the overall satisfaction regarding the Variable Pay/Bonus campaign  ?
     satisfaction_ratio = 0.6
     barcharts_ratio = 1 - satisfaction_ratio
@@ -2124,7 +2165,7 @@ if dashboard == 'Section 5: Compensation':
         }
         </style>
         """, unsafe_allow_html=True)
-    
+
     with satisfaction_col:
         st.markdown('<div class="chart-container">', unsafe_allow_html=True)
         categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
@@ -2168,7 +2209,7 @@ if dashboard == 'Section 5: Compensation':
         satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
                                 'Satisfied', 'Very Satisfied']
         satisfaction_dropdown38 = st.selectbox('', satisfaction_options,
-                                              key='satisfaction_dropdown38')
+                                               key='satisfaction_dropdown38')
 
         satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown38, 45)
 
@@ -2193,8 +2234,7 @@ if dashboard == 'Section 5: Compensation':
         fig_function1.update_yaxes(showticklabels=True, title='')
         fig_function1.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
-        
-        
+
     ### Question39: Do you manage/launch your bonus/variable pay campaigns nationally or in another way?
     st.markdown(
         """
@@ -2218,13 +2258,13 @@ if dashboard == 'Section 5: Compensation':
     bonus_manage_counts['percentage'] = bonus_manage_counts['count'] / bonus_manage_counts['count'].sum() * 100
 
     # Create a horizontal bar chart
-    fig39 = px.bar(bonus_manage_counts, x='percentage', y='bonus_manage', text='percentage', 
+    fig39 = px.bar(bonus_manage_counts, x='percentage', y='bonus_manage', text='percentage',
                    orientation='h',
                    color='bonus_manage', color_discrete_map={
-                       'National Campaign': '#440154',  # Dark purple
-                       'International Campaign': '#3b528b',  # Dark blue
-                       'Regional Campaign': '#21918c',  # Cyan
-                   })
+            'National Campaign': '#440154',  # Dark purple
+            'International Campaign': '#3b528b',  # Dark blue
+            'Regional Campaign': '#21918c',  # Cyan
+        })
 
     # Remove legend and axes titles
     fig39.update_layout(showlegend=False, xaxis_visible=False, xaxis_title=None, yaxis_title=None, autosize=True,
@@ -2239,25 +2279,23 @@ if dashboard == 'Section 5: Compensation':
 
     # Show the chart
     st.plotly_chart(fig39, use_container_width=False)
-    
-    
+
     ### Question40: Are the dates of your Variable Pay campaign different from the one for the Compensation Campaign ?
     q40_data_available_count = (filtered_data.iloc[:, 47] == 'Yes').sum()
     q40_data_available_pct = q40_data_available_count / q29_data_available_count * 100
-    
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Variable Pay Campaign Dates Different from Compensation Campaign Dates
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Variable Pay Campaign Dates Different from Compensation Campaign Dates
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
-    
+
     st.write(
         f"Among the people who participate the Compensation Campaign, {q40_data_available_pct:.2f}% of the respondents, {q40_data_available_count} employee(s), have different dates for the Variable Pay Campaign compared to the Compensation Campaign.")
 
-    
 ############ SECTION 5 ENDS ############
 
 
@@ -2265,8 +2303,7 @@ if dashboard == 'Section 5: Compensation':
 if dashboard == 'Section 6: Payroll':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
-    
-    
+
     # A text container for filtering instructions
     st.markdown(
         f"""
@@ -2277,25 +2314,23 @@ if dashboard == 'Section 6: Payroll':
         """,
         unsafe_allow_html=True
     )
-    
-    
+
     ### Question41: Are you part of the payroll team ?
     q41_data_available_count = (filtered_data.iloc[:, 48] == 'Yes').sum()
     q41_data_available_pct = q41_data_available_count / len(filtered_data) * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Payroll Team
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Payroll Team
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"{q41_data_available_pct:.2f}% of the respondents, {q41_data_available_count} employee(s), are part of the payroll team.")
-    
-    
+
     ### Question42: How satisfied are you with your current payroll system ?
     satisfaction_ratio = 0.6
     barcharts_ratio = 1 - satisfaction_ratio
@@ -2308,7 +2343,7 @@ if dashboard == 'Section 6: Payroll':
         }
         </style>
         """, unsafe_allow_html=True)
-    
+
     with satisfaction_col:
         st.markdown('<div class="chart-container">', unsafe_allow_html=True)
         categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
@@ -2352,7 +2387,7 @@ if dashboard == 'Section 6: Payroll':
         satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
                                 'Satisfied', 'Very Satisfied']
         satisfaction_dropdown38 = st.selectbox('', satisfaction_options,
-                                              key='satisfaction_dropdown38')
+                                               key='satisfaction_dropdown38')
 
         satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown38, 49)
 
@@ -2377,59 +2412,55 @@ if dashboard == 'Section 6: Payroll':
         fig_function1.update_yaxes(showticklabels=True, title='')
         fig_function1.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
-        
-        
+
     ### Question43: Do you realize your payroll activities internally or is it outsourced ?
     q43_data_available_count = (filtered_data.iloc[:, 50] == 'Internal').sum()
     q43_data_available_pct = q43_data_available_count / q41_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Payroll Activities
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Payroll Activities
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the payroll team, {q43_data_available_pct:.2f}% of the respondents, {q43_data_available_count} employee(s), realize their payroll activities internally and others realize that it is outsourced.")
-    
-    
+
     ### Question44: Does your system cover legal updates ?
     q44_data_available_count = (filtered_data.iloc[:, 51] == 'Yes').sum()
     q44_data_available_pct = q44_data_available_count / q41_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Legal Updates
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Legal Updates
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the payroll team, {q44_data_available_pct:.2f}% of the respondents, {q44_data_available_count} employee(s), answer that their system covers legal updates.")
-    
-    
+
     ### Question45: Are you autonomous when it comes to updating simple data, or do you systematically rely on outside firms for updates?
     q45_data_available_count = (filtered_data.iloc[:, 52] == 'Autonomous').sum()
     q45_data_available_pct = q45_data_available_count / q41_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Are you autonomous when it comes to updating simple data?
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Are you autonomous when it comes to updating simple data?
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the payroll team, {q45_data_available_pct:.2f}% of the respondents, {q45_data_available_count} employee(s), answer that they are autonomous and others rely on outside firms for updates.")
-    
-    
+
     ### Question46: Can you share any specific features of your current system that you like/that made you choose it?
     st.markdown(
         """
@@ -2440,93 +2471,87 @@ if dashboard == 'Section 6: Payroll':
         unsafe_allow_html=True
     )
     ### Missing wordcloud
-    
-    
+
     ### Question47: If your payroll system is used in several countries, do you have a global platform for consolidating all your employees' country data?
     q47_data_available_count = (filtered_data.iloc[:, 54] == 'Yes').sum()
     q47_data_available_pct = q47_data_available_count / q41_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Global Platform for Multiple Countries
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Global Platform for Multiple Countries
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the payroll team, {q47_data_available_pct:.2f}% of the respondents, {q47_data_available_count} employee(s), answer that they have a global platform for consolidating all employees' country data.")
-    
-    
+
     ### Question48: If so, does this platform automatically generate KPIs relating to your payroll (M/F headcount, salaries paid, contributions paid, etc.)?
     q48_data_available_count = (filtered_data.iloc[:, 55] == 'Yes').sum()
     q48_data_available_pct = q48_data_available_count / q47_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Global Platform Function: Automatically Generate KPIs
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Global Platform Function: Automatically Generate KPIs
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who have a global platform, {q48_data_available_pct:.2f}% of the respondents, {q48_data_available_count} employee(s), answer that this platform automatically generate KPIs relating to the payroll (M/F headcount, salaries paid, contributions paid, etc.).")
-    
-    
+
     ### Question49: Can mass entries be made in the tool?
     q49_data_available_count = (filtered_data.iloc[:, 56] == 'Yes').sum()
     q49_data_available_pct = q49_data_available_count / q41_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Mass Entries
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Mass Entries
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the payroll team, {q49_data_available_pct:.2f}% of the respondents, {q49_data_available_count} employee(s), answer that they have a global platform for consolidating all employees' country data.")
-    
-    
-    
+
     ### Question50: Is your payroll connected with your time management system ?
     q50_data_available_count = (filtered_data.iloc[:, 57] == 'Yes').sum()
     q50_data_available_pct = q50_data_available_count / q41_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Payroll Connected with Time Management System
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Payroll Connected with Time Management System
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the payroll team, {q50_data_available_pct:.2f}% of the respondents, {q50_data_available_count} employee(s), answer that the payroll system is connected with time management system.")
-    
-    
+
     ### Question51: Is your payroll connected with a CORE HR/Administrative solution ?
     q51_data_available_count = (filtered_data.iloc[:, 58] == 'Yes').sum()
     q51_data_available_pct = q51_data_available_count / q41_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Payroll Connected with a CORE HR/Administrative Solution
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Payroll Connected with a CORE HR/Administrative Solution
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the payroll team, {q51_data_available_pct:.2f}% of the respondents, {q51_data_available_count} employee(s), answer that the payroll system is connected with a CORE HR/Administrative solution.")
-    
+
 ############ SECTION 6 ENDS ############
 
 
@@ -2534,8 +2559,7 @@ if dashboard == 'Section 6: Payroll':
 if dashboard == 'Section 7: Time Management':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
-    
-    
+
     # A text container for filtering instructions
     st.markdown(
         f"""
@@ -2546,42 +2570,39 @@ if dashboard == 'Section 7: Time Management':
         """,
         unsafe_allow_html=True
     )
-    
-    
+
     ### Question52: Are you part of the Time Management Team ?
     q52_data_available_count = (filtered_data.iloc[:, 59] == 'Yes').sum()
     q52_data_available_pct = q52_data_available_count / len(filtered_data) * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Time Management Team
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Time Management Team
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"{q52_data_available_pct:.2f}% of the respondents, {q52_data_available_count} employee(s), are part of the time management team.")
-    
-    
+
     ### Question53: Do you currently have a time management system ?
     q53_data_available_count = (filtered_data.iloc[:, 60] == 'Yes').sum()
     q53_data_available_pct = q53_data_available_count / q52_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Time Management System
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Time Management System
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the time management team, {q53_data_available_pct:.2f}% of the respondents,  {q53_data_available_count} employee(s),  answer that they currently have a time management system.")
-    
-    
+
     ### Question54: How satisfied are you with your current time management system ?
     satisfaction_ratio = 0.6
     barcharts_ratio = 1 - satisfaction_ratio
@@ -2594,7 +2615,7 @@ if dashboard == 'Section 7: Time Management':
         }
         </style>
         """, unsafe_allow_html=True)
-    
+
     with satisfaction_col:
         st.markdown('<div class="chart-container">', unsafe_allow_html=True)
         categories = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
@@ -2638,7 +2659,7 @@ if dashboard == 'Section 7: Time Management':
         satisfaction_options = ['Select a satisfaction level', 'Very Dissatisfied', 'Dissatisfied', 'Neutral',
                                 'Satisfied', 'Very Satisfied']
         satisfaction_dropdown38 = st.selectbox('', satisfaction_options,
-                                              key='satisfaction_dropdown38')
+                                               key='satisfaction_dropdown38')
 
         satisfaction_filtered_data1 = filter_by_satisfaction(filtered_data, satisfaction_dropdown38, 61)
 
@@ -2663,78 +2684,71 @@ if dashboard == 'Section 7: Time Management':
         fig_function1.update_yaxes(showticklabels=True, title='')
         fig_function1.update_xaxes(showticklabels=False, title='')
         st.plotly_chart(fig_function1, use_container_width=True, key="functions_bar_chart1")
-    
-    
-    
+
     ### Question55: Do you have a self-service for your employees ?
     q55_data_available_count = (filtered_data.iloc[:, 62] == 'Yes').sum()
     q55_data_available_pct = q55_data_available_count / q52_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Self-service for the Employees
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Self-service for the Employees
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the time management team, {q55_data_available_pct:.2f}% of the respondents,  {q55_data_available_count} employee(s),  answer that they have a self-service for their employees.")
-    
-    
+
     ### Question56: Does the system allow employees to view their vacation counters (entitlement / taken / balance)
     q56_data_available_count = (filtered_data.iloc[:, 63] == 'Yes').sum()
     q56_data_available_pct = q56_data_available_count / q52_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    System Function: View Vacation Counters
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        System Function: View Vacation Counters
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the time management team, {q56_data_available_pct:.2f}% of the respondents,  {q56_data_available_count} employee(s),  answer that the system allow employess to view their vacation counters (entitlement / taken / balance).")
-    
-    
+
     ### Question57: Does your system cover all the shift scheduling functions you need?
     q57_data_available_count = (filtered_data.iloc[:, 64] == 'Yes').sum()
     q57_data_available_pct = q57_data_available_count / q52_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    System Function: Cover the Shift Scheduling
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        System Function: Cover the Shift Scheduling
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the time management team, {q57_data_available_pct:.2f}% of the respondents,  {q57_data_available_count} employee(s),  answer that the system cover all the shift scheduling functions needed.")
-    
-    
-    
+
     ### Question58: Do you have the capability to run all the report needed ?
     q58_data_available_count = (filtered_data.iloc[:, 65] == 'Yes').sum()
     q58_data_available_pct = q58_data_available_count / q52_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Capability: Run all the reports
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Capability: Run all the reports
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the time management team, {q58_data_available_pct:.2f}% of the respondents,  {q58_data_available_count} employee(s),  answer that they have the capability to run all the reports needed.")
-    
-    
+
     ### Question59: According to you, what functionalities are missing from your current system ?
     st.markdown(
         """
@@ -2745,41 +2759,39 @@ if dashboard == 'Section 7: Time Management':
         unsafe_allow_html=True
     )
     ### Missing wordcloud
-    
-    
+
     ### Question60: Does the system allow employees to take their own leave, with workflow validation by their manager or HR?
     q60_data_available_count = (filtered_data.iloc[:, 67] == 'Yes').sum()
     q60_data_available_pct = q60_data_available_count / q52_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    System Function: Allow Employess to Take Their Own Leave
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        System Function: Allow Employess to Take Their Own Leave
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the time management team, {q60_data_available_pct:.2f}% of the respondents,  {q60_data_available_count} employee(s),  answer that the system allows employees to take their own leave, with workflow validation by their manager or HR.")
-    
-    
+
     ### Question61: Does your system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1)?
     q61_data_available_count = (filtered_data.iloc[:, 68] == 'Yes').sum()
     q61_data_available_pct = q61_data_available_count / q52_data_available_count * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    System Function: Automatically Take Retroactive Items Into Account
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        System Function: Automatically Take Retroactive Items Into Account
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"Among the people who are part of the time management team, {q61_data_available_pct:.2f}% of the respondents,  {q61_data_available_count} employee(s),  answer that the system automatically take retroactive items into account (e.g. application to April payroll of a salary increase with an effective date of January 1).")
-    
+
 ############ SECTION 7 ENDS ############
 
 
@@ -2787,8 +2799,7 @@ if dashboard == 'Section 7: Time Management':
 if dashboard == 'Section 8: User Experience':
     filtered_data = apply_filters(data, st.session_state['selected_role'], st.session_state['selected_function'],
                                   st.session_state['selected_location'])
-    
-    
+
     # A text container for filtering instructions
     st.markdown(
         f"""
@@ -2799,61 +2810,55 @@ if dashboard == 'Section 8: User Experience':
         """,
         unsafe_allow_html=True
     )
-    
-    
+
     ### Question62: In the context of your job, what are the most valuable activities your current HRIS enable you to do?
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    In the context of your job, what are the most valuable activities your current HRIS enable you to do?
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        In the context of your job, what are the most valuable activities your current HRIS enable you to do?
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
     ### Missing wordcloud,emotion analysis
-    
-    
+
     ### Question63: In the context of your job, what do your current HRIS fail to address?
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    In the context of your job, what do your current HRIS fail to address?
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        In the context of your job, what do your current HRIS fail to address?
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
     ### Missing wordcloud,emotion analysis
-    
-    
+
     ### Question64: Do you consider the time you spend on your HRIS to be time well spent?
     q64_data_available_count = (filtered_data.iloc[:, 71] == 'Yes').sum()
     q64_data_available_pct = q64_data_available_count / len(filtered_data) * 100
-   
+
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    Time Spend on HRIS
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        Time Spend on HRIS
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write(
         f"{q64_data_available_pct:.2f}% of the respondents, {q64_data_available_count} employee(s), consider the time you spend on your HRIS to be time well spent.")
-    
-    
+
     ### Question65: In 3 words, how would you describe your current user-experience with the HRIS ?
     st.markdown(
-    """
-    <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-    In 3 words, how would you describe your current user-experience with the HRIS ?
-    </h2>
-    """,
-    unsafe_allow_html=True
+        """
+        <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
+        In 3 words, how would you describe your current user-experience with the HRIS ?
+        </h2>
+        """,
+        unsafe_allow_html=True
     )
     ### Missing wordcloud,emotion analysis
-    
-    
 
     import pandas as pd
     from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForSeq2SeqLM
@@ -2931,5 +2936,4 @@ if dashboard == 'Section 8: User Experience':
     # Display the DataFrame with predicted emotions
     df_with_emotions.head()
 
-    
 ############ SECTION 8 ENDS ############
