@@ -193,8 +193,10 @@ def prepare_summaries(data):
 
     role_summary = pd.DataFrame(data['What is your role at the company ?'].value_counts()).reset_index()
     role_summary.columns = ['Role', 'Count']
+    role_summary = role_summary.sort_values('Count', ascending=True)
     function_summary = pd.DataFrame(data['What function are you part of ?'].value_counts()).reset_index()
     function_summary.columns = ['Function', 'Count']
+    function_summary = function_summary.sort_values('Count', ascending=True)
     return location_summary, role_summary, function_summary
 
 
@@ -224,34 +226,7 @@ if dashboard == "General Survey Results":
         unsafe_allow_html=True
     )
 
-
-    # Data preparation for display of survey summary
-    def prepare_summaries(data):
-        # Create a dictionary to map continents to proxy countries
-        continent_to_country_code = {
-            'Asia': 'KAZ',
-            'Oceania': 'AUS',
-            'North America': 'CAN',
-            'South America': 'BRA',
-            'Europe': 'DEU',
-            'Africa': 'TCD'
-        }
-        country_code_to_continent = {v: k for k, v in continent_to_country_code.items()}
-        location_summary = pd.DataFrame(data['Where are you located ?'].value_counts()).reset_index()
-        location_summary.columns = ['Continent', 'Count']
-        location_summary['Country_Code'] = location_summary['Continent'].map(continent_to_country_code)
-        location_summary['Label'] = location_summary['Continent'].apply(
-            lambda x: f"{x}: {location_summary.loc[location_summary['Continent'] == x, 'Count'].iloc[0]}")
-
-        role_summary = pd.DataFrame(data['What is your role at the company ?'].value_counts()).reset_index()
-        role_summary.columns = ['Role', 'Count']
-        role_summary = role_summary.sort_values('Count', ascending=True)
-        function_summary = pd.DataFrame(data['What function are you part of ?'].value_counts()).reset_index()
-        function_summary.columns = ['Function', 'Count']
-        function_summary = function_summary.sort_values('Count', ascending=True)
-        return location_summary, role_summary, function_summary
-
-
+    # Prepare the summaries for the filtered data
     location_summary, role_summary, function_summary = prepare_summaries(filtered_data)
 
     st.markdown(
