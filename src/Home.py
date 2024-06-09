@@ -134,19 +134,6 @@ if dashboard != st.session_state['previous_dashboard']:
 def get_unique_values(column):
     return data[column].unique()
 
-@st.cache_resource
-def load_sentiment_analyzer():
-    return pipeline("sentiment-analysis")
-
-@st.cache_resource
-def load_star_rating_model():
-    tokenizer = AutoTokenizer.from_pretrained("nlptown/bert-base-multilingual-uncased-sentiment")
-    model = AutoModelForSequenceClassification.from_pretrained("nlptown/bert-base-multilingual-uncased-sentiment")
-    return tokenizer, model
-
-sentiment_analyzer = load_sentiment_analyzer()
-tokenizer, model = load_star_rating_model()
-
 
 roles = get_unique_values('What is your role at the company ?')
 functions = get_unique_values('What function are you part of ?')
@@ -985,7 +972,9 @@ if dashboard == "Section 1: Employee Experience":
             unsafe_allow_html=True)
         generate_wordclouds(filtered_data, 13, 14, communication_stopwords)
 
-    from transformers import pipeline
+    st.write('For detailed reason analysis/sentiment dashboard, please check out the [link](https://gucciouy5ardhonqumm6p4.streamlit.app)')
+    
+
 
 
     
