@@ -37,13 +37,18 @@ def reset_filters():
 st.set_page_config(layout="wide")
 initialize_state()
 
+# Add a file uploader to the sidebar
+uploaded_file = st.sidebar.file_uploader("Choose a file")
+st.session_state['uploaded_file'] = uploaded_file
 
 # Load and clean data
 @st.cache_data(persist=True)
 def load_data():
-    # Load data and cache the DataFrame to avoid reloads on each user interaction
-    url = 'https://github.com/001202ZHENG/V1_Chatbot_Streamlit/raw/main/data/Voice%20of%20Customer_Second%20data%20set.xlsx'
-    data = pd.read_excel(url)
+    if st.session_state['uploaded_file'] is not None:
+        data = pd.read_excel(st.session_state['uploaded_file'])
+    else:
+        url = 'https://github.com/001202ZHENG/V1_Chatbot_Streamlit/raw/main/data/Voice%20of%20Customer_Second%20data%20set.xlsx'
+        data = pd.read_excel(url)
     return data
 
 
@@ -125,6 +130,38 @@ if dashboard != st.session_state['previous_dashboard']:
 @st.cache_data
 def get_unique_values(column):
     return data[column].unique()
+
+@st.cache_resource(show_spinner=False)
+    def load_model():
+        try:
+            model = pipeline("summarization", model="csebuetnlp/mT5_multilingual_XLSum")
+            return model
+        except Exception as e:
+            st.error(f"Error loading the summarizer model: {e}")
+            return None
+
+
+    def main():
+        st.title("Summarization with Transformers")
+
+        # Display a message or spinner while the model is loading
+        with st.spinner("Loading summarization model..."):
+            summarizer = load_model()
+
+        if summarizer:
+            st.write("Successfully loaded the summarizer model.")
+            # Add your Streamlit app content here
+            user_input = st.text_area("Enter text for summarization")
+            if st.button("Summarize"):
+                with st.spinner("Summarizing..."):
+                    summary = summarizer(user_input, max_length=100, min_length=25, do_sample=False)
+                    st.write(summary[0]['summary_text'])
+        else:
+            st.error("Model could not be loaded. Please check the logs for more details.")
+
+
+    if __name__ == "__main__":
+        main()
 
 
 roles = get_unique_values('What is your role at the company ?')
@@ -910,8 +947,8 @@ if dashboard == "Section 1: Employee Experience":
         fig_q4.update_layout(
             title='HR Processes: Employee Interaction vs Improvement Areas',
             title_font=dict(size=17, family="Arial", color='#333333'),
-            xaxis_title='HR Process',
-            yaxis_title='Number of Respondents',
+            xaxis_title='Number of Respondents',
+            yaxis_title='HR Process',
             barmode='group',
             annotations=[
                 dict(
@@ -967,37 +1004,7 @@ if dashboard == "Section 1: Employee Experience":
     from transformers import pipeline
 
 
-    @st.cache_resource(show_spinner=False)
-    def load_model():
-        try:
-            model = pipeline("summarization", model="csebuetnlp/mT5_multilingual_XLSum")
-            return model
-        except Exception as e:
-            st.error(f"Error loading the summarizer model: {e}")
-            return None
-
-
-    def main():
-        st.title("Summarization with Transformers")
-
-        # Display a message or spinner while the model is loading
-        with st.spinner("Loading summarization model..."):
-            summarizer = load_model()
-
-        if summarizer:
-            st.write("Successfully loaded the summarizer model.")
-            # Add your Streamlit app content here
-            user_input = st.text_area("Enter text for summarization")
-            if st.button("Summarize"):
-                with st.spinner("Summarizing..."):
-                    summary = summarizer(user_input, max_length=100, min_length=25, do_sample=False)
-                    st.write(summary[0]['summary_text'])
-        else:
-            st.error("Model could not be loaded. Please check the logs for more details.")
-
-
-    if __name__ == "__main__":
-        main()
+    
 
 ############ SECTION 1 ENDS ############
 
