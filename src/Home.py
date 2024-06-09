@@ -10,6 +10,8 @@ import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
 from transformers import pipeline
+from transformers import BertTokenizer, BertForSequenceClassification, AutoTokenizer, AutoModelForSequenceClassification
+import torch
 
 score_to_category = {
     1: 'Very Dissatisfied',
