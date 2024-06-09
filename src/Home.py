@@ -9,6 +9,7 @@ from wordcloud import WordCloud, STOPWORDS
 import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
+from transformers import pipeline
 
 score_to_category = {
     1: 'Very Dissatisfied',
