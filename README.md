@@ -28,7 +28,7 @@ In the evolving landscape of Human Resources, capturing and understanding employ
    - Supports dynamic analysis based on user prompts.
 
 ## Usage
-Once the application is running, you can upload survey data files (CSV, PDF, TXT, XLSX) via the sidebar. The chatbot will process the data and provide insights based on your queries. You can interact with the chatbot to explore data trends, perform sentiment analysis, and generate dynamic visualizations.
+Once the application is running, you can upload survey data files (CSV, PDF, TXT, XLSX) via the sidebar. The chatbot will process the data and provide insights based on your queries. You can interact with the chatbot to explore data trends, perform sentiment analysis, etc.
 
 ## Project Structure
 
