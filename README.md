@@ -31,13 +31,6 @@ In the evolving landscape of Human Resources, capturing and understanding employ
 Once the application is running, you can upload survey data files (CSV, PDF, TXT, XLSX) via the sidebar. The chatbot will process the data and provide insights based on your queries. You can interact with the chatbot to explore data trends, perform sentiment analysis, and generate dynamic visualizations.
 
 ## Project Structure
-- **chatbot.py**: Contains the Chatbot class for handling conversations and retrieving information.
-- **embedder.py**: Contains the Embedder class for creating and retrieving document embeddings.
-- **history.py**: Manages chat history and user interactions.
-- **layout.py**: Defines the layout and UI components of the application.
-- **sidebar.py**: Handles sidebar options and configurations.
-- **utils.py**: Utility functions for loading API keys, handling file uploads, and setting up the chatbot.
-
 
 ## Installation
 To set up the VoC Chatbot on your local machine, follow these steps:
