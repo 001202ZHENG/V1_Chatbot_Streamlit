@@ -111,6 +111,7 @@ def render_header(title, subtitle=None):
     if subtitle:
         st.markdown(f'<h3 class="subheader">{subtitle}</h3>', unsafe_allow_html=True)
 
+st.sidebar.markdown('For detailed reason analysis/sentiment dashboard, please check out the [link](https://gucciouy5ardhonqumm6p4.streamlit.app)')
 
 # Sidebar for dashboard selection
 dashboard = st.sidebar.radio("Select Dashboard", ('General Survey Results',
@@ -1625,6 +1626,15 @@ if dashboard == 'Section 3: Performance & Talent':
 
         ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q19ValuesCount.values})
 
+        # Define the order of the categories
+        satisfaction_order = ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very Dissatisfied']
+
+        # Convert 'Satisfaction Level' to a categorical variable with the specified order
+        ratings_df['Satisfaction Level'] = pd.Categorical(ratings_df['Satisfaction Level'], categories=satisfaction_order, ordered=True)
+
+        # Sort the DataFrame by 'Satisfaction Level'
+        ratings_df.sort_values('Satisfaction Level', inplace=True)
+
         # Display title and median score
         title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Company's Performance Evaluation and Feedback Process</h2>"
         caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q19MedianScore:.1f}</div>"
@@ -1710,6 +1720,15 @@ if dashboard == 'Section 3: Performance & Talent':
         q21ValuesCount, q21MedianScore = score_distribution(filtered_data, 28)
 
         ratings_df = pd.DataFrame({'Comfort Level': categories, 'Percentage': q21ValuesCount.values})
+
+        #Define the order of the categories
+        comfort_order = ['Very Comfortable', 'Comfortable', 'Hesitant', 'Uncomfortable', 'Very Uncomfortable']
+
+        # Convert 'Comfort Level' to a categorical variable with the specified order
+        ratings_df['Comfort Level'] = pd.Categorical(ratings_df['Comfort Level'], categories=comfort_order, ordered=True)
+
+        # Sort the DataFrame by 'Comfort Level'
+        ratings_df.sort_values('Comfort Level', inplace=True)
 
         # Display title and median score
         title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Comfort Level in Discussing Career Goals         and Development with Manager</h2>"
@@ -1943,6 +1962,15 @@ if dashboard == 'Section 4: Learning':
 
         ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q24ValuesCount.values})
 
+        # Define the order of the categories
+        satisfaction_order = ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very Dissatisfied']
+
+        # Convert 'Satisfaction Level' to a categorical variable with the specified order
+        ratings_df['Satisfaction Level'] = pd.Categorical(ratings_df['Satisfaction Level'], categories=satisfaction_order, ordered=True)
+
+        # Sort the DataFrame by 'Satisfaction Level'
+        ratings_df.sort_values('Satisfaction Level', inplace=True)
+
         # Display title and median score
         title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Current Learning Management System</h2>"
         caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q24MedianScore:.1f}</div>"
@@ -2146,7 +2174,7 @@ if dashboard == 'Section 4: Learning':
     st.markdown(
         """
         <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-        What could be improved or what kind of format is missing today ?
+        Improvement or Missing Format 
         </h2>
         """,
         unsafe_allow_html=True
@@ -2355,28 +2383,31 @@ if dashboard == 'Section 5: Compensation':
     st.markdown(
         """
         <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-        What data is missing according to you ?
+        Missing Data in Compensation Campaign
         </h2>
         """,
         unsafe_allow_html=True
     )
 
-    q38_data_reliable = filtered_data['What data is missing according to you ?'].dropna()
-    from wordcloud import WordCloud
-    import matplotlib.pyplot as plt
+    #stopwords for data missing for compensation
+    compensation_stopwords = ["compensation", "miss", "missing", "this","about", "of", ",", "to", "a", "what", "on", "could", "do", "we", "their", "the", "learning", "management", "system", "employees", "company", "help", "need", "everyone", "makes", "improved", "improvement", "format", "today", "no", "and","should","more", "training", "data", "according", "you"]
+    
+    data_missing = filtered_data.iloc[:, 38]
+    data_missing = data_missing.dropna()
 
-    # Replace spaces with underscores
-    phrases = q38_data_reliable.str.replace(' ', '_')
+    #generate all text for word cloud for data missing
+    data_missing_text = ' '.join(data_missing.astype(str))
+    
+    #generate simple word cloud for data missing
+    wordcloud = WordCloud(width=800, height=400, background_color='white', stopwords=compensation_stopwords).generate(data_missing_text)
 
-    # Generate word cloud
-    wordcloud = WordCloud(width=1000, height=500).generate(' '.join(phrases))
+    # Display the word cloud using Streamlit
+    st.markdown(
+            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud</h3>",
+            unsafe_allow_html=True)
+    st.image(wordcloud.to_array(), use_column_width=True)
 
-    plt.figure(figsize=(15, 8))
-    plt.imshow(wordcloud)
-    plt.axis("off")
-
-    # Display the plot in Streamlit
-    st.pyplot(plt)
+    st.write('For detailed reason analysis/sentiment dashboard, please check out the [link](https://gucciouy5ardhonqumm6p4.streamlit.app)')
 
     ### Question32: Do you manage/launch your compensation campaigns nationally or in another way?
     st.markdown(
@@ -2443,6 +2474,15 @@ if dashboard == 'Section 5: Compensation':
         q33ValuesCount, q33MedianScore = score_distribution(filtered_data, 40)
 
         ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q33ValuesCount.values})
+
+        # Define the order of the categories
+        satisfaction_order = ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very Dissatisfied']
+
+        # Convert 'Satisfaction Level' to a categorical variable with the specified order
+        ratings_df['Satisfaction Level'] = pd.Categorical(ratings_df['Satisfaction Level'], categories=satisfaction_order, ordered=True)
+
+        # Sort the DataFrame by 'Satisfaction Level'
+        ratings_df.sort_values('Satisfaction Level', inplace=True)
 
         # Display title and median score
         title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Compensation Campaign</h2>"
@@ -2605,6 +2645,15 @@ if dashboard == 'Section 5: Compensation':
         q38ValuesCount, q38MedianScore = score_distribution(filtered_data, 45)
 
         ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q38ValuesCount.values})
+
+        # Define the order of the categories
+        satisfaction_order = ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very Dissatisfied']
+
+        # Convert 'Satisfaction Level' to a categorical variable with the specified order
+        ratings_df['Satisfaction Level'] = pd.Categorical(ratings_df['Satisfaction Level'], categories=satisfaction_order, ordered=True)
+
+        # Sort the DataFrame by 'Satisfaction Level'
+        ratings_df.sort_values('Satisfaction Level', inplace=True)
 
         # Display title and median score
         title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Variable Pay/Bonus Campaign </h2>"
@@ -2903,6 +2952,15 @@ if dashboard == 'Section 6: Payroll':
 
         ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q42ValuesCount.values})
 
+        # Define the order of the categories
+        satisfaction_order = ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very Dissatisfied']
+
+        # Convert 'Satisfaction Level' to a categorical variable with the specified order
+        ratings_df['Satisfaction Level'] = pd.Categorical(ratings_df['Satisfaction Level'], categories=satisfaction_order, ordered=True)
+
+        # Sort the DataFrame by 'Satisfaction Level'
+        ratings_df.sort_values('Satisfaction Level', inplace=True)
+
         # Display title and median score
         title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Current Payroll System</h2>"
         caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q42MedianScore:.1f}</div>"
@@ -3049,7 +3107,7 @@ if dashboard == 'Section 6: Payroll':
     st.markdown(
         """
         <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-        Are you autonomous when it comes to updating simple data?
+        Autonomy When It Comes to Updating Simple Data
         </h2>
         """,
         unsafe_allow_html=True
@@ -3084,12 +3142,49 @@ if dashboard == 'Section 6: Payroll':
     st.markdown(
         """
         <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-        Can you share any specific features of your current system that you like/that made you choose it?
+        Specific Features of the Current System that People like/that Made People Choose It
         </h2>
         """,
         unsafe_allow_html=True
     )
-    ### Missing wordcloud
+
+    #stopwords for specific features of the current system that you like/that made you choose it
+    features_stopwords = ["payroll", "compensation", "miss", "missing", "this","about", "of", ",", "to", "a", "what", "on", "could", "do", "we", "their", "the", "learning", "management", "system", "employees", "company", "system", "like", "choose", "help", "need", "everyone", "makes", "improved", "improvement", "format", "today", "no", "and","should","more", "training", "data", "according", "you"]
+    
+    specific_features = filtered_data.iloc[:, 53]
+
+    #generate wordcloud since the repsonses are too few
+    word_cloud = WordCloud(width=800, height=400, background_color='white', stopwords=features_stopwords).generate(' '.join(specific_features.dropna().astype(str)))
+
+    # Display the word cloud using Streamlit
+    st.markdown(
+            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud</h3>",
+            unsafe_allow_html=True)
+    
+    st.image(word_cloud.to_array(), use_column_width=True)
+    
+    #Generate more complex wordcloud if there are more repsonses
+    specific_features = specific_features.dropna()
+    
+    st.markdown(
+        "<h3 style='text-align: left; font-size: 20px; font-weight: normal;'>All specific features of the current system that people like/that made people choose it</h3>",
+        unsafe_allow_html=True)
+    st.write(specific_features)
+
+    # Checkbox to decide whether to display the complete DataFrame
+    if st.checkbox('Display complete specific features of the current system that people like/that made people choose it'):
+        # Convert DataFrame to HTML and display it
+        html = filtered_data.iloc[:,53].to_html(index=False)
+        st.markdown(html, unsafe_allow_html=True)
+
+    # Convert DataFrame to CSV and generate download link
+    csv = filtered_data.iloc[:, 53].to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
+    href = f'<a href="data:file/csv;base64,{b64}" download="specific_features.csv">Download specific_features CSV File</a>'
+    st.markdown(href, unsafe_allow_html=True)
+
+    st.write('For detailed reason analysis/sentiment dashboard, please check out the [link](https://gucciouy5ardhonqumm6p4.streamlit.app)')
+
 
     ### Question47: If your payroll system is used in several countries, do you have a global platform for consolidating all your employees' country data?
     q47_data_available_count = (filtered_data.iloc[:, 54] == 'Yes').sum()
@@ -3469,6 +3564,15 @@ if dashboard == 'Section 7: Time Management':
 
         ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q54ValuesCount.values})
 
+        # Define the order of the categories
+        satisfaction_order = ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very Dissatisfied']
+
+        # Convert 'Satisfaction Level' to a categorical variable with the specified order
+        ratings_df['Satisfaction Level'] = pd.Categorical(ratings_df['Satisfaction Level'], categories=satisfaction_order, ordered=True)
+
+        # Sort the DataFrame by 'Satisfaction Level'
+        ratings_df.sort_values('Satisfaction Level', inplace=True)
+
         # Display title and median score
         title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on Current Time Management System</h2>"
         caption_html = f"<div style='font-size: 15px; font-family: Arial; color: #707070;'>The median satisfaction score is {q54MedianScore:.1f}</div>"
@@ -3689,12 +3793,49 @@ if dashboard == 'Section 7: Time Management':
     st.markdown(
         """
         <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-        According to you, what functionalities are missing from your current system ?
+        Functionalities Missing from the Current System
         </h2>
         """,
         unsafe_allow_html=True
     )
-    ### Missing wordcloud
+
+    #stopwords for functionalities missing from the current system
+    functionalities_stopwords = ["functionalities", "system", "payroll", "compensation", "miss", "missing", "this","about", "of", ",", "to", "a", "what", "on", "could", "do", "we", "their", "the", "learning", "management", "system", "employees", "company", "system", "like", "choose", "help", "need", "everyone", "makes", "improved", "improvement", "format", "today", "no", "and","should","more", "training", "data", "according", "you"]
+    
+    functionalities_missing = filtered_data.iloc[:, 66]
+
+    #generate wordcloud since the repsonses are too few
+    word_cloud = WordCloud(width=800, height=400, background_color='white').generate(' '.join(functionalities_missing.dropna().astype(str)))
+
+    # Display the word cloud using Streamlit
+    st.markdown(
+            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud</h3>",
+            unsafe_allow_html=True)
+    st.image(word_cloud.to_array(), use_column_width=True)
+    
+    #Generate more complex wordcloud if there are more repsonses
+    #drop missing values first
+    functionalities_missing = functionalities_missing.dropna()
+    
+    st.markdown(
+        "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>All the functionalities missing from the current system:</h3>",
+        unsafe_allow_html=True)
+    st.write(functionalities_missing)
+
+    # Checkbox to decide whether to display the complete DataFrame
+    if st.checkbox('Display complete missing functionalities'):
+        # Convert DataFrame to HTML and display it
+        html = filtered_data.iloc[:, 66].to_html(index=False)
+        st.markdown(html, unsafe_allow_html=True)
+
+    # Convert DataFrame to CSV and generate download link
+    csv = filtered_data.iloc[:, 66].to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
+    href = f'<a href="data:file/csv;base64,{b64}" download="functionalities_missing.csv">Download functionalities_missing csv file</a>'
+    st.markdown(href, unsafe_allow_html=True)
+
+    st.write('For detailed reason analysis/sentiment dashboard, please check out the [link](https://gucciouy5ardhonqumm6p4.streamlit.app)')
+
 
     ### Question60: Does the system allow employees to take their own leave, with workflow validation by their manager or HR?
     q60_data_available_count = (filtered_data.iloc[:, 67] == 'Yes').sum()
@@ -3836,23 +3977,60 @@ if dashboard == 'Section 8: User Experience':
     st.markdown(
         """
         <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-        In the context of your job, what are the most valuable activities your current HRIS enable you to do?
+        The Most Valuable Activities in the Current HRIS in the Context of the Job
         </h2>
         """,
         unsafe_allow_html=True
     )
-    ### Missing wordcloud,emotion analysis
+
+    #stopwords for most valuable activities in the current HRIS
+    HRIS_stopwords = ["I","and" ," and", "and ", " ;", "; ", " to", " for", "for ", "for", "to ", "my", "activities", "HRIS", "valuable", "system", "HR", "current", "functionalities", "system", "payroll", "compensation", "miss", "missing", "this","about", "of", ",", "to", "a", "what", "on", "could", "do", "we", "their", "the", "learning", "management", "system", "employees", "company", "system", "like", "choose", "help", "need", "everyone", "makes", "improved", "improvement", "format", "today", "no", "and","should","more", "training", "data", "according", "you"]
+    
+    valuable_activities = filtered_data.iloc[:, 69]
+
+    #drop missing values first
+    valuable_activities = valuable_activities.dropna()
+
+    #generate wordcloud since the repsonses are too few
+    word_cloud_valuable = WordCloud(width=800, height=400, background_color='white', stopwords=HRIS_stopwords).generate(' '.join(valuable_activities.dropna().astype(str)))
+
+
+    
+    st.markdown(
+            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud</h3>",
+            unsafe_allow_html=True)
+    
+    st.image(word_cloud_valuable.to_array(), use_column_width=True)
+
 
     ### Question63: In the context of your job, what do your current HRIS fail to address?
     st.markdown(
         """
         <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-        In the context of your job, what do your current HRIS fail to address?
+        What the Current HRIS Fail to Address in the Context of the Job
         </h2>
         """,
         unsafe_allow_html=True
     )
-    ### Missing wordcloud,emotion analysis
+    #stopwords for most functions are missing in the current HRIS
+    HRIS_stopwords2 = ["I", "my", "activities", "fail", "address", "missing", "HRIS", "valuable", "system", "HR", "current", "functionalities", "system", "payroll", "compensation", "miss", "missing", "this","about", "of", ",", "to", "a", "what", "on", "could", "do", "we", "their", "the", "learning", "management", "system", "employees", "company", "system", "like", "choose", "help", "need", "everyone", "makes", "improved", "improvement", "format", "today", "no", "and","should","more", "training", "data", "according", "you"]
+
+    functions_missing = filtered_data.iloc[:, 70]
+
+    #generate wordcloud since the repsonses are too few
+    word_cloud_functions = WordCloud(width=800, height=400, background_color='white', stopwords=HRIS_stopwords2).generate(' '.join(functions_missing.dropna().astype(str)))
+
+    # Display the word cloud using Streamlit
+    st.markdown(
+            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud</h3>",
+            unsafe_allow_html=True)
+    st.image(word_cloud_functions.to_array(), use_column_width=True)
+
+    #Generate more complex wordcloud if there are more repsonses
+
+    #drop missing values first
+    functions_missing = functions_missing.dropna()
+
 
     ### Question64: Do you consider the time you spend on your HRIS to be time well spent?
     q64_data_available_count = (filtered_data.iloc[:, 71] == 'Yes').sum()
@@ -3897,87 +4075,67 @@ if dashboard == 'Section 8: User Experience':
     st.markdown(
         """
         <h2 style='font-size: 17px; font-family: Arial; color: #333333;'>
-        In 3 words, how would you describe your current user-experience with the HRIS ?
+        3 Words to Describe the Current User-Experience with the HRIS
         </h2>
         """,
         unsafe_allow_html=True
     )
-    ### Missing wordcloud,emotion analysis
 
-    import pandas as pd
-    from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForSeq2SeqLM
-    import torch
-    import numpy as np
+    st.markdown("<h1 style='text-align: center; font-size: 24px; font-weight: normal;'>Descriptions about User Experience with the Current HRIS</h1>", unsafe_allow_html=True)
+    #get the data
+    overall_experience = filtered_data.iloc[:, 72]
 
+    #set the stopwords
+    Overall_stopwords = [",", ";", " ;", "; ", "not very", "not", "very", " ; ", "I", "my", "activities", "fail", "address", "missing", "HRIS", "valuable", "system", "HR", "current", "functionalities", "system", "payroll", "compensation", "miss", "missing", "this","about", "of", ",", "to", "a", "what", "on", "could", "do", "we", "their", "the", "learning", "management", "system", "employees", "company", "system", "like", "choose", "help", "need", "everyone", "makes", "improved", "improvement", "format", "today", "no", "and","should","more", "training", "data", "according", "you"]
 
-    def load_models():
-        # Load the tokenizers and models
-        tokenizer_1 = AutoTokenizer.from_pretrained("j-hartmann/emotion-english-distilroberta-base")
-        model_1 = AutoModelForSequenceClassification.from_pretrained("j-hartmann/emotion-english-distilroberta-base")
+    # Function to extract n-grams from text
+    def extract_ngrams(x, n):
+        ngrams = []
+        phrases = x.split(', ')
+        for phrase in phrases:
+            words = phrase.split(' ')
+            ngrams.extend([' '.join(ng) for ng in nltk_ngrams(words, n)])
+        return ngrams
 
-        tokenizer_2 = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-emotion")
-        model_2 = AutoModelForSeq2SeqLM.from_pretrained("mrm8488/t5-base-finetuned-emotion")
+    #drop missing values first
+    overall_experience = overall_experience.dropna()
 
-        return tokenizer_1, model_1, tokenizer_2, model_2
+    # Concatenate all text data
+    overall_text = ' '.join(overall_experience.astype(str))
 
+    # Generate unigrams, bigrams, and trigrams
+    unigrams_overall = extract_ngrams(overall_text, 1)
+    bigrams_overall = extract_ngrams(overall_text, 2)
+    trigrams_overall = extract_ngrams(overall_text, 3)
 
-    def predict_emotions_hybrid(df, text_columns):
-        tokenizer_1, model_1, tokenizer_2, model_2 = load_models()
+    # Count the frequency of each n-gram
+    unigram_freq_overall = Counter(unigrams_overall)
+    bigram_freq_overall = Counter(bigrams_overall)
+    trigram_freq_overall = Counter(trigrams_overall)
 
-        emotion_labels_1 = ["anger", "disgust", "fear", "joy", "neutral", "sadness", "surprise"]
-        emotion_labels_2 = ["anger", "joy", "optimism", "sadness"]
+    # Combine the frequencies
+    combined_freq_overall = unigram_freq_overall + bigram_freq_overall + trigram_freq_overall
 
-        for column in text_columns:
-            if column not in df.columns:
-                raise ValueError(f"Column '{column}' does not exist in DataFrame")
-            df[column] = df[column].fillna("")
+    # Generate the word cloud
+    phrase_cloud_overall = WordCloud(width=800, height=400, background_color='white', stopwords = Overall_stopwords).generate_from_frequencies(combined_freq_overall)
 
-        for column in text_columns:
-            # Predictions from the first model
-            encoded_texts_1 = tokenizer_1(df[column].tolist(), padding=True, truncation=True, return_tensors='pt')
-            with torch.no_grad():
-                outputs_1 = model_1(**encoded_texts_1)
-                probabilities_1 = torch.nn.functional.softmax(outputs_1.logits, dim=-1)
+    # Display the word cloud using Streamlit
+    st.markdown(
+            "<h3 style='text-align: center; font-size: 20px; font-weight: normal;'>Word Cloud</h3>",
+            unsafe_allow_html=True)
+    st.image(phrase_cloud_overall.to_array(), use_column_width=True)
 
-            # Predictions from the second model
-            encoded_texts_2 = tokenizer_2(df[column].tolist(), padding=True, truncation=True, return_tensors='pt')
-            with torch.no_grad():
-                outputs_2 = model_2.generate(input_ids=encoded_texts_2['input_ids'],
-                                             attention_mask=encoded_texts_2['attention_mask'])
-                predicted_labels_2 = [tokenizer_2.decode(output, skip_special_tokens=True) for output in outputs_2]
-                probabilities_2 = torch.tensor(
-                    [[1 if label == emotion else 0 for emotion in emotion_labels_2] for label in predicted_labels_2])
+    #check if the user wants to see the data
+    if st.checkbox('Display complete description data in 3 words'):
+        # Convert DataFrame to HTML and display it
+        html = filtered_data.iloc[:, 72].to_html(index=False)
+        st.markdown(html, unsafe_allow_html=True)
 
-            # Adjust probabilities_2 to match the length of emotion_labels_1 by filling missing labels with zero probabilities
-            adjusted_probabilities_2 = torch.zeros(probabilities_2.size(0), len(emotion_labels_1))
-            for i, emotion in enumerate(emotion_labels_2):
-                if emotion in emotion_labels_1:
-                    adjusted_probabilities_2[:, emotion_labels_1.index(emotion)] = probabilities_2[:, i]
-
-            # Average the probabilities
-            averaged_probabilities = (probabilities_1 + adjusted_probabilities_2) / 2
-            predicted_emotions = [emotion_labels_1[probability.argmax()] for probability in averaged_probabilities]
-
-            df[f'{column}_predicted_emotion'] = predicted_emotions
-
-        return df
-
-
-    # Load the DataFrame from the Excel file
-    df = pd.read_excel('/content/data.xlsx')
-
-    # Specify the columns to analyze
-    columns_to_analyze = [
-        'What could be improved or what kind of format is missing today ?',
-        'In the context of your job, what are the most valuable activities your current HRIS enable you to do?',
-        'In the context of your job, what do your current HRIS fail to address?',
-        'In 3 words, how would you describe your current user-experience with the HRIS ?'
-    ]
-
-    # Run the function
-    df_with_emotions = predict_emotions_hybrid(df, columns_to_analyze)
-
-    # Display the DataFrame with predicted emotions
-    df_with_emotions.head()
+    # Convert DataFrame to CSV and generate download link
+    csv = filtered_data.iloc[:, 72].to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
+    href = f'<a href="data:file/csv;base64,{b64}" download="user_experience.csv">Download user_experience csv file</a>'
+    st.markdown(href, unsafe_allow_html=True)
+    st.write('For detailed reason analysis/sentiment dashboard, please check out the [link](https://gucciouy5ardhonqumm6p4.streamlit.app)')
 
 ############ SECTION 8 ENDS ############
