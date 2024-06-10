@@ -1,6 +1,7 @@
+<p align="center">
 [![GitHub Link](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/001202ZHENG/V1_Chatbot_Streamlit)
 [![Streamlit App](https://img.shields.io/badge/Streamlit-App-orange?logo=streamlit)](https://v1chatbotapp-2syadnkccp6nyevahkmkbm.streamlit.app/)
-
+</p>
 # VoC Project
 
 ## Overview
@@ -64,13 +65,6 @@ To set up the VoC Chatbot on your local machine, follow these steps:
    streamlit run pages/1__VoC-Chat.py
    ```
    
-## Contributors
-- Linhui Sang
-- Nishant Dave
-- Maria Hallak
-- Zheng Wan
-- Weijing Zeng
-
 ## Acknowledgements
 This project was developed as part of a collaboration between students from ESSEC Business School and Deloitte HR Transformation team. We are grateful for the support and guidance provided by our professors and the Deloitte team.
 
