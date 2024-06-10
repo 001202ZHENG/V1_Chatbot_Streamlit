@@ -11,6 +11,7 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
 import base64
 from nltk.util import ngrams as nltk_ngrams
+from collections import Counter
 
 nltk.download('punkt', quiet=True)
 
@@ -3180,11 +3181,11 @@ if dashboard == 'Section 6: Payroll':
     # Checkbox to decide whether to display the complete DataFrame
     if st.checkbox('Display complete specific features of the current system that people like/that made people choose it'):
         # Convert DataFrame to HTML and display it
-        html = filtered_data.iloc[:,53].to_html(index=False)
+        html = specific_features.to_html(index=False)
         st.markdown(html, unsafe_allow_html=True)
 
     # Convert DataFrame to CSV and generate download link
-    csv = filtered_data.iloc[:, 53].to_csv(index=False)
+    csv = specific_features.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}" download="specific_features.csv">Download specific_features CSV File</a>'
     st.markdown(href, unsafe_allow_html=True)
@@ -3831,11 +3832,11 @@ if dashboard == 'Section 7: Time Management':
     # Checkbox to decide whether to display the complete DataFrame
     if st.checkbox('Display complete missing functionalities'):
         # Convert DataFrame to HTML and display it
-        html = filtered_data.iloc[:, 66].to_html(index=False)
+        html = functionalities_missing.to_html(index=False)
         st.markdown(html, unsafe_allow_html=True)
 
     # Convert DataFrame to CSV and generate download link
-    csv = filtered_data.iloc[:, 66].to_csv(index=False)
+    csv = functionalities_missing.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}" download="functionalities_missing.csv">Download functionalities_missing csv file</a>'
     st.markdown(href, unsafe_allow_html=True)
