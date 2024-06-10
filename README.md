@@ -1,7 +1,6 @@
-<p align="center">
 [![GitHub Link](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/001202ZHENG/V1_Chatbot_Streamlit)
 [![Streamlit App](https://img.shields.io/badge/Streamlit-App-orange?logo=streamlit)](https://v1chatbotapp-2syadnkccp6nyevahkmkbm.streamlit.app/)
-</p>
+
 # VoC Project
 
 ## Overview
