@@ -1300,6 +1300,7 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
     aspect_recruiting_counts = q14_data['recruiting process that required improvement'].value_counts().reset_index()
     aspect_recruiting_counts.columns = ['recruiting process that required improvement', 'count']
     aspect_recruiting_counts['percentage'] = aspect_recruiting_counts['count'] / len(filtered_data) * 100
+    aspect_recruiting_counts = aspect_recruiting_counts.sort_values(by='percentage', ascending=True)
 
     # Create a horizontal bar chart
     fig8 = px.bar(
@@ -1343,6 +1344,16 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
         q15ValuesCount, q15MedianScore = score_distribution(filtered_data, 21)
 
         ratings_df = pd.DataFrame({'Satisfaction Level': categories, 'Percentage': q15ValuesCount.values})
+
+        # Define the order of the categories
+        satisfaction_order = ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very Dissatisfied']
+
+        # Convert 'Satisfaction Level' to a categorical variable with the specified order
+        ratings_df['Satisfaction Level'] = pd.Categorical(ratings_df['Satisfaction Level'], categories=satisfaction_order, ordered=True)
+
+        # Sort the DataFrame by 'Satisfaction Level'
+        ratings_df.sort_values('Satisfaction Level', inplace=True)
+
 
         # Display title and median score
         title_html = f"<h2 style='font-size: 17px; font-family: Arial; color: #333333;'>Rating on the Onboarding Process</h2>"
@@ -1480,6 +1491,7 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
         aspect_onboarding_counts = q18_data['onboarding_process_to_improve'].value_counts().reset_index()
         aspect_onboarding_counts.columns = ['onboarding_process_to_improve', 'count']
         aspect_onboarding_counts['percentage'] = aspect_onboarding_counts['count'] / len(filtered_data) * 100
+        aspect_onboarding_counts = aspect_onboarding_counts.sort_values(by='percentage', ascending=True)
         
         fig18 = px.bar(aspect_onboarding_counts, y='onboarding_process_to_improve', x='percentage', text='percentage', orientation='h', title='Aspects of the Onboarding Process that Require Improvements', color_discrete_sequence=['#336699'])
         fig18.update_layout(
@@ -1504,6 +1516,7 @@ if dashboard == 'Section 2: Recruiting & Onboarding':
         helpful_onboarding_counts = q17_data['helpful_onboarding_process'].value_counts().reset_index()
         helpful_onboarding_counts.columns = ['helpful_onboarding_process', 'count']
         helpful_onboarding_counts['percentage'] = helpful_onboarding_counts['count'] / len(filtered_data) * 100
+        helpful_onboarding_counts = helpful_onboarding_counts.sort_values(by='percentage', ascending=True)
   
         fig17 = px.bar(helpful_onboarding_counts, y='helpful_onboarding_process', x='percentage', text='percentage', orientation='h', title='Helpful Aspects of the Onboarding Process', color_discrete_sequence=['#336699'])
         fig17.update_layout(
