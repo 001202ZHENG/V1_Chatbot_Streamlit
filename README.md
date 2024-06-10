@@ -1,7 +1,5 @@
-## Running Online
-https://v1chatbotapp-2syadnkccp6nyevahkmkbm.streamlit.app/
-
-
+[![GitHub Link](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/001202ZHENG/V1_Chatbot_Streamlit)
+[![Streamlit App](https://img.shields.io/badge/Streamlit-App-orange?logo=streamlit)](https://v1chatbotapp-2syadnkccp6nyevahkmkbm.streamlit.app/)
 
 # VoC Project
 
@@ -12,8 +10,8 @@ Welcome to the VoC Chatbot project! This repository contains code for an AI-powe
 In the evolving landscape of Human Resources, capturing and understanding employee sentiment is crucial for fostering a positive work environment and making informed decisions. Traditional survey analysis methods can be time-consuming and insufficient for capturing the depth of employee sentiments. Our project aims to develop an automated tool that integrates sentiment analysis, visualization technologies, and generative AI to address these challenges.
 
 ## Links Running Online
-- **GitHub Repository**: [VoC Chatbot](https://github.com/001202ZHENG/V1_Chatbot_Streamlit)
-- **Streamlit Application**: [VoC Chatbot App](https://v1chatbotapp-2syadnkccp6nyevahkmkbm.streamlit.app/)
+- **Streamlit Application**: 
+[![Streamlit App](https://img.shields.io/badge/Streamlit-App-orange?logo=streamlit)](https://v1chatbotapp-2syadnkccp6nyevahkmkbm.streamlit.app/)
 
 ## Features
 1. **Visualization Tool**:
@@ -76,6 +74,4 @@ To set up the VoC Chatbot on your local machine, follow these steps:
 ## Acknowledgements
 This project was developed as part of a collaboration between students from ESSEC Business School and Deloitte HR Transformation team. We are grateful for the support and guidance provided by our professors and the Deloitte team.
 
-[![GitHub Link](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/001202ZHENG/V1_Chatbot_Streamlit)
-[![Streamlit App](https://img.shields.io/badge/Streamlit-App-orange?logo=streamlit)](https://v1chatbotapp-2syadnkccp6nyevahkmkbm.streamlit.app/)
 
