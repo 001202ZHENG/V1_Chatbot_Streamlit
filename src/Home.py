@@ -9,8 +9,10 @@ from wordcloud import WordCloud, STOPWORDS
 import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
+import base64
+from nltk.util import ngrams as nltk_ngrams
 
-nltk.download('punkt')
+nltk.download('punkt', quiet=True)
 
 score_to_category = {
     1: 'Very Dissatisfied',
@@ -380,14 +382,18 @@ def score_distribution(data, column_index):
 
 
 def filter_by_satisfaction(data, satisfaction_level, column_index):
-    if satisfaction_level != 'Select a satisfaction level':
-        data = data[data.iloc[:, column_index] == satisfaction_options.index(satisfaction_level)]
-    return data
+    if satisfaction_level == 'Select a satisfaction level':
+        return data[data.iloc[:, column_index].notna()]
+    else:
+        return data[data.iloc[:, column_index] == satisfaction_options.index(satisfaction_level)]
+
 
 
 def filter_by_comfort(data, comfort_level, column_index):
     if comfort_level != 'Select a comfort level':
         data = data[data.iloc[:, column_index] == comfort_options.index(comfort_level)]
+    else:
+        data = data[data.iloc[:, column_index].notna()]
     return data
 
 
@@ -1814,7 +1820,7 @@ if dashboard == 'Section 3: Performance & Talent':
     negative_reason_recruiting_counts['percentage'] = negative_reason_recruiting_counts['count'] / len(
         filtered_data) * 100
 
-    fig1 = px.bar(negative_reason_recruiting_counts, y='negative_reasons', x='percentage', text='count',
+    fig1 = px.bar(negative_reason_recruiting_counts, y='negative_reasons', x='percentage', text='percentage',
                   color='negative_reasons', color_discrete_sequence=['#3b528b'], orientation='h')
 
     fig1.update_traces(hovertemplate='<b>Reason:</b> %{y}<br><b>Count:</b> %{text}')
