@@ -101,4 +101,4 @@ To set up the VoC Chatbot on your local machine, follow these steps:
    ```
    
 ## Acknowledgements
-This project was developed as part of a collaboration between students from ESSEC Business School and Deloitte HR Transformation team. We are grateful for the support and guidance provided by our professors and the Deloitte team.
+This project was developed as part of a collaboration between students from ESSEC&CentraleSupélec and Deloitte HR Transformation team. We are grateful for the support and guidance provided by our professors and the Deloitte team.
